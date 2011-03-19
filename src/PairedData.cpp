@@ -5288,7 +5288,7 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 	
 	// close bam(s)
 	ar1.Close();
-	if (ar2.HasOpenReaders() ) {
+	if  (BamZ<1)  {
 		ar2.Close();
 	}
 	br1.Close();

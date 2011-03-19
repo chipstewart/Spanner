@@ -1,0 +1,52 @@
+README																11 Mar 2011
+
+Spanner is a c++ program for the detection of Structural Variation events from whole genome sequenced read pair data. It uses aligned read information in bam format and was developed in conjunction with the Mosaik alignment program (https://github.com/wanpinglee/MOSAIK). 
+
+Compiling the source code
+=========================
+git clone git@github.com:chipstewart/Spanner.git (this repository) to an appropriately named subdirectory (eg ~/Spanner) on a linux or macOSX computer. 
+
+Spanner links to two other libraries:
+
+ 1. Bamtools
+ 
+ If bamtools is not already installed  Install bamtools on your computer. Bamtools and the corresponding installation instructions can be found at:
+ git clone https://github.com/pezmaster31/bamtools.git
+ 
+
+ 2. RE2  regular expression library
+ 
+ RE2 and installation readme instructions can be found at:
+ hg clone https://re2.googlecode.com/hg re2
+
+ 
+ 
+INSTALLING SPANNER
+
+ Go the area with the Spanner source and find the Makefile. The Makefile needs to know where to find Bamtools and RE2, so it is necessary to edit the Makefile to change  RE2_ROOT=" " and BAMTOOLS_ROOT=" "  to point to the main install areas for those packages.   Once RE2_ROOT and BAMTOOLS_ROOT are set, then 
+ type "make".  I hate to predict what will happen, but if we are lucky a Spanner binary will appear in the directory despite gcc complaints about deprecated header files. 
+ 
+ Run Spanner without arguments. You should see something very much like:
+
+    begin Spanner!      Version 7.00
+    command line:
+    Spanner
+    hey ... need some input file(s) !
+     try  -1 and -2 , or -i
+
+ If you don't see this, then we'll need to fix the compile & link on your server. I hope we can avoid that because I use a couple of  libraries that would need to be installed (bamtools and RE2).   
+
+ Even more informative would be to run Spanner -h which will produce a list of all the command line arguments that Spanner can accept. Spanner has years  of historical developement behind it so some options are more obscure than others.  The command line options are listed by Spanner -h in no particular order.   
+ 
+ 
+Spanner processing steps:
+
+ 1:  Build spanner data structures (*.span files) and split by chromosome. 
+
+ 1a.  A short step between 2 and 3 in which multiple sequencing runs/lanes are combined.  Spanner combines runs  by loading all build files from a  subdirectory. A python script (SpanLinks.py) can make linux symbolic links in a subdirectory from all build files from all runs/lanes that should be combined.
+
+ 2:  Detect SV's: detect clusters of fragments spanning SV breakpoints and write the corresponding event list of SV's. The event list is a VCF-format text file with many fields in addition to event type, chromosome, position, and length. Depending on the SV type, there are up to 20 other descriptive fields in the output event lists for each event. The other fields are parameters that I sometimes look at but are not generally relevant. 
+ 
+ At the moment, the output SV list includes deletions, tandem duplications,  inversions, cross-chromosome translocations, and mobile element insertions detected by read-paired (RP) constraint.  
+ 
+ 

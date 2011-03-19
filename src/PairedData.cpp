@@ -5286,6 +5286,14 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 		}
 	}
 	
+	// close bam(s)
+	ar1.Close();
+	if (ar2.HasOpenReaders() ) {
+		ar2.Close();
+	}
+	br1.Close();
+	br2.Close();
+	
 	// finalize histos
 	for (iset=0; iset<Nset; iset++) {
 		set[iset].pairCountStats.Finalize();         

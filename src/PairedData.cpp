@@ -5042,7 +5042,14 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 	
 	BamAlignment ba;
 		
-	ar1.Open(BamFileNames,BamZ<1,false);
+	//ar1.Open(BamFileNames,BamZ<1,false);
+	ar1.Open(BamFileNames);
+	if (BamZ<1) {
+		if (ar1.LocateIndexes()) {
+			ar1.OpenIndexes(BamFileNames);
+		}
+	}
+	
 	
 	if (ar1.GetReferenceCount()<1) {
 		cout << "ERROR: Unable to open the BAM file (" << file1.c_str()<< ")." << endl;
@@ -5058,7 +5065,13 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 	
 	if ( (BamZ<1) ) {
 		
-		ar2.Open(BamFileNames,true,false);
+		//ar2.Open(BamFileNames,true,false);
+		ar2.Open(BamFileNames);
+		if (BamZ<1) {
+			if (ar2.LocateIndexes()) {
+				ar2.OpenIndexes(BamFileNames);
+			}
+		}
 		if (ar2.GetReferenceCount()<1) {
 			cout << "ERROR: Unable to open the BAM file twice (" << file1.c_str() << ")." << endl;
 			exit(104);
@@ -5163,7 +5176,11 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 
 	if ( BamFileNames.size()==1 ) {
 		br1.Open(file1);
-		br2.Open(file1,"",true);
+		//br2.Open(file1,"",true);
+		br2.Open(file1);
+		if (br2.LocateIndex()) {
+			br2.OpenIndex(file1);
+		}
 	}
 		
 	bool next = true;
@@ -5413,7 +5430,13 @@ void C_pairedfiles::testMultiMapBam( string  & file1, RunControlParameters & par
 	
 	// check reader1
 	//ar1.Open(BamFileNames[0].c_str(),"",true,true);
-	ar1.Open(BamFileNames,"",true,true);
+	//ar1.Open(BamFileNames,"",true,true);
+	ar1.Open(BamFileNames);
+	
+	if (ar1.LocateIndexes()) {
+			ar1.OpenIndexes(BamFileNames);
+	}
+	
 	if (ar1.GetReferenceCount()<1) {
 		cout << "ERROR: Unable to open the BAM file (" << file1.c_str() << ")." << endl;
 		exit(106);
@@ -5518,9 +5541,9 @@ void C_pairedfiles::testMultiMapBam( string  & file1, RunControlParameters & par
 			cout << Nfrag << "\t" << ba1.RefID <<  "\t" << ba1.Position <<  "\n";
 		}      		
 		
-    }
+  }
 	
-		
+	ar1.Close();	
 			
 	// finalize histos
 	for (int iset=0; iset<Nset; iset++) {
@@ -9851,7 +9874,9 @@ bool C_pairedfiles::checkBamFile(string & filename1) {
   BamReader file1;
 	// file1.SetFilename(bamFilename1);
 
-  file1.Open(bamFilename1,"",true);
+  //file1.Open(bamFilename1,"",true);
+	file1.Open(bamFilename1);
+	
   if (file1.GetReferenceCount()>0) { 
    	//cerr << endl;
 	//	cerr << "BAM" << endl; 

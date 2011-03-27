@@ -877,7 +877,7 @@ int getCigarLength(string cigar, int opt=0)
 	string op1;
 	
 	int len=0;
-	while (RE2::Consume(&sp,patternCigar, &len1, &op1)) {
+	while (RE2::FindAndConsume(&sp,patternCigar, &len1, &op1)) {
 		if (opt==0) {
 			// query length does not count deletions in reference
 			size_t found=op1.find("D");
@@ -912,7 +912,7 @@ bool getCigarLengths(string cigar, int &LQ, int &LR, int &MM)
 	LR=0;
 	MM=0;
 	
-	while (RE2::Consume(&sp,patternCigar, &len1, &op1)) {
+	while (RE2::FindAndConsume(&sp,patternCigar, &len1, &op1)) {
 		size_t found=op1.find("S");
 		if (found!=string::npos) 	// skip S's (clips in query)
 			continue;
@@ -945,8 +945,8 @@ int getCigarMismatchCount(string cigar)
 	string op1;
 	
 	int mm=0;
-	//while (RE2::Consume(&sp,patternCigar.c_str(), &len1, &op1)) {
-	while (RE2::Consume(&sp,patternCigar, &len1, &op1)) {
+	//while (RE2::FindAndConsume(&sp,patternCigar.c_str(), &len1, &op1)) {
+	while (RE2::FindAndConsume(&sp,patternCigar, &len1, &op1)) {
 		
 		size_t found=op1.find("S");
 		if (found!=string::npos) 	// skip S's (clips in query)
@@ -972,10 +972,14 @@ int getMDMismatchCount(string MD)
 	string se;
 	
 	int mm=0;
-	while (RE2::Consume(&sp,patternMD, &se)) {
-		
-		size_t len1=se.size();
-		mm+=len1;
+	while (RE2::FindAndConsume(&sp,patternMD, &se)) {
+
+		size_t found=se.find("^");
+		if (found==string::npos) {
+			// skip ^'s (gaps in reads are already in cigar)			
+			size_t len1=se.size();
+			mm+=len1;
+		}
 	}
 	return mm;
 }

@@ -39,7 +39,7 @@ C_readmap::C_readmap()   // Constructor
    mm=0;
 	 q2=0;
 	 nmap=0;
-	 mob=" ";
+	 mob="";
 }
 
 C_readmap::C_readmap(const C_readmap &copyin)   // Copy constructor to handle pass by value.
@@ -55,14 +55,19 @@ C_readmap::C_readmap(const C_readmap &copyin)   // Copy constructor to handle pa
 	 mob=copyin.mob;
 }
 
-C_readmap::C_readmap(unsigned int pos1, unsigned short anchor1,unsigned short len1, char sense1, char q1, char mm1) {
+/*
+ C_readmap::C_readmap(unsigned int pos1, unsigned short anchor1,unsigned short len1, char sense1, char q1, char mm1) {
    pos = pos1;
    anchor = anchor1;
    len = len1;
    sense = sense1;
    q = q1;
    mm = mm1;
+	q2=0;
+	nmap=0;
+	mob=" ";
 }
+*/
 
 ostream &operator<<(ostream &output, const C_readmap & x)
 {

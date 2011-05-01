@@ -126,20 +126,39 @@ class C_SVspanfrags1 {
     float        ER;      // estimated count of  read mapped to SV region     
 };
 
+class C_SVCF_TAG {
+	friend ostream &operator<<(ostream &, C_SVCF_TAG &);
+	public:	  
+		C_SVCF_TAG();
+		C_SVCF_TAG(char, string &, int , string &, string &);
+		bool INFO;
+		bool ALT;
+		bool FORMAT;
+		bool FILTER;
+		string Id;
+		int	   Number;
+		string Type;
+		string Descr;
+};	
 
 class C_SVCF {
   friend ostream &operator<<(ostream &, C_SVCF &);
   public:
     C_SVCF();    
-    C_SVCF(RunControlParameters &, vector <string> & Info1,vector <string> & Format1, vector <string> & Samples1);
+  	C_SVCF(RunControlParameters &, vector <C_SVCF_TAG> & Info1,vector <C_SVCF_TAG> & Format1, 
+					 vector <C_SVCF_TAG> & Alt1,vector <C_SVCF_TAG> & Filt1,vector <string> & Samples1);
     string Version;
     string Date;
     string Source;
     string Reference;
     string EventType;
     int NEvent;
-    vector<string> Info;
-    vector<string> Format;
+		vector<C_SVCF_TAG> FMT;
+		vector<C_SVCF_TAG> INFO;
+		vector<C_SVCF_TAG> ALT;
+		vector<C_SVCF_TAG> FILT;
+		//vector<string> Info;
+    //vector<string> Format;
     vector<string> Samples;
     
 };
@@ -153,35 +172,39 @@ class C_SV1 {
   friend ostream &operator<<(ostream &, const C_SV1 &);
   //friend class C_SVcoverage1;
   //friend class C_cluster2d_element1;
-  public:
-    C_SV1();
-    C_SV1&operator=(const C_SV1 &rhs);
-    int operator==(const C_SV1 &rhs) const;
-    int operator<(const C_SV1 &rhs) const;
-    string type;
-    unsigned int pos;
-    unsigned short anchor;
-    unsigned int length;
-    unsigned char q;            // -10log (p nominal coverage)
-    unsigned int p5[2];
-    unsigned int p3[2];    
-    unsigned short copynumber;  
-    C_cluster2d_element1 cls;
-    vector<C_localpair> pair;
-    C_SVcoverage1 cov;          // coverage inside event
-    C_SVcoverage1 cov5;         // coverage at 5' end of event
-    C_SVcoverage1 cov3;         // coverage at 5' end of event
-    float a5;                   // alignability estimate at 5' end of event
-    float a3;                   // alignability estimate at 3' end of event
-    unsigned int posU;          // position uncertainty
-    unsigned int lenU;          // length uncertainty
-    unsigned int qOutlier;      // probability of outlier in cluster
-    unsigned int qAberrantLM;   // probability of aberrant frag length
-    C_RGmap ReadGroupMap;       // count of fragments for each read in event
-    C_SAMmap SampleMap;         // count of fragments for each sample in library
-    bool merge;                 // merged clusters flag
-    int id;
-
+public:
+	C_SV1();
+	C_SV1&operator=(const C_SV1 &rhs);
+	int operator==(const C_SV1 &rhs) const;
+	int operator<(const C_SV1 &rhs) const;
+	string type;
+	unsigned int pos;
+	unsigned short anchor;
+	unsigned int length;
+	unsigned int pend;
+	unsigned char q;            // -10log (p nominal coverage)
+	unsigned int p5[2];
+	unsigned int p3[2];    
+	unsigned short copynumber;  
+	C_cluster2d_element1 cls;
+	vector<C_localpair> pair;
+	C_SVcoverage1 cov;          // coverage inside event
+	C_SVcoverage1 cov5;         // coverage at 5' end of event
+	C_SVcoverage1 cov3;         // coverage at 5' end of event
+	float a5;                   // alignability estimate at 5' end of event
+	float a3;                   // alignability estimate at 3' end of event
+	unsigned char q5;           // median mapping quality at 5' end
+	unsigned char q3;           // median mapping quality at 3' end of event
+ 	int CIpos[2];								// position uncertainty   
+	int CIend[2];								// end coordinate uncertainty
+	int CIlen[2];               // length uncertainty
+	unsigned int qOutlier;      // probability of outlier in cluster
+	unsigned int qAberrantLM;   // probability of aberrant frag length
+	C_RGmap ReadGroupMap;       // count of fragments for each read in event
+	C_SAMmap SampleMap;         // count of fragments for each sample in library
+	bool merge;                 // merged clusters flag
+	int id;
+	
 };    
 
 
@@ -520,7 +543,7 @@ class C_SpannerRetroCluster {
 //-----------------------------------------------------------------------------
 class C_retroElements {
   public:
-  C_retroElements(C_anchorinfo &);
+  C_retroElements(C_anchorinfo &, string &);
   vector <int> e;
   vector <string> name;
   int N;

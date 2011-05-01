@@ -978,8 +978,23 @@ int getMDMismatchCount(string MD)
 		if (found==string::npos) {
 			// skip ^'s (gaps in reads are already in cigar)			
 			size_t len1=se.size();
+			
 			mm+=len1;
+		} 
+		/* skip inserted bases.....
+		 else {
+			int ins=0;
+			while (RE2::FindAndConsume(&sp,patternMD, &se)) {
+				ins++;
+			}
+			if (ins<1) {
+				cerr << "bad MD tag" << endl;
+				cerr << MD << endl;
+				exit(97);
+			}
 		}
+		*/
+
 	}
 	return mm;
 }

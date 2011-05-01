@@ -95,6 +95,7 @@ class C_pairedread {
     ~C_pairedread(){};  
     unsigned int ReadGroupCode;
 		string Name;
+	  char Qproperpair;	
   private:
     unsigned int Nend;
 
@@ -110,7 +111,7 @@ class C_anchorinfo {
     C_anchorinfo(const C_anchorinfo &);           // copy constructor
     C_anchorinfo(char);           // AB constructor
     C_anchorinfo(string &);       // constructor - load from anchor info file
-    C_anchorinfo(Mosaik::CAlignmentReader &);    // constructor - load from Mosaik file
+    //C_anchorinfo(Mosaik::CAlignmentReader &);    // constructor - load from Mosaik file
     //C_anchorinfo(BamReader &);    // constructor - load from Bam  file
     C_anchorinfo(BamMultiReader &);    // constructor - load from Bam  file
     ~C_anchorinfo(){};            // destructor
@@ -121,11 +122,12 @@ class C_anchorinfo {
     unsigned int anchorMinElement();
     void printAnchorInfo(string &);
     char anchorIndex(string &);   // return anchor index given anchor name 
-	map<string, unsigned int, less<string> > L;
+		map<string, unsigned int, less<string> > L;
     vector<char> use; 
     vector<char> element; 
     vector <string> names;
-    string source;
+		string source;
+		string special;	// prefix for "special.bam anchors"
     void push_anchor (string &, unsigned int);
 };
 
@@ -166,7 +168,8 @@ class C_libraryinfo {
     int NSingle;
     int NPairRedundant;
     int NSingleRedundant; 
-
+		string source;
+  	bool isSpecial();
 };
 
 //------------------------------------------------------------------------------
@@ -179,9 +182,9 @@ class C_libraries {
 public:
 	C_libraries();                            // constructor
 	C_libraries(const C_libraries &);         // copy constructor
-	C_libraries(Mosaik::CAlignmentReader &);  // constructor - load from Mosaik file    
-	//C_libraries(BamReader  & );               // constructor - load from BAM file    
-	C_libraries(BamMultiReader  & );               // constructor - load from BAM file    
+	//C_libraries(Mosaik::CAlignmentReader &);// constructor - load from Mosaik file    
+	//C_libraries(BamReader  & );             // constructor - load from BAM file    
+	C_libraries(BamMultiReader  & );          // constructor - load from BAM file    
 	C_libraries(string  &);                   // load constructor from library.span file  (& AB)
 	void printLibraryInfo(string &);          // text dump
 	void writeLibraryInfo(string &, string &);// binary file output
@@ -192,6 +195,7 @@ public:
 	vector<char> getSequencingTechnology();   // list of platform techologies
 	C_librarymap  libmap;                     // map of library info records indexed by unit code
 	C_anchorinfo anchorinfo;                  // only one anchor info needed for all libs
+	//string source;
 	map<string, double, less<string> > readFractionSamples();  // read fractions for each sample
 	map<string, unsigned int , less<string> > ReadGroupID2Code;  // read fractions for each sample
 	
@@ -253,6 +257,7 @@ class C_umpair {
    int nmap;                   // Number of different element subclasses (moblist hits)
    int nmapA;                  // Total number of moblist hits
    int elements;
+	 int Qproperpair;
    unsigned int ReadGroupCode;  // library info index
    C_umpair();  
    C_umpair(const C_umpair &); 
@@ -466,6 +471,7 @@ public:
 	unsigned int Npair_11o;
 	unsigned char elementMinAnchor;                 // start of element anchor indices...
 	C_libraries libraries;
+	char SpannerMode;
 	void calcLibraryRedundancy(C_libraryinfo &);    // fill in redundant read part of library info
 	//void fixBamRedundancy(C_libraryinfo & lib1);    // fix Bam redundancy & fill lib info 
 	// SAM @RG header info
@@ -529,11 +535,11 @@ private:
 	int makeSetsFromLibs(string &, RunControlParameters &, C_anchorinfo &);
 	int makeOneSetFromLibs(string &, RunControlParameters &, C_anchorinfo &);
 	int  strnum_cmp(const string & a0, const string & b0);
-	bool  nextBamAlignmentPair( BamReader & ar1, BamReader & ar2, C_pairedread & p1); 
-	bool  nextBamAlignmentZA( BamReader & ar1, C_pairedread & p1); 
-	bool  nextBamAlignmentPairSortedByName( BamReader & ar1, C_pairedread & p1);
-	bool  nextBamAlignmentJump( BamReader & ar1, BamReader & ar2, C_pairedread & pr1); 
-	bool  nextBamAlignmentPairSpecial( BamReader & ar1, C_pairedread & p1);
+	bool  nextBamAlignmentPair( BamMultiReader & ar1, BamMultiReader & ar2, C_pairedread & p1); 
+	bool  nextBamAlignmentZA( BamMultiReader & ar1, C_pairedread & p1); 
+	bool  nextBamAlignmentPairSortedByName( BamMultiReader & ar1, C_pairedread & p1);
+	bool  nextBamAlignmentJump( BamMultiReader & ar1, BamMultiReader & ar2, C_pairedread & pr1); 
+	bool  nextBamAlignmentPairSpecial( BamMultiReader & ar1, C_pairedread & p1);
 	int  BamZA2PairedRead(BamAlignment & ba1, C_pairedread & pr1); 
 	int  BamBam2PairedRead(BamAlignment & ba1, BamAlignment & ba2, C_pairedread & pr1); 
 	int  BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2, C_pairedread & pr1); 
@@ -569,7 +575,7 @@ private:
 	int NbadPos;
 	time_t tprev, tnow;
 	float elapsedtime();
-	int  MateMode;  // 0: FR (illumina RP short); 1: R1R2/F2F2 (454);  2: F1F2/R2R1 (SOLiD)
+	int  MateMode;  // 0: FR (illumina RP short); 1: R1R2/F2F1 (454);  2: F1F2/R2R1 (SOLiD)
 	char SpannerMode;
 	int BamZ;
 	int Qmin;

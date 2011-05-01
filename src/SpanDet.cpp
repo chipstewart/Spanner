@@ -115,7 +115,11 @@ C_SpannerSV::C_SpannerSV(C_pairedfiles & data,  RunControlParameters & pars) {
       //-----------------------------------------------------------------------
       // check for mobile element insertions
       //-----------------------------------------------------------------------
-      C_retroElements retrolist(data.set[iset].contig[name].anchors);
+      vector<string> patternElement = pars.getMobileElements();
+			if (patternElement.size()<1) {
+				patternElement.push_back("moblist_");
+			}
+			C_retroElements retrolist(data.set[iset].contig[name].anchors, patternElement[0]);
       int NE=retrolist.e.size();
 
       for (int j=0; j<NE; j++) {
@@ -187,6 +191,8 @@ C_SpannerSV::C_SpannerSV(C_pairedfiles & data,  RunControlParameters & pars) {
         fname = basename+"."+retroType+".svcf";
         cout << "write " << retroType << " element insertions : " << fname << endl;
         ret.print(fname);
+				C_SVR ret1;
+				ret=ret1;
       }
 
 
@@ -290,7 +296,13 @@ int C_SpannerSV::findDel(C_contig  & contig, C_SpannerCluster & clus,
   C_cluster2d_elements::iterator it;
   C_cluster2d_element1 c1;
   vector<C_localpair> cpair;
-    
+  // vector of fraglength shift
+	vector<int> DiffLF;
+  // vector of mapping qualities 5' end
+	vector<int> mapQ5;
+  // vector of mapping qualities 3' end
+	vector<int> mapQ3;
+ 	
   //----------------------------------------------------------------------------
   // samples name vector sorted & unique in ret
   //----------------------------------------------------------------------------
@@ -309,16 +321,86 @@ int C_SpannerSV::findDel(C_contig  & contig, C_SpannerCluster & clus,
   //----------------------------------------------------------------------------
   // SVCF Info (list here and in C_SVR << )
   //----------------------------------------------------------------------------
-  string s1[] = {"L","NF","NP","UP","UL","PA","PB","PC","PD","AL","NR","ER","MR"};
-  vector<string> Info1(s1, s1 + 13);
-  del.SVCF.Info=Info1;
+  C_SVCF_TAG tag1;
+	tag1.INFO=true;
+	tag1.Id="SVLEN";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Difference in length between REF and ALT alleles";
+  del.SVCF.INFO.push_back(tag1);
+  tag1.Id="CIPOS";
+	tag1.Number=2;
+	tag1.Type="Integer";
+	tag1.Descr="Confidence interval around POS";
+  del.SVCF.INFO.push_back(tag1);
+  tag1.Id="END";
+	tag1.Number=1;
+	tag1.Descr="Deletion end coordinate";
+  del.SVCF.INFO.push_back(tag1);
+  tag1.Id="CIEND";
+	tag1.Number=2;
+	tag1.Type="Integer";
+	tag1.Descr="Confidence interval around END";
+  del.SVCF.INFO.push_back(tag1);
+  tag1.Id="CISVLEN";
+	tag1.Descr="Confidence interval around SVLEN";
+  del.SVCF.INFO.push_back(tag1);
+  tag1.Id="NALTF";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Number of ALT supporting fragments";
+  del.SVCF.INFO.push_back(tag1);
+  tag1.Id="QLF";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Aberrant fragment length metric";
+  del.SVCF.INFO.push_back(tag1);
+  tag1.Id="QOUT";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Outlier fragment metric";
+  del.SVCF.INFO.push_back(tag1);
+	tag1.Id="PRF";
+	tag1.Number=2;
+	tag1.Type="Integer";
+	tag1.Descr="Range of F cluster reads";
+  del.SVCF.INFO.push_back(tag1);
+	tag1.Id="PRR";
+	tag1.Number=2;
+	tag1.Type="Integer";
+	tag1.Descr="Range of R cluster reads";
+  del.SVCF.INFO.push_back(tag1);
+  tag1.Id="MQ5";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Median mapping quality at 5' end";
+  del.SVCF.INFO.push_back(tag1);
+  tag1.Id="MQ3";
+	tag1.Descr="Median mapping quality at 3' end";
+  del.SVCF.INFO.push_back(tag1);
+  tag1.INFO=false;
+	tag1.FORMAT=true;
+	tag1.Id="NF";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Number of ALT supporting fragments/sample";
+  del.SVCF.FMT.push_back(tag1);
+  tag1.FORMAT=false;
+	tag1.ALT=true;
+	tag1.Id="DEL";
+	tag1.Descr="Deletion relative to REF";
+  del.SVCF.ALT.push_back(tag1);
+	
+	//string s1[] = {"L","NF","NP","UP","UL","PA","PB","PC","PD","AL","NR","ER","MR"};
+  //vector<string> Info1(s1, s1 + 13);
+  //del.SVCF.Info=Info1;
   
   // SVCF Format  (list here and in C_SVR << operator method)
   // string s2[] = {"NF","NP","N3","N5","NR","ER"}; //"CN"};
   //string s2[] = {"NF","NP","NR","ER"}; //"CN"};
-  string s2[] = {"NF"}; //"CN"};
-  vector<string> Format1(s2, s2 + 1);
-  del.SVCF.Format=Format1;
+  //string s2[] = {"NF"}; //"CN"};
+  //vector<string> Format1(s2, s2 + 1);
+  //del.SVCF.Format=Format1;
   
   // SVCF samples
   del.SVCF.Samples=del.samples;    
@@ -368,6 +450,9 @@ int C_SpannerSV::findDel(C_contig  & contig, C_SpannerCluster & clus,
 
     // loop over fragments in cluster
     cpair.resize(Np);
+    DiffLF.resize(Np);
+    mapQ5.resize(Np);
+    mapQ3.resize(Np);
     for (int j=0; j<Np; j++) {
        int k = c1.inp[j];
        C_localpair lp1 = clus.longpair[k];
@@ -392,8 +477,31 @@ int C_SpannerSV::findDel(C_contig  & contig, C_SpannerCluster & clus,
        }
        double pAb1=libraries.libmap[RGC1].fragHist.x2pTrim(double(lp1.lm));
        qAberr+=double(p2q(1-pAb1))/Np;
+			 // frag length shift
+			 DiffLF[j]=lp1.lm-libraries.libmap[RGC1].fragHist.median;
+			 // mapQ5
+			 mapQ5[j]=lp1.q1;
+			 // mapQ3
+			 mapQ3[j]=lp1.q2;
     }
     
+		vector <int> DiffLF1 = DiffLF;
+		sort(DiffLF1.begin(),DiffLF1.end());
+		int DLF1=DiffLF1[Np/2];
+		
+		if ( 2*(Np/2)==Np)  {
+			DLF1= (DiffLF1[Np/2]+DiffLF1[(Np/2)-1])/2.0;
+		}
+
+		sort(mapQ5.begin(),mapQ5.end());
+		int mQ5=mapQ5[Np/2];		
+		sort(mapQ3.begin(),mapQ3.end());
+		int mQ3=mapQ3[Np/2];		
+		if ( 2*(Np/2)==Np)  {
+			mQ5= (mapQ5[Np/2]+mapQ5[-1+(Np/2)])/2.0;
+			mQ3= (mapQ3[Np/2]+mapQ3[-1+(Np/2)])/2.0;
+		}
+
     // check for very strange read lengths or indexing screwups
     //if ((p5b+1)!=p0) {
     //if ( abs((p5b+1)-p0)>(int(20*contig.sLR)) ) {
@@ -411,7 +519,7 @@ int C_SpannerSV::findDel(C_contig  & contig, C_SpannerCluster & clus,
     //-------------------------------------------------------------------------
     // estimate gap size where breakpoint should be 
     //-------------------------------------------------------------------------
-    int avegap = ((p5aMax-p5a)+(p3aMax-p3a))/(2*Np);
+    // int avegap = ((p5aMax-p5a)+(p3aMax-p3a))/(2*Np);
     // average gap over this contig
     //int avegapC = double(contig.Length)/int(2*contig.localpairs.size());
     //int avegapC = double(contig.Length)/double(contig.totalUniqueReads);
@@ -422,7 +530,8 @@ int C_SpannerSV::findDel(C_contig  & contig, C_SpannerCluster & clus,
     // int p0 = p5b+1+avegap/2;
     // int len = int(p3a-p5b-1)-avegap/2;
     int p0 = p5b+1;
-    int len = int(p3a-p5b-1);
+		int p1 = p3b;
+    int len = int(DLF1);
     /*
     don't extrapolate without threshold info
     //-------------------------------------------------------------------------
@@ -449,7 +558,7 @@ int C_SpannerSV::findDel(C_contig  & contig, C_SpannerCluster & clus,
     C_SV1 e0;
     if (del.evt.size()>0) { 
        e0 = del.evt.back();
-       int pp = e0.pos+e0.length;
+       int pp = e0.pend;
        overlap=(pp>p0);
        overlap = overlap&&(abs(int(e0.pos)-int(p0))<LFmax);
 
@@ -473,10 +582,14 @@ int C_SpannerSV::findDel(C_contig  & contig, C_SpannerCluster & clus,
    
     C_SV1 e1;
     e1.pos = p0;
+    e1.pend = p1;
     e1.anchor = contig.getAnchorIndex();
     e1.length = len;
     //e1.q = p2q(cov.p);
+		// adhoc satuating functions
 		e1.q=(Np*100.0)/(Np+10.0);
+		e1.q5=mQ5;
+		e1.q3=mQ3;
     //e1.cov=cov;
     //e1.cov5=cov5;
     //e1.cov3=cov3;
@@ -490,15 +603,21 @@ int C_SpannerSV::findDel(C_contig  & contig, C_SpannerCluster & clus,
 
     // brkpoint uncertainty depends on average gap between read starts in cluster
     //e1.posU=(avegap>avegapC? avegap: avegapC);
-    e1.posU=avegap;
-		e1.lenU=e1.posU;
+    e1.CIpos[0]=-(p5aMax-p5a)/Np;
+		e1.CIpos[1]=(p3aMax-p3a)/Np;
+    e1.CIend[0]=-(p5aMax-p5a)/Np;
+		e1.CIend[1]=(p3aMax-p3a)/Np;
+		e1.CIlen[0]=-(DLF1-DiffLF1[0])/Np;
+		e1.CIlen[1]=(DiffLF1[DiffLF1.size()-1]-DLF1)/Np;
     
     // correction to pos,len for deletion bracketed by repeat region
     int DL=(len-e1.cls.mean[1]);
-    if (DL>(4*int(e1.posU))) {
-        e1.lenU=e1.cls.std[1]/sqrt(e1.cls.N);
-        e1.length=e1.cls.mean[1];
-        e1.posU=DL/2;
+    if (DL>(4*int(e1.CIpos[1]))) {
+				e1.CIlen[0]=-e1.cls.std[1]/sqrt(e1.cls.N);
+				e1.CIlen[1]=e1.cls.std[1]/sqrt(e1.cls.N);
+				e1.length=e1.cls.mean[1];
+   			e1.CIpos[0]=-DL/2;
+	  		e1.CIpos[1]=DL/2;
         e1.pos=e1.pos+DL/2;
     }
 
@@ -565,7 +684,13 @@ int C_SpannerSV::findDup(C_contig  & contig, C_SpannerCluster & clus,
   C_cluster2d_elements::iterator it;
   C_cluster2d_element1 c1;
   vector<C_localpair> cpair;
-  
+	// vector of fraglength shift
+	vector<int> DiffLF;
+	// vector of mapping qualities 5' end
+	vector<int> mapQ5;
+  // vector of mapping qualities 3' end
+	vector<int> mapQ3;
+ 	
   //----------------------------------------------------------------------------
   // samples name vector sorted & unique in ret
   //----------------------------------------------------------------------------
@@ -584,7 +709,8 @@ int C_SpannerSV::findDup(C_contig  & contig, C_SpannerCluster & clus,
   //----------------------------------------------------------------------------
   // SVCF Info (list here and in C_SVR << )
   //----------------------------------------------------------------------------
-  string s1[] = {"L","NF","NP","UP","UL","PA","PB","PC","PD","AL","NR","ER","MR"};
+  /*
+	string s1[] = {"L","NF","NP","UP","UL","PA","PB","PC","PD","AL","NR","ER","MR"};
   vector<string> Info1(s1, s1 + 13);
   dup.SVCF.Info=Info1;
   
@@ -592,7 +718,83 @@ int C_SpannerSV::findDup(C_contig  & contig, C_SpannerCluster & clus,
   string s2[] = {"NF"}; //,"NP","NR","ER"}; //"CN"};
   vector<string> Format1(s2, s2 + 1);
   dup.SVCF.Format=Format1;
-  
+  */
+	C_SVCF_TAG tag1;
+	tag1.INFO=true;
+	tag1.Id="SVLEN";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Difference in length between REF and ALT alleles";
+  dup.SVCF.INFO.push_back(tag1);
+  tag1.Id="CIPOS";
+	tag1.Number=2;
+	tag1.Type="Integer";
+	tag1.Descr="Confidence interval around POS";
+  dup.SVCF.INFO.push_back(tag1);
+	tag1.Id="END";
+	tag1.Number=1;
+	tag1.Descr="Duplication end coordinate";
+  dup.SVCF.INFO.push_back(tag1);
+  tag1.Id="CIEND";
+	tag1.Number=2;
+	tag1.Type="Integer";
+	tag1.Descr="Confidence interval around END";
+  dup.SVCF.INFO.push_back(tag1);
+	tag1.Id="CISVLEN";
+	tag1.Descr="Confidence interval around SVLEN";
+  dup.SVCF.INFO.push_back(tag1);
+	
+  tag1.Id="NALTF";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Number of ALT supporting fragments";
+  dup.SVCF.INFO.push_back(tag1);
+  tag1.Id="QLF";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Aberrant fragment length metric";
+  dup.SVCF.INFO.push_back(tag1);
+  tag1.Id="QOUT";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Outlier fragment metric";
+  dup.SVCF.INFO.push_back(tag1);
+	tag1.Id="PRF";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Range of F cluster reads";
+  dup.SVCF.INFO.push_back(tag1);
+	tag1.Id="PRR";
+	tag1.Number=2;
+	tag1.Type="Integer";
+	tag1.Descr="Range of R cluster reads";
+  dup.SVCF.INFO.push_back(tag1);
+	
+	tag1.Id="MQ5";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Median mapping quality at 5' end";
+  del.SVCF.INFO.push_back(tag1);
+  tag1.Id="MQ3";
+	tag1.Descr="Median mapping quality at 3' end";
+  del.SVCF.INFO.push_back(tag1);
+	
+  tag1.INFO=false;
+	tag1.FORMAT=true;
+	tag1.Id="NF";
+	tag1.Number=2;
+	tag1.Type="Integer";
+	tag1.Descr="Number of ALT supporting fragments/sample";
+  dup.SVCF.FMT.push_back(tag1);
+  tag1.FORMAT=false;
+	tag1.ALT=true;
+	tag1.Id="DUP:TANDEM";
+	tag1.Descr="Tandem Duplication relative to REF";
+  dup.SVCF.ALT.push_back(tag1);
+	tag1.Id="INS";
+	tag1.Descr="Insertion relative to REF";
+  dup.SVCF.ALT.push_back(tag1);
+	
   // SVCF samples
   dup.SVCF.Samples=dup.samples;    
 
@@ -645,6 +847,9 @@ int C_SpannerSV::findDup(C_contig  & contig, C_SpannerCluster & clus,
 
     //
     cpair.resize(Np);
+		DiffLF.resize(Np);
+		mapQ5.resize(Np);
+    mapQ3.resize(Np);
     for (int j=0; j<Np; j++) {
        int k = c1.inp[j];
        C_localpair lp1 = clus.shortpair[k];
@@ -671,9 +876,35 @@ int C_SpannerSV::findDup(C_contig  & contig, C_SpannerCluster & clus,
        double pAb1=libraries.libmap[RGC1].fragHist.x2pTrim(double(lp1.lm));
        qAberr+=double(p2q(pAb1))/Np;
 
+			 DiffLF[j]=libraries.libmap[RGC1].fragHist.median-lp1.lm;
+			
+			// mapQ5
+			mapQ5[j]=lp1.q1;
+			// mapQ3
+			mapQ3[j]=lp1.q2;
+			
     }
 
-    int avegap = ((p5aMax-p5a)+(p3aMax-p3a))/(2*Np);
+		vector <int> DiffLF1 = DiffLF;
+		sort(DiffLF1.begin(),DiffLF1.end());
+		int DLF1=DiffLF1[Np/2];
+		
+		if ( 2*(Np/2)==Np)  {
+			DLF1= (DiffLF1[Np/2]+DiffLF1[(Np/2)-1])/2.0;
+		}
+
+    
+		sort(mapQ5.begin(),mapQ5.end());
+		int mQ5=mapQ5[Np/2];		
+		sort(mapQ3.begin(),mapQ3.end());
+		int mQ3=mapQ3[Np/2];		
+		if ( 2*(Np/2)==Np)  {
+			mQ5= (mapQ5[Np/2]+mapQ5[-1+(Np/2)])/2.0;
+			mQ3= (mapQ3[Np/2]+mapQ3[-1+(Np/2)])/2.0;
+		}
+		
+		
+		//int avegap = ((p5aMax-p5a)+(p3aMax-p3a))/(2*Np);
     // average gap over this contig
     //int avegapC = double(contig.Length)/int(2*contig.localpairs.size());
     //int avegapC = double(contig.Length)/double(contig.totalUniqueReads);
@@ -683,7 +914,8 @@ int C_SpannerSV::findDup(C_contig  & contig, C_SpannerCluster & clus,
     // int p0 = p3a+1-avegap/2;
     // int len = int(p5b-p3a-1)+avegap/2;
     int p0 = p3a+1;
-    int len = int(p5b-p3a-1);
+		int p1 = p5b;
+    int len = DLF1;
 
     /*
     int p0 = p3a+1;
@@ -715,9 +947,9 @@ int C_SpannerSV::findDup(C_contig  & contig, C_SpannerCluster & clus,
     }    
     */
     //-------------------------------------------------------------------------
-    // bail out for negative length events
+    // don't bail out for negative length events
     //-------------------------------------------------------------------------
-    if (len<1) continue; 
+    // if (len<1) continue; 
     //-------------------------------------------------------------------------
     // check for overlap with previous evt
     //-------------------------------------------------------------------------
@@ -725,7 +957,7 @@ int C_SpannerSV::findDup(C_contig  & contig, C_SpannerCluster & clus,
     C_SV1 e0;
     if (dup.evt.size()>0) { 
        e0 = dup.evt.back();
-       int pp = e0.pos+e0.length;
+       int pp = e0.pend;
        overlap=pp>p0;
        overlap = overlap&&(abs(int(e0.pos)-int(p0))<LFmax);
        /*
@@ -752,11 +984,14 @@ int C_SpannerSV::findDup(C_contig  & contig, C_SpannerCluster & clus,
     //-------------------------------------------------------------------------  
     C_SV1 e1;
     e1.pos = p0;
+		e1.pend= p1;
     e1.anchor = contig.getAnchorIndex();
     e1.length = len;
     // prob that null CNV exceeds this coverage is 1-cov.p
     //cov.p=fabs(1.0-cov.p);
     e1.q = (100.*Np)/(Np+5); //p2q(cov.p);
+		e1.q5=mQ5;
+		e1.q3=mQ3;
     //    
     //e1.cov=cov;  
     e1.cls = c1;
@@ -769,16 +1004,22 @@ int C_SpannerSV::findDup(C_contig  & contig, C_SpannerCluster & clus,
 
     // brkpoint uncertainty depends on average gap between read starts in cluster
     //e1.posU=(avegap>avegapC? avegap: avegapC);
-    e1.posU=avegap;
-		e1.lenU=e1.posU;
+		e1.CIpos[0]=-(p5aMax-p5a)/Np;
+		e1.CIpos[1]=(p3aMax-p3a)/Np;
+    e1.CIend[0]=-(p5aMax-p5a)/Np;
+		e1.CIend[1]=(p3aMax-p3a)/Np;
+		e1.CIlen[0]=-(DLF1-DiffLF1[0])/Np;
+		e1.CIlen[1]=(DiffLF1[DiffLF1.size()-1]-DLF1)/Np;
     
     // correction to pos,len for duplication bracketed by repeat region
     
     int DL=(len+e1.cls.mean[1]);
-    if (DL>int(4*e1.posU)) {
-        e1.lenU=e1.cls.std[1]/sqrt(e1.cls.N);
-        e1.length=-e1.cls.mean[1];
-        e1.posU=DL/2;
+    if (DL>int(4*e1.CIpos[1])) {
+			  e1.CIlen[0]=e1.cls.std[1]/sqrt(e1.cls.N);
+			  e1.CIlen[1]=e1.cls.std[1]/sqrt(e1.cls.N);
+				e1.length=-e1.cls.mean[1];
+  			e1.CIpos[0]=-DL/2;
+	  		e1.CIpos[1]=DL/2;
         e1.pos=e1.pos+DL/2;
     }
     
@@ -815,14 +1056,17 @@ int C_SpannerSV::findDup(C_contig  & contig, C_SpannerCluster & clus,
     // simple cut on number of pairs in event
     significant = significant & (Npairs>=pars.getMinClustered());
     // simple cut on event length
-    significant = significant & (int(e1.length)>=pars.getMinLength());
+    significant = significant & (abs(int(e1.length))>=pars.getMinLength());
     // quantized copy number
-    e1.copynumber = short(2*e1.cov.N/e1.cov.eN +0.5);
+    // e1.copynumber = short(2*e1.cov.N/e1.cov.eN +0.5);
     //-------------------------------------------------------------------------
     // new duplication event
     //-------------------------------------------------------------------------
     e1.type="TDUP";
-    //if (significant&(e1.copynumber>(2-pars.getCNslosh()))) {
+    if (e1.length>0) { 
+			e1.type="INS";
+    }
+		//if (significant&(e1.copynumber>(2-pars.getCNslosh()))) {
 	  if (significant) { 
 				dup.evt.push_back(e1);
     }
@@ -864,6 +1108,7 @@ int C_SpannerSV::findInv(C_contig  & contig, C_SpannerCluster & clus,  RunContro
   //----------------------------------------------------------------------------
   // SVCF Info (list here and in C_SVR << )
   //----------------------------------------------------------------------------
+	/*
   string s1[] = {"L","NF","NP","UP","UL","PA","PB","PC","PD","AL","NR","ER","MR"};
   vector<string> Info1(s1, s1 + 13);
   inv.SVCF.Info=Info1;
@@ -872,7 +1117,62 @@ int C_SpannerSV::findInv(C_contig  & contig, C_SpannerCluster & clus,  RunContro
   string s2[] = {"NF","NP","N3","N5","NR","ER"}; //"CN"};
   vector<string> Format1(s2, s2 + 6);
   inv.SVCF.Format=Format1;
-  
+  */
+	C_SVCF_TAG tag1;
+	tag1.ALT=true;
+	tag1.Id="INV";
+	tag1.Descr="Inversion relative to REF";
+  inv.SVCF.ALT.push_back(tag1);	
+	tag1.ALT=false;
+	tag1.INFO=true;
+	tag1.Id="SVLEN";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Difference in length between REF and ALT alleles";
+  inv.SVCF.INFO.push_back(tag1);
+  tag1.Id="CIPOS";
+	tag1.Number=2;
+	tag1.Type="Integer";
+	tag1.Descr="Confidence interval around POS";
+  inv.SVCF.INFO.push_back(tag1);
+  tag1.Id="NFF";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Number of F ALT supporting fragments";
+  inv.SVCF.INFO.push_back(tag1);
+  tag1.Id="NFR";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Number of R ALT supporting fragments";
+  inv.SVCF.INFO.push_back(tag1);
+  tag1.Id="QC";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Outlier fragment metric";
+  inv.SVCF.INFO.push_back(tag1);
+	tag1.Id="PC1";
+	tag1.Number=2;
+	tag1.Type="Integer";
+	tag1.Descr="Range of F cluster reads";
+  inv.SVCF.INFO.push_back(tag1);
+	tag1.Id="PC2";
+	tag1.Number=2;
+	tag1.Type="Integer";
+	tag1.Descr="Range of R cluster reads";
+  inv.SVCF.INFO.push_back(tag1);
+  tag1.INFO=false;
+	tag1.FORMAT=true;
+	tag1.Id="NFF";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Number of F ALT supporting fragments";
+  inv.SVCF.FMT.push_back(tag1);
+	tag1.Id="NFR";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Number of R ALT supporting fragments";
+  inv.SVCF.FMT.push_back(tag1);
+  	
   // SVCF samples
   inv.SVCF.Samples=inv.samples;    
 
@@ -1311,6 +1611,7 @@ int C_SpannerSV::findCross(C_contig  & contig, C_SpannerCluster & clus,  RunCont
   //----------------------------------------------------------------------------
   // SVCF Info (list here and in C_SVR << )
   //----------------------------------------------------------------------------
+	/*
   string s1[] = {"L","NF","NP","UP","UL","PA","PB","PC","PD","AL","NR","ER","MR"};
   vector<string> Info1(s1, s1 + 13);
   crx.SVCF.Info=Info1;
@@ -1319,7 +1620,68 @@ int C_SpannerSV::findCross(C_contig  & contig, C_SpannerCluster & clus,  RunCont
   string s2[] = {"NF","NP","N3","N5","NR","ER"}; //"CN"};
   vector<string> Format1(s2, s2 + 6);
   crx.SVCF.Format=Format1;
-  
+  */
+	C_SVCF_TAG tag1;
+	tag1.ALT=true;
+	tag1.Id="X";
+	tag1.Descr="Cross chromosomal adjacency relative to REF";
+  crx.SVCF.ALT.push_back(tag1);	
+	tag1.ALT=false;
+	tag1.INFO=true;
+	tag1.Id="MATECHR";
+	tag1.Number=1;
+	tag1.Type="String";
+	tag1.Descr="Chromosome of mate end";
+  crx.SVCF.INFO.push_back(tag1);
+	tag1.Id="MATEPOS";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Position of mate end";
+  crx.SVCF.INFO.push_back(tag1);
+  tag1.Id="CIPOS";
+	tag1.Number=2;
+	tag1.Type="Integer";
+	tag1.Descr="Confidence interval around POS";
+  crx.SVCF.INFO.push_back(tag1);
+  tag1.Id="NFF";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Number of F ALT supporting fragments";
+  crx.SVCF.INFO.push_back(tag1);
+  tag1.Id="NFR";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Number of R ALT supporting fragments";
+  crx.SVCF.INFO.push_back(tag1);
+  tag1.Id="QC";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Outlier fragment metric";
+  crx.SVCF.INFO.push_back(tag1);
+	tag1.Id="PC1";
+	tag1.Number=2;
+	tag1.Type="Integer";
+	tag1.Descr="Range of F cluster reads";
+  crx.SVCF.INFO.push_back(tag1);
+	tag1.Id="PC2";
+	tag1.Number=2;
+	tag1.Type="Integer";
+	tag1.Descr="Range of R cluster reads";
+  crx.SVCF.INFO.push_back(tag1);
+  tag1.INFO=false;
+	tag1.FORMAT=true;
+	tag1.Id="NFF";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Number of F ALT supporting fragments";
+  crx.SVCF.FMT.push_back(tag1);
+	tag1.Id="NFR";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Number of R ALT supporting fragments";
+  crx.SVCF.FMT.push_back(tag1);
+
+	
   // SVCF samples
   crx.SVCF.Samples=crx.samples;    
 
@@ -1422,7 +1784,7 @@ int C_SpannerSV::findCross(C_contig  & contig, C_SpannerCluster & clus,  RunCont
 			//significant = significant & (Npairs>=pars.getMinClustered());    
 			bool significant = (Npairs>=pars.getMinClustered());    
 		  // quantized copy number
-      e1.copynumber = short(2*e1.cov.N/e1.cov.eN +0.5);
+      // e1.copynumber = short(2*e1.cov.N/e1.cov.eN +0.5);
       //-------------------------------------------------------------------------
       // new cross event
       //-------------------------------------------------------------------------
@@ -1680,7 +2042,9 @@ C_SV1 C_SpannerSV::merge(C_SV1 & e0, C_SV1 & e1, C_contig  & contig, RunControlP
   C_SV1 e2;
   e2.merge=true;
   e2.anchor=e0.anchor;
-
+	// vector of fraglength shift
+	vector<int> DiffLF;
+	
   // ranges
   e2.p5[0] = (e0.p5[0]<e1.p5[0]? e0.p5[0]: e1.p5[0]);
   e2.p5[1] = (e0.p5[1]>e1.p5[1]? e0.p5[1]: e1.p5[1]);
@@ -1772,7 +2136,7 @@ C_SV1 C_SpannerSV::merge(C_SV1 & e0, C_SV1 & e1, C_contig  & contig, RunControlP
   // e2.pos = e2.p5[1]+1+avegap/2;
   // e2.length = int(e2.p3[0]-e2.p5[1]-1)-avegap/2;
   e2.pos = e2.p5[1]+1;
-  e2.length = int(e2.p3[0]-e2.p5[1]-1);
+  e2.length = c1.mean[1]; //int(e2.p3[0]-e2.p5[1]-1);
   if (type==1) { 
     e2.pos = e2.p3[0]+1-avegap/2;
     e2.length = int(e2.p3[1]-e2.p3[0]-1)+avegap/2;
@@ -1798,19 +2162,32 @@ C_SV1 C_SpannerSV::merge(C_SV1 & e0, C_SV1 & e1, C_contig  & contig, RunControlP
   e2.cov5=cov5;
   e2.cov3=cov3;
 	*/
-	 
+	
+	cerr << "merge SV1" << endl;
+  cerr << e0.pos << endl;
+  cerr << e1.pos << endl;
+	cerr << endl;
+	
   // brkpoint uncertainty depends on average gap between read starts in cluster
   //e1.posU=(avegap>avegapC? avegap: avegapC);
-  e1.posU=avegap;
-	e1.lenU=0;
-  // correction to pos,len for deletion bracketed by repeat region
-  int DL=(e1.length-e1.cls.mean[1]);
-  if (DL>(4*int(e1.posU))) {
-        e1.lenU=e1.cls.std[1]/sqrt(e1.cls.N);
-        e1.length=e1.cls.mean[1];
-        e1.posU=DL/2;
-        e1.pos=e1.pos+DL/2;
-    }
+  e2.CIpos[0]=(p5aMax-e2.p5[0])/Np;
+	e2.CIpos[1]=(p3aMax-e2.p3[0])/Np;
+  e2.CIend[0]=(p5aMax-e2.p5[0])/Np;
+	e2.CIend[1]=(p3aMax-e2.p3[0])/Np;
+  e2.CIlen[0]=0;
+	e2.CIlen[1]=0;
+	// correction to pos,len for deletion bracketed by repeat region
+  int DL=(e2.length-e2.cls.mean[1]);
+  if (DL>(4*int(e2.CIpos[0]))) {
+   	e2.CIlen[0]=e2.cls.std[1]/sqrt(e2.cls.N);
+		e2.CIlen[1]=e2.cls.std[1]/sqrt(e2.cls.N);
+		e2.length=e2.cls.mean[1];
+		e2.CIpos[0]=-DL/2;
+		e2.CIpos[1]=DL/2;
+		e2.pos=e2.pos+DL/2;
+	}
+	
+
  
   double aRange=((e2.p3[1]-e2.p3[0])+(e2.p5[1]-e2.p5[0]))/2.0;
   double pOut=libraries.libmap[RGCmax].fragHist.x2pTrim(aRange);
@@ -2334,194 +2711,6 @@ C_SVX1 C_SpannerSV::merge(C_SVX1 & e0, C_SVX1 & e1, C_contig  & contig) {
 
 
 
-
-
-//-------------------------------------------------------------------------
-// element insertion event
-//------------------------------------------------------------------------- 
-/*
-int C_SpannerSV::findRet0(C_contig  & contig, C_SpannerRetroCluster & rclus,  RunControlParameters & pars) {
-  ret.evt.clear();
-  ret.typeName=rclus.typeName;
-  //int Nc = clus.longpairc.cluster.size();
-  C_cluster1d_elements::iterator i5,i3;
-  C_cluster1d_element1 c5,c3;
-  vector<C_umpair> retro5;
-  vector<C_umpair> retro3;
-  //----------------------------------------------------------------------------
-  // initialize cluster and vectors
-  //----------------------------------------------------------------------------
-  retro5.clear();
-  retro3.clear();
-  //----------------------------------------------------------------------------
-  // fragment length properties
-  //----------------------------------------------------------------------------
-  double LMlow = pars.getFragmentLengthLo();
-  double LMhigh = pars.getFragmentLengthHi();
-  HistObj LFhist = pars.getFragHist();  
-  double LF= LFhist.median;
-  //----------------------------------------------------------------------------
-  // max separation between F and R clusters
-  //----------------------------------------------------------------------------
-  int FRmax=pars.getClusteringLengthRetro();
-  //----------------------------------------------------------------------------
-  // expected number of pairs that span a given deletion
-  //----------------------------------------------------------------------------
-  double Nexp = contig.localpairs.size()*double(LF-2*contig.aLR)/double(contig.Length);
-  //----------------------------------------------------------------------------
-  // loop over retro clusters to identify candidate insertions
-  //----------------------------------------------------------------------------
-  C_NNcluster2d c5c = cullRet(contig, rclus.e5c, rclus.e5,  pars);
-  C_NNcluster2d c3c = cullRet(contig, rclus.e3c, rclus.e3,  pars);
-  
-  retro5.clear();
-  retro3.clear();
-  
-  // vector c5c that pair with c3c cluster
-  vector<int> m5to3(c5c.cluster.size(),-1);
-  // vector c3c that pair with c5c cluster
-  vector<int> m3to5(c3c.cluster.size(),-1);
-  
-  for ( i5=c5c.cluster.begin() ; i5 != c5c.cluster.end(); i5++ ) {
-    int f = (*i5).first;
-    c5 = c5c.cluster[f];   
-    //-------------------------------------------------------------------------
-    // highest start position mark start of deletion 
-    //-------------------------------------------------------------------------
-    int p5 = int(c5.mean[0]);
-    int p5b = int(c5.high[0]+round(contig.aLR)+1);
-    //-------------------------------------------------------------------------
-    // check for closest c3 cluster
-    //-------------------------------------------------------------------------
-    int rmin=-1;
-    int dmin=INT_MAX;
-    for ( i3=c3c.cluster.begin() ; i3 != c3c.cluster.end(); i3++ ) {
-      int r = (*i3).first;
-      //-------------------------------------------------------------------------
-      // lowest start position marks break 
-      //-------------------------------------------------------------------------
-      int p3 = int(c3c.cluster[r].mean[0]);
-      int p3a = int(c3c.cluster[r].low[0]);
-      // skip previously matched cluster
-      if (m3to5[r]>=0) continue;
-      // p5 and p3 are sorted so skip p3's out of range
-      if (p3a<(p5b-FRmax*10)) continue;
-      if (p3a<(p5b+FRmax*10)) break;      
-      int d=p3a-p5b;
-      if ( (abs(d)<dmin) && (p3>p5) ) {
-        rmin=r;
-        dmin=abs(d);
-      }
-    }
-    // jump to next c5 if no matching c3
-    if (dmin<FRmax) { 
-       m5to3[f]=rmin;  
-       m3to5[rmin]=f;  
-    } else {
-       continue;
-    }
-    //-------------------------------------------------------------------------
-    // this combination of c5 and c3 forms an insertion event 
-    //-------------------------------------------------------------------------
-    
-    int Np5 = c5c.cluster[f].inp.size();
-    int Np3 = c3c.cluster[rmin].inp.size();
-    // pmed1 for Deniz's median 
-    // constraint counts for Gabor...
-    int Np5con=0;
-    int Np3con=0;    
-    list <unsigned int> pmed1;
-    for (int j=0; j<Np5; j++) {
-       int k = c5c.cluster[f].inp[j];
-       C_umpair r1 = rclus.e5[k];
-       pmed1.push_back(r1.read[0].pos+r1.read[0].len);
-       retro5.push_back(r1);
-       if (r1.constrain(int(LMlow),int(LMhigh))) Np5con++;
-    }
-    for (int j=0; j<Np3; j++) {
-       int k = c3c.cluster[rmin].inp[j];
-       C_umpair r1 = rclus.e3[k];
-       pmed1.push_back(r1.read[0].pos);
-       retro3.push_back(r1);
-       if (r1.constrain(int(LMlow),int(LMhigh))) Np3con++;
-    }       
-    //-------------------------------------------------------------------------
-    // insertion breakpoint = mean of two sides
-    //-------------------------------------------------------------------------
-    int p0 = int(((c5c.cluster[f].high+round(contig.aLR)+1)+c3c.cluster[rmin].low)/2.0);
-    
-    //-------------------------------------------------------------------------
-    // event
-    //-------------------------------------------------------------------------    
-    C_SVR1 e1;
-    e1.pos = p0;
-    e1.anchor = contig.getAnchorIndex();
-    // make length the cluster gap .... fix 4/30/2009
-    e1.length = int(c3c.cluster[rmin].low - (c5c.cluster[f].high+round(contig.aLR)+1) );
-    C_SVcoverage1 cov(contig, p0-100, p0+100,nomcov) ;
-    e1.cov=cov;  
-    // e1.cls = c5c.cluster;
-    // e1.pair=cpair;
-    e1.p5[0]=int(c5c.cluster[f].low[0]);
-    e1.p5[1]=int(c5c.cluster[f].high[0]+round(contig.aLR))+1;
-    e1.p3[0]=int(c3c.cluster[rmin].low[0]);
-    e1.p3[1]=int(c3c.cluster[rmin].high[0]+round(contig.aLR))+1;;
-    // quantized copy number
-    e1.copynumber = short(2*e1.cov.N/e1.cov.eN +0.5);
-    //-------------------------------------------------------------------------
-    // new element insertion event
-    //-------------------------------------------------------------------------
-    // retro event info
-    e1.cls5=c5c.cluster[f];
-    e1.cls3=c3c.cluster[rmin];
-    e1.retro5=retro5;
-    e1.retro3=retro3;
-    e1.NfragCluster[0]=Np5;
-    e1.NfragCluster[1]=Np3;
-    e1.NfragCov=int(contig.frag_depth.n[p0]);
-    if (p0>LF) {
-      e1.NfragCovOut[0]=int(contig.frag_depth.n[int(p0-LF)]);
-    } else {
-      e1.NfragCovOut[0]=0;
-    }
-    if ((p0+LF)<contig.Length) {
-      e1.NfragCovOut[1]=int(contig.frag_depth.n[int(p0+LF)]);
-    } else {
-      e1.NfragCovOut[0]=0;
-    }
-    e1.NfragCovExp=int(Nexp);
-    // constraint counts
-    e1.Nconstrain[0]=Np5con;
-    e1.Nconstrain[1]=Np3con;
-    //    
-    // q value is set by NfragCov
-    double nf = e1.NfragCov;
-    double pf = contig.frag_depth.Stats.h.x2pTrim(nf);
-    e1.q = p2q(pf);
-    
-    //-------------------------------------------------------------------------
-    // median pos
-    //-------------------------------------------------------------------------
-    pmed1.sort();
-    list <unsigned int>::iterator imed;
-    int Nmed=pmed1.size()/2;
-    int nmed=0;
-    e1.pmedian =0;
-    for (imed=pmed1.begin(); imed!=pmed1.end(); ++imed) {
-       nmed++;
-       if (nmed>Nmed) {
-         e1.pmedian = *imed;
-         break;
-       }
-    }
-
-    ret.evt.push_back(e1);
-  }
-  return int(ret.evt.size());
-}       
-
-*/ 
-
 //-------------------------------------------------------------------------
 // element insertion event
 //------------------------------------------------------------------------- 
@@ -2550,6 +2739,7 @@ int C_SpannerSV::findRet(C_contig  & contig, C_SpannerRetroCluster & rclus,
   //----------------------------------------------------------------------------
   // SVCF Info (list here and in C_SVR << )
   //----------------------------------------------------------------------------
+	/*
   string s1[] = {"L","NF","NP","UP","UL","PA","PB","PC","PD","AL","NR","ER","MR"};
   vector<string> Info1(s1, s1 + 13);
   ret.SVCF.Info=Info1;
@@ -2558,7 +2748,68 @@ int C_SpannerSV::findRet(C_contig  & contig, C_SpannerRetroCluster & rclus,
   string s2[] = {"NF","NP","N3","N5","NR","ER"}; //"CN"};
   vector<string> Format1(s2, s2 + 6);
   ret.SVCF.Format=Format1;
-  
+  */
+	C_SVCF_TAG tag1;
+	
+	tag1.ALT=true;
+	tag1.Id="INS:"+ret.typeName;
+	tag1.Descr="Insertion relative to REF: "+ret.typeName;
+  ret.SVCF.ALT.push_back(tag1);
+	//
+	tag1.ALT=false;
+	tag1.INFO=true;
+	tag1.Id="SVLEN";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Difference in length between REF and ALT alleles";
+  ret.SVCF.INFO.push_back(tag1);
+  tag1.Id="CIPOS";
+	tag1.Number=2;
+	tag1.Type="Integer";
+	tag1.Descr="Confidence interval around POS";
+  ret.SVCF.INFO.push_back(tag1);
+  tag1.Id="NFF";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Number of F ALT supporting fragments";
+  ret.SVCF.INFO.push_back(tag1);
+  tag1.Id="QF";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Aberrant fragment length metric";
+  ret.SVCF.INFO.push_back(tag1);
+  tag1.Id="QC";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Outlier fragment metric";
+  ret.SVCF.INFO.push_back(tag1);
+	tag1.Id="PC1";
+	tag1.Number=2;
+	tag1.Type="Integer";
+	tag1.Descr="Range of F cluster reads";
+  ret.SVCF.INFO.push_back(tag1);
+	tag1.Id="PC2";
+	tag1.Number=2;
+	tag1.Type="Integer";
+	tag1.Descr="Range of R cluster reads";
+  ret.SVCF.INFO.push_back(tag1);
+  tag1.INFO=false;
+	tag1.FORMAT=true;
+	tag1.Id="NFF";
+	tag1.Number=1;
+	tag1.Type="Integer";
+	tag1.Descr="Number of F ALT supporting fragments";
+  ret.SVCF.FMT.push_back(tag1);
+	tag1.Id="NFR";
+	tag1.Descr="Number of R ALT supporting fragments";
+  ret.SVCF.FMT.push_back(tag1);
+  tag1.FILTER=true;
+	tag1.FORMAT=false;
+	tag1.Id="1_SIDE";
+	tag1.Descr="Insertion supporting fragments from only one side";
+  ret.SVCF.FILT.push_back(tag1);
+	
+	
   // SVCF samples
   ret.SVCF.Samples=ret.samples;    
 
@@ -2716,8 +2967,8 @@ C_SVR1  C_SpannerSV::makeRetEvent(C_contig  & contig,
           if (p3b<pMb) p3b = pMb;
           pU=pUb;
        } else {
-          unsigned int pMa=r1.read[0].pos-LM1;    // low estimate M read
-          unsigned int pMb=r1.read[0].pos+LM1+r1.read[1].len;               // high estimate M read
+          unsigned int pMa=r1.read[0].pos-LM1;                   // low estimate M read
+          unsigned int pMb=r1.read[0].pos-LM1+r1.read[1].len;    // high estimate M read
           if (p5a>pMa) p5a = pMa;
           if (p5b<pMb) p5b = pMb;
           if (p3a>pUa) p3a = pUa;
@@ -2743,20 +2994,20 @@ C_SVR1  C_SpannerSV::makeRetEvent(C_contig  & contig,
     e1.anchor = contig.getAnchorIndex();
     // make length zero for insertion 
     e1.length = 0;
-    C_SVcoverage1 cov(contig, p0-100, p0+100,nomcov) ;
-    e1.cov=cov;  
+    //C_SVcoverage1 cov(contig, p0-100, p0+100,nomcov) ;
+    //e1.cov=cov;  
     e1.p5[0]=p5a;
     e1.p5[1]=p5b;
     e1.p3[0]=p3a;
     e1.p3[1]=p3b;
     
     // average gap over this event
-    int avegap = ((p5b-p5a)+(p3b-p3a))/(2*Np1);
+    int avegap = round(float((p5b-p5a)+(p3b-p3a))/float(2*Np1));
     // average gap over this contig
-    int avegapC = double(contig.Length)/double(contig.totalUniqueReads);
+    //int avegapC = double(contig.Length)/double(contig.totalUniqueReads);
     // contig alignability estimate
-    float totSites = float(contig.Length-int(contig.totalNoCovBases));
-    float acontig  = float (totSites-contig.totalRepeatBases) / totSites;
+    //float totSites = float(contig.Length-int(contig.totalNoCovBases));
+    //float acontig  = float (totSites-contig.totalRepeatBases) / totSites;
  
     if (fiveprime) {
       e1.cls5=c0;
@@ -2766,8 +3017,8 @@ C_SVR1  C_SpannerSV::makeRetEvent(C_contig  & contig,
       e1.Nconstrain[0]=Ncon;
       e1.ReadGroupMap5=RGmap;    
       // coverage within U cluster region
-      C_SVcoverage1 covU(contig, p5a, p5b,nomcov) ;
-      e1.a5 = covU.Nsite/(float(int(covU.p1)-int(covU.p0))*acontig);  
+      //C_SVcoverage1 covU(contig, p5a, p5b,nomcov) ;
+      //e1.a5 = covU.Nsite/(float(int(covU.p1)-int(covU.p0))*acontig);  
     } else {
       e1.cls3=c0;
       e1.retro3=retro1;
@@ -2776,16 +3027,18 @@ C_SVR1  C_SpannerSV::makeRetEvent(C_contig  & contig,
       e1.Nconstrain[1]=Ncon;
       e1.ReadGroupMap3=RGmap;    
       // coverage within U cluster region
-      C_SVcoverage1 covU(contig, p3a, p3b,nomcov) ;
-      e1.a3 = covU.Nsite/(float(int(covU.p1)-int(covU.p0))*acontig);  
+      //C_SVcoverage1 covU(contig, p3a, p3b,nomcov) ;
+      //e1.a3 = covU.Nsite/(float(int(covU.p1)-int(covU.p0))*acontig);  
     }
     // quantized copy number
-    e1.copynumber = short(2*e1.cov.N/e1.cov.eN +0.5);
+    //e1.copynumber = short(2*e1.cov.N/e1.cov.eN +0.5);
  
     // brkpoint uncertainty depends on average gap between read starts in cluster
-    e1.posU=(avegap>avegapC? avegap: avegapC);
-    e1.lenU=e1.posU;
+		//e1.posU=(avegap>avegapC? avegap: avegapC);
+	  e1.posU=avegap;
+	  //e1.lenU=e1.posU; // no more info
     // retro event info
+	  /*
     e1.NfragCov=int(contig.frag_depth.n[p0]);
     if (p0>LFmax) {
       e1.NfragCovOut[0]=int(contig.frag_depth.n[int(p0-LFmax)]);
@@ -2798,12 +3051,13 @@ C_SVR1  C_SpannerSV::makeRetEvent(C_contig  & contig,
       e1.NfragCovOut[0]=0;
     }
     e1.NfragCovExp=int(Nexp);
-    //    
+    */
+	  //    
     // double nf = e1.NfragCov;
     // double pf = contig.frag_depth.Stats.h.x2pTrim(nf);
     // e1.q = p2q(pf);
     //
-    // q value is set by supporting fragments (max 50)
+    // q value is set by supporting fragments (max 25)
     e1.q = int(25.0*Np1/(5.0+double(Np1)));    
     
     //-------------------------------------------------------------------------
@@ -2913,7 +3167,7 @@ C_SVR1 C_SpannerSV::merge(C_SVR1 & e0, C_SVR1 & e1, C_contig  & contig) {
   //----------------------------------------------------------------------------
   // expected number of spanning frags
   //----------------------------------------------------------------------------
-  double Nexp = contig.frag_depth.Stats.h.mean;
+  //double Nexp = contig.frag_depth.Stats.h.mean;
   
   //----------------------------------------------------------------------------
   // flip e0 to F ,  and e1 to R
@@ -2971,26 +3225,30 @@ C_SVR1 C_SpannerSV::merge(C_SVR1 & e0, C_SVR1 & e1, C_contig  & contig) {
   double P0=(e0.NfragCluster[0]>0? double(e0.p5[1]) : double(e0.p3[0]));
   double P1=(e1.NfragCluster[1]>0? double(e1.p3[0]) : double(e1.p5[1]));
   
-  em.pos = int((P0*N0+P1*N1)/double(Np));  
+  //em.pos = int((P0*N0+P1*N1)/double(Np));  
+	// leftmost insertion pos (before tsd)	
+			
+	em.pos = int(P0<P1? P0: P1);
   //em.length = int(P0)-int(P1); // should be ~0 unless insert is shorter than LF or repeat region
   //em.gap = int(P0)-int(P1); // should be ~0 unless insert is shorter than LF or repeat region
-  em.gap = em.p3[0]-em.p5[1];
+  em.gap = P1-P0; //em.p3[0]-em.p5[1];
   
   // average gap over this event
-  int avegap = ((em.p5[1]-em.p5[0])+(em.p3[1]-em.p3[0]))/(2*Np);
+	em.posU= float(em.p5[1]-em.p5[0])/float(N0);
+	em.lenU= float(em.p3[1]-em.p3[0])/float(N1);
   // average gap over this contig
   // int avegapC = double(contig.Length)/int(2*contig.localpairs.size());
-  int avegapC = double(contig.Length)/double(contig.totalUniqueReads);
+  //int avegapC = double(contig.Length)/double(contig.totalUniqueReads);
   // brkpoint uncertainty depends on average gap between read starts in cluster
-  em.posU=(avegap>avegapC? 2*avegap: 2*avegapC);
-  em.lenU=0; // meaningless 
+  //em.posU=avegap; //(avegap>avegapC? 2*avegap: 2*avegapC);
+  //em.lenU=avegap; // meaningless 
         
   em.NfragCluster[0] = e0.retro5.size()+e1.retro5.size();
   em.NfragCluster[1] = e0.retro3.size()+e1.retro3.size();
   int p0 = (int(em.pos)>100? int(em.pos)-100: 0);  
-  int p1 = (int(em.pos)<(contig.Length-101)? em.pos+100: contig.Length-1);
-  C_SVcoverage1 cov(contig, p0, p1,nomcov);
-  em.cov=cov; 
+  //int p1 = (int(em.pos)<(contig.Length-101)? em.pos+100: contig.Length-1);
+  //C_SVcoverage1 cov(contig, p0, p1,nomcov);
+  //em.cov=cov; 
 
   //----------------------------------------------------------------------------
   // alignability estimates for 3' end of F (a5) or R cluster (a3) 
@@ -3073,12 +3331,13 @@ C_SVR1 C_SpannerSV::merge(C_SVR1 & e0, C_SVR1 & e1, C_contig  & contig) {
   //----------------------------------------------------------------------------
   // local copy number
   //----------------------------------------------------------------------------
-  em.copynumber = short(2*em.cov.N/em.cov.eN +0.5);  
+  //em.copynumber = short(2*em.cov.N/em.cov.eN +0.5);  
 
   //----------------------------------------------------------------------------
   // fragment coverage at and around insertion
   //----------------------------------------------------------------------------
   p0=em.pos;
+	/*
   em.NfragCov=int(contig.frag_depth.n[p0]);
   if (p0>LFmax) {
       em.NfragCovOut[0]=int(contig.frag_depth.n[p0-int(LFmax)]);
@@ -3091,7 +3350,8 @@ C_SVR1 C_SpannerSV::merge(C_SVR1 & e0, C_SVR1 & e1, C_contig  & contig) {
       em.NfragCovOut[0]=0;
   }
   em.NfragCovExp=int(Nexp);
-
+  */
+	
   // q value is set by NfragCov
   //double nf = em.NfragCov;
   //double pf = contig.frag_depth.Stats.h.x2pTrim(nf);
@@ -3117,7 +3377,7 @@ C_SVR1 C_SpannerSV::merge(C_SVR1 & e0, C_SVR1 & e1, C_contig  & contig) {
   }
   C_SVR1 eout;
   eout=em;
-  eout.lenU=1;  // marker
+  //eout.lenU=1;  // marker
   return eout;
 }
 
@@ -3171,7 +3431,65 @@ int C_SVspanfrags1::operator==(const C_SVspanfrags1 &rhs) const
    if( this->ER != rhs.ER) return 0;
    return 1;
 }
- 
+
+C_SVCF_TAG::C_SVCF_TAG() {
+	Id="";
+	Number=0;
+	Type="";  // Integer, Float, String, Flag
+	Descr="";
+	INFO=false;
+	ALT=false;
+	FORMAT=false;
+	FILTER=false;
+}
+
+C_SVCF_TAG::C_SVCF_TAG(char I1, string & Id1, int Number1, string & Type1,string & Descr1 ) {
+	
+	switch (I1) {
+		case 0:
+			INFO=true;
+			break;
+		case 1:
+			ALT=true;
+			break;
+		case 2:
+			FORMAT=true;
+			break;
+		case 3:
+			FILTER=true;
+			break;
+		default:
+			break;
+	}	
+	Id=Id1;
+	Number=Number1;
+	Type=Type1;  // Integer, Float, String, Flag
+	Descr=Descr1;
+}
+
+
+ostream &operator<<(ostream &output, C_SVCF_TAG & tag)
+{
+  //----------------------------------------------------------------------------
+  //  print SVCF format header 
+  //----------------------------------------------------------------------------  
+  char b [200];
+  if (tag.ALT) { 		
+		sprintf(b,"##ALT=<ID=%s,Description=\"%s\">", tag.Id.c_str(),tag.Descr.c_str());
+	} else if (tag.INFO) { 
+		sprintf(b,"##INFO=<ID=%s,Number=%d,Type=%s,Description=\"%s\">", 
+				tag.Id.c_str(),tag.Number,tag.Type.c_str(),tag.Descr.c_str());
+	} else if (tag.FORMAT) { 
+		sprintf(b,"##FORMAT=<ID=%s,Number=%d,Type=%s,Description=\"%s\">", 
+				tag.Id.c_str(),tag.Number,tag.Type.c_str(),tag.Descr.c_str());
+	} else if (tag.FILTER) { 
+		sprintf(b,"##FILTER=<ID=%s,Description=\"%s\">", tag.Id.c_str(),tag.Descr.c_str());
+	}
+	string s = b;
+	output << s ;
+	return output;	
+}	
+	
  
 C_SVCF::C_SVCF() {
   Version="VCFv4.0";
@@ -3184,24 +3502,31 @@ C_SVCF::C_SVCF() {
   strftime (buffer,80,"%Y%m%d",timeinfo);
   Date=buffer;
   // source
-  Source="Spanner ";
+  Source="Spanner:V";
   Source=Source+SpannerSvnVersion;
   // blanks
   Reference="";
   EventType="";
   NEvent=0;
-  Info.clear();
-  Format.clear();
+  ALT.clear();
+	INFO.clear();
+	FMT.clear();
+	FILT.clear();
+	//Info.clear();
+  //Format.clear();
   Samples.clear();  
 }
 
-C_SVCF::C_SVCF(RunControlParameters & pars, vector<string> & Info1,vector<string> & Format1, vector<string> & Samples1) {
+
+C_SVCF::C_SVCF(RunControlParameters & pars, vector<C_SVCF_TAG> & Info1,vector<C_SVCF_TAG> & Format1, vector<C_SVCF_TAG> & Filt1, 
+							 vector<C_SVCF_TAG> & Alt1,vector<string> & Samples1) {
   // fill-in-the-blanks
   Reference=pars.getAnchorfile();
-  Info=Info1;
-  Format=Format1;
+  //Info=Info1;
+  //Format=Format1;
   Samples=Samples1;
 }
+
 
 ostream &operator<<(ostream &output, C_SVCF & svcf1)
 {
@@ -3213,35 +3538,7 @@ ostream &operator<<(ostream &output, C_SVCF & svcf1)
   string s = b;
   output << s << endl;
 	
-	/*
-	 ##ALT=<ID=DUP:TANDEM,Description="Tandem Duplication">
-	 ##FORMAT=<ID=CN,Number=1,Type=Integer,Description="Copy number genotype">
-	 ##FORMAT=<ID=CNQ,Number=1,Type=Float,Description="Copy number genotype quality">
-	 ##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality">
-	 ##FORMAT=<ID=NALT,Number=1,Type=Integer,Description="Number of ALT Supporting Fragments">
-	 ##FORMAT=<ID=NREF,Number=1,Type=Integer,Description="Number of REF Supporting Fragments">
-	 ##FORMAT=<ID=NRD,Number=1,Type=Integer,Description="Number of Reads mapped to region">
-	 ##FORMAT=<ID=ERD,Number=1,Type=Float,Description="Expected reads mapped to region">
-	 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
-	 ##FORMAT=<ID=VG,Number=1,Type=String,Description="Validation Genotype">
-	 ##INFO=<ID=CIPOS,Number=2,Type=Integer,Description="Confidence interval around POS for imprecise variants">
-	 ##INFO=<ID=CIEND,Number=2,Type=Integer,Description="Confidence interval around END for imprecise variants">
-	 ##INFO=<ID=DBVARID,Number=1,Type=String,Description="ID of this element in DBVAR">
-	 ##INFO=<ID=PUBID,Number=1,Type=String,Description="ID of this element in publication">
-	 ##INFO=<ID=IMPRECISE,Number=0,Type=Flag,Description="Imprecise structural variation">
-	 ##INFO=<ID=VALIDATED,Number=0,Type=Flag,Description="validated">
-	 ##INFO=<ID=VALMETHOD,Number=1,Type=String,Description="validation method (PCR ASM CGH SAV CAP)">
-	 ##INFO=<ID=SVMETHOD,Number=1,Type=String,Description="detection method (RP RD SR AS)">
-	 ##INFO=<ID=NOVEL,Number=0,Type=Flag,Description="Indicates a novel structural variation">
-	 ##INFO=<ID=SVLEN,Number=-1,Type=Integer,Description="Difference in length between REF and ALT alleles">
-	 ##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
-	 ##INFO=<ID=HOMLEN,Number=1,Type=Integer,Description="Target Site Duplication length">
-	 ##INFO=<ID=END,Number=1,Type=Integer,Description=?End position of the variant described in this record?>
-	 ##INFO=<ID=DETRD,Number=0,Type=Flag,Description="Also found by RD detection algorithm">
-	 ##FILTER=<ID=PCR_invalidated,Description="Variant invalidated by PCR experiment">
-	 ##FILTER=<ID=CGH_invalidated,Description="Variant invalidated by CGH experiment">
-	 */
-	
+		
   sprintf(b,"##fileDate=%s", svcf1.Date.c_str());
   s = b;
   output << s << endl;
@@ -3262,11 +3559,21 @@ ostream &operator<<(ostream &output, C_SVCF & svcf1)
     s = b;
     output << s << endl;
   }
-
-  sprintf(b,"##source=%s", svcf1.Source.c_str());
-  s = b;
+  
+	for (size_t i=0; i<svcf1.ALT.size(); i++) {
+		output << svcf1.ALT[i] << endl;
+	}
+	for (size_t i=0; i<svcf1.INFO.size(); i++) {
+		output << svcf1.INFO[i] << endl;
+	}
+	for (size_t i=0; i<svcf1.FMT.size(); i++) {
+		output << svcf1.FMT[i] << endl;
+	}
+	for (size_t i=0; i<svcf1.FILT.size(); i++) {
+		output << svcf1.FILT[i] << endl;
+	}
+		
   output << "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT";
-
     
   size_t NS=svcf1.Samples.size();
   if (NS>0) {
@@ -3278,6 +3585,7 @@ ostream &operator<<(ostream &output, C_SVCF & svcf1)
   }
   output << endl;
   return output;
+
 }
   
 
@@ -3288,19 +3596,26 @@ C_SV1::C_SV1() {
     pos=0;
     anchor=0;
     length=0;
+  	pend=0;
     q=0;
     p5[0]=0;
     p5[1]=0;
     p3[0]=0;
     p3[1]=0;
     copynumber=0;
-    posU=0;
-    lenU=0;
+  	CIpos[0]=0;
+	  CIpos[1]=0;
+		CIend[0]=0;
+		CIend[1]=0;
+		CIlen[0]=0;
+	  CIlen[1]=0;
     qOutlier=0;
     qAberrantLM=0;
     merge=false;
-    a5=0;
-    a3=0;   
+		a5=0;
+		a3=0;   
+		q5=0;
+		q3=0;   
     SampleMap.clear();
     id=0;
 }
@@ -3312,11 +3627,22 @@ ostream &operator<<(ostream &output, C_SV1 & e1)
   //----------------------------------------------------------------------------  
   char b [200];
   string s=e1.type;
+	if (s.compare("TDUP")==0) {
+		s="DUP:TANDEM";
+	}
   sprintf(b,"%d\t%d\t%d\t.\t<%s>\t%d\t0\t", e1.anchor, e1.pos+1,e1.id, s.c_str(),e1.q);
   s = b;
   output << s;
-  int u=e1.posU; 
-  sprintf(b,"SVLEN=%d;CIPOS=%d,%d;NF=%d;", e1.length,-u,u,int(e1.cls.inp.size()));
+  //int u=e1.posU; 
+  sprintf(b,"SVLEN=%d;CIPOS=%d,%d;NALTF=%d;", e1.length,e1.CIpos[0],e1.CIpos[1],int(e1.cls.inp.size()));
+  s = b;
+  output << s;
+
+	sprintf(b,"END=%d;CIEND=%d,%d;", e1.pend,e1.CIend[0],e1.CIend[1],int(e1.cls.inp.size()));
+  s = b;
+  output << s;
+	
+	sprintf(b,"CISVLEN=%d,%d;", e1.CIlen[0],e1.CIlen[1]);
   s = b;
   output << s;
 
@@ -3333,6 +3659,10 @@ ostream &operator<<(ostream &output, C_SV1 & e1)
   s = b;
   output << s;
 
+	sprintf(b,"MQ5=%d;MQ3=%d",e1.q5,e1.q3);
+  s = b;
+  output << s;
+	
 	/*
   sprintf(b,"NR=%d;ER=%.1f;MR=%d;", e1.cov.N,e1.cov.eN,(e1.merge)?1:0);
   s = b;
@@ -3365,14 +3695,21 @@ C_SV1& C_SV1::operator=(const C_SV1 &rhs)
    this->cov3  = rhs.cov3;
    this->cls   = rhs.cls;  
    this->pair  = rhs.pair;  
-   this->posU  = rhs.posU;
-   this->lenU  = rhs.lenU;
+	 this->pend = rhs.pend;
+	 this->CIpos[0]  = rhs.CIpos[0];
+	 this->CIpos[1]  = rhs.CIpos[1];
+	 this->CIend[0]  = rhs.CIend[0];
+	 this->CIend[1]  = rhs.CIend[1];
+	 this->CIlen[0]  = rhs.CIlen[0];
+	 this->CIlen[1]  = rhs.CIlen[1];
    this->qOutlier   = rhs.qOutlier;
    this->qAberrantLM= rhs.qAberrantLM;
    this->ReadGroupMap=rhs.ReadGroupMap;
    this->merge     = rhs.merge;
-   this->a5        = rhs.a5;
-   this->a3        = rhs.a3;
+	 this->a5        = rhs.a5;
+	 this->a3        = rhs.a3;
+	 this->q5        = rhs.q5;
+	 this->q3        = rhs.q3;
    this->type      = rhs.type;
    this->id        = rhs.id;
    this->SampleMap = rhs.SampleMap;
@@ -3382,24 +3719,31 @@ C_SV1& C_SV1::operator=(const C_SV1 &rhs)
 
 int C_SV1::operator==(const C_SV1 &rhs) const
 {
-   if( this->pos != rhs.pos) return 0;
-   if( this->anchor != rhs.anchor) return 0;
-   if( this->length != rhs.length) return 0;
-   if( this->p5[0] != rhs.p5[0]) return 0;
-   if( this->p5[1] != rhs.p5[1]) return 0;
-   if( this->p3[0] != rhs.p3[0]) return 0;
-   if( this->p3[1] != rhs.p3[1]) return 0;
-   if( this->q != rhs.q) return 0;
-   if( this->posU != rhs.posU) return 0;
-   if( this->lenU != rhs.lenU) return 0;
-   if( this->qOutlier != rhs.qOutlier) return 0;
-   if( this->qAberrantLM != rhs.qAberrantLM) return 0;
-   if (this->copynumber != rhs.copynumber) return 0;
-   if (this->merge != rhs.merge) return 0;
-   if (this->ReadGroupMap.size() != rhs.ReadGroupMap.size()) return 0;
-   if( this->a5 != rhs.a5) return 0;
-   if( this->a3 != rhs.a3) return 0;
-   return 1;
+	if( this->pos != rhs.pos) return 0;
+	if( this->anchor != rhs.anchor) return 0;
+	if( this->length != rhs.length) return 0;
+	if( this->p5[0] != rhs.p5[0]) return 0;
+	if( this->p5[1] != rhs.p5[1]) return 0;
+	if( this->p3[0] != rhs.p3[0]) return 0;
+	if( this->p3[1] != rhs.p3[1]) return 0;
+	if( this->q != rhs.q) return 0;
+	if( this->pend != rhs.pend) return 0;
+	if( this->CIpos[0] != rhs.CIpos[0]) return 0;
+	if( this->CIpos[1] != rhs.CIpos[1]) return 0;
+	if( this->CIend[0] != rhs.CIend[0]) return 0;
+	if( this->CIend[1] != rhs.CIend[1]) return 0;
+	if( this->CIlen[0] != rhs.CIlen[0]) return 0;
+	if( this->CIlen[1] != rhs.CIlen[1]) return 0;
+	if( this->qOutlier != rhs.qOutlier) return 0;
+	if( this->qAberrantLM != rhs.qAberrantLM) return 0;
+	if (this->copynumber != rhs.copynumber) return 0;
+	if (this->merge != rhs.merge) return 0;
+	if (this->ReadGroupMap.size() != rhs.ReadGroupMap.size()) return 0;
+	if( this->a5 != rhs.a5) return 0;
+	if( this->a3 != rhs.a3) return 0;
+	if( this->q5 != rhs.q5) return 0;
+	if( this->q3 != rhs.q3) return 0;
+	return 1;
 }
 
 int C_SV1::operator<(const C_SV1 &rhs) const
@@ -3484,7 +3828,7 @@ void C_SV::genotype(C_contig  & contig, C_libraries & libraries, RunControlParam
   if (libraries.libmap.size()==0) { return;}
   
   map<string, double, less<string> >  rX = libraries.readFractionSamples();
-      
+	
   list<C_SV1>::iterator ie,ie1,ie2;
   //C_SVR1 e1;
   unsigned int ReadGroupCode1;
@@ -3492,13 +3836,16 @@ void C_SV::genotype(C_contig  & contig, C_libraries & libraries, RunControlParam
   int NF1;
   
   ie1=evt.begin();
-
+	
   // know when to stop
   ie2=evt.end();  
   
   list<C_localpair>::iterator i;
+	
+	/*
   // get Minimum Q mapping value for unique read
   int Qmin  = pars.getQmin();
+
   // loop over pairs
   int np=0;
   for(i=contig.localpairs.begin(); i != contig.localpairs.end(); ++i) {
@@ -3512,84 +3859,86 @@ void C_SV::genotype(C_contig  & contig, C_libraries & libraries, RunControlParam
     //int LM1=libraries.libmap[ReadGroupCode1].LM;
     int LMhigh1=libraries.libmap[ReadGroupCode1].LMhigh;
     int LMlow1=libraries.libmap[ReadGroupCode1].LMlow;
-      
+		
     // fragment length
     int lm = (*i).lm;
     // demand usual fragment
     if ((lm<LMlow1)|(lm>LMhigh1)) {continue; }
-
+		
     SAM = libraries.libmap[ReadGroupCode1].Info.SampleName;
-
+		
     // add only the non-read part of the fragment
     int p0 = (*i).pos;
-	// end of 5' read
-	int p1 = (*i).pos+(*i).len1;
-	//int p2 = p1+(*i).lm-(*i).len2;
-	// begining of 3' read at p0+lm-len2
-	int p2 = p0+(*i).lm-(*i).len2;
+		// end of 5' read
+		int p1 = (*i).pos+(*i).len1;
+		//int p2 = p1+(*i).lm-(*i).len2;
+		// begining of 3' read at p0+lm-len2
+		int p2 = p0+(*i).lm-(*i).len2;
     // end of 3' read
-	int p3 = p0+(*i).lm;
+		int p3 = p0+(*i).lm;
 	  
-    
     // loop over events
     int ne=0;
     for ( ie=ie1 ; ie != ie2; ++ie ) {
-
-        ne++;
-
-       // two spanning windows eP1a-eP1b and eP2b-eP2b  
-       int eP1a=(*ie).pos-(*ie).posU/2;     
-       int eP1b=int((*ie).pos)+int((*ie).posU/2);
-       int eP2a=int((*ie).pos)+int((*ie).length)-int((*ie).posU/2);
-       int eP2b=int((*ie).pos)+int((*ie).length)+int((*ie).posU/2);
-
-       // check for reads starts inside event window eP1b-eP2a
-       if ((p0>=eP1b)&(p0<=eP2a)&((*i).q1>=Qmin)) {       
-          (*ie).SampleMap[SAM].NR++;
-       }
-       // other end of fragment
-       if ((p2>=eP1b)&(p2<=eP2a)&((*i).q1>=Qmin)) {       
-          (*ie).SampleMap[SAM].NR++;
-       }
-
-       // beginning of event well beyond this fragment
-       if ((eP1a-1000)>p3) { break;}        
-       
-       // end of event not yet reaching this fragment
-       if (eP2b<p1) { continue;}       
-       
-       // select spanning fragments - both above Qmin 
-       if (((*i).q1<Qmin)|((*i).q2<Qmin)) {
-          continue;
-       } 
-       
-       // spanning  breakpoint
-       if ((p1<eP1a)&(p2>eP1b)) {
-          (*ie).SampleMap[SAM].NN++;
-       }
-       
+			
+			ne++;
+			
+			// two spanning windows eP1a-eP1b and eP2b-eP2b  
+			int eP1a=(*ie).pos-(*ie).posU/2;     
+			int eP1b=int((*ie).pos)+int((*ie).posU/2);
+			int eP2a=int((*ie).pos)+int((*ie).length)-int((*ie).posU/2);
+			int eP2b=int((*ie).pos)+int((*ie).length)+int((*ie).posU/2);
+			
+			// check for reads starts inside event window eP1b-eP2a
+			if ((p0>=eP1b)&(p0<=eP2a)&((*i).q1>=Qmin)) {       
+				(*ie).SampleMap[SAM].NR++;
+			}
+			// other end of fragment
+			if ((p2>=eP1b)&(p2<=eP2a)&((*i).q1>=Qmin)) {       
+				(*ie).SampleMap[SAM].NR++;
+			}
+			
+			// beginning of event well beyond this fragment
+			if ((eP1a-1000)>p3) { break;}        
+			
+			// end of event not yet reaching this fragment
+			if (eP2b<p1) { continue;}       
+			
+			// select spanning fragments - both above Qmin 
+			if (((*i).q1<Qmin)|((*i).q2<Qmin)) {
+				continue;
+			} 
+			
+			// spanning  breakpoint
+			if ((p1<eP1a)&(p2>eP1b)) {
+				(*ie).SampleMap[SAM].NN++;
+			}
+			
     }
+		
     // start next loop over events where this one left off - 3
     if (ie!=ie1)  ie1=ie--;
     if (ie1!=evt.begin())  ie1--;
     if (ie1!=evt.begin())  ie1--;
-  
+		
   }
   
   ie1=evt.begin();
-
+	*/
+	
   std::map<unsigned int,unsigned int, less<unsigned int> >::iterator it;  
   // iterate over read groups in 5' end;
   for ( ie=ie1 ; ie != ie2; ++ie ) {
     //e1 = *ie;
     for ( it=(*ie).ReadGroupMap.begin() ; it != (*ie).ReadGroupMap.end(); it++ ) {
-        ReadGroupCode1 = (*it).first;
-        NF1  = (*ie).ReadGroupMap[ReadGroupCode1];
-        SAM = libraries.libmap[ReadGroupCode1].Info.SampleName;
-        //(*ie).SampleMap[SAM].N5+=NF1;
-        (*ie).SampleMap[SAM].N+=NF1;
+			ReadGroupCode1 = (*it).first;
+			NF1  = (*ie).ReadGroupMap[ReadGroupCode1];
+			SAM = libraries.libmap[ReadGroupCode1].Info.SampleName;
+			//(*ie).SampleMap[SAM].N5+=NF1;
+			(*ie).SampleMap[SAM].N+=NF1;
     }     
-    
+  
+		/*
     // loop over libraries for estimated number of reads 
     //map<string, double, less<string> > rX = libraries.readFractionSamples();
     map<string, double, less<string> >::iterator irX;
@@ -3597,10 +3946,10 @@ void C_SV::genotype(C_contig  & contig, C_libraries & libraries, RunControlParam
       SAM=(*irX).first;
       (*ie).SampleMap[SAM].ER=double((*ie).cov.eN)*rX[SAM];
     }
+		*/
   }
-
-  // loop over single ends
-    
+	
+  /*
   // fill depth from cross pairs (not so many...)
   int N = contig.crosspairs.size();
   list<C_crosspair>::iterator ix;
@@ -3618,30 +3967,32 @@ void C_SV::genotype(C_contig  & contig, C_libraries & libraries, RunControlParam
     // loop over events
     int nx=0;
     for ( ie=ie1 ; ie != ie2; ++ie ) {
-       nx++;
-
-       int eP1a=(*ie).pos-(*ie).posU/2;     
-       int eP1b=int((*ie).pos)+int((*ie).posU/2);
-       int eP2a=int((*ie).pos)+int((*ie).length)-int((*ie).posU/2);
-       int eP2b=int((*ie).pos)+int((*ie).length)+int((*ie).posU/2);
- 
-       // beginning of event well beyond this fragment
-       if ((eP1a-1000)>p1) { break;}        
-       
-       // end of event not yet reaching this fragment
-       if (eP2b<p1) { continue;}       
- 
-       // check for reads starts inside event window eP1b-eP2a
-       if ((p1>=eP1b)&(p1<=eP2a)&((*ix).read[0].q>=Qmin)) {       
-          (*ie).SampleMap[SAM].NR++;
-       }
-
+			nx++;
+			
+			int eP1a=(*ie).pos-(*ie).posU/2;     
+			int eP1b=int((*ie).pos)+int((*ie).posU/2);
+			int eP2a=int((*ie).pos)+int((*ie).length)-int((*ie).posU/2);
+			int eP2b=int((*ie).pos)+int((*ie).length)+int((*ie).posU/2);
+			
+			// beginning of event well beyond this fragment
+			if ((eP1a-1000)>p1) { break;}        
+			
+			// end of event not yet reaching this fragment
+			if (eP2b<p1) { continue;}       
+			
+			// check for reads starts inside event window eP1b-eP2a
+			if ((p1>=eP1b)&(p1<=eP2a)&((*ix).read[0].q>=Qmin)) {       
+				(*ie).SampleMap[SAM].NR++;
+			}
+			
     }
+		
     // start next loop over events where this one left off - 3
     if (ie!=ie1)  ie1=ie--;
     if (ie1!=evt.begin())  ie1--;
     if (ie1!=evt.begin())  ie1--;
   }
+
   // fill depth from dangle starts 
   N = contig.dangle.size();
   list<C_singleEnd>::iterator is; 
@@ -3650,33 +4001,34 @@ void C_SV::genotype(C_contig  & contig, C_libraries & libraries, RunControlParam
     if ((*is).q<Qmin) {continue;}
     ReadGroupCode1 = (*is).ReadGroupCode;  
     SAM = libraries.libmap[ReadGroupCode1].Info.SampleName;
-
+		
     // read start
     int p1=int((*is).pos);
     
     // loop over events
     int nd=0;
     for ( ie=ie1 ; ie != ie2; ++ie ) {
-       nd++;
-       
-       int eP1a=(*ie).pos-(*ie).posU/2;     
-       int eP1b=int((*ie).pos)+int((*ie).posU/2);
-       int eP2a=int((*ie).pos)+int((*ie).length)-int((*ie).posU/2);
-       int eP2b=int((*ie).pos)+int((*ie).length)+int((*ie).posU/2);
- 
-       // beginning of event well beyond this fragment
-       if ((eP1a-1000)>p1) { break;}        
-       
-       // end of event not yet reaching this fragment
-       if (eP2b<p1) { continue;}       
- 
-       // check for reads starts inside event window eP1b-eP2a
-       if ((p1>=eP1b)&(p1<=eP2a)&((*is).q>=Qmin)) {       
-          (*ie).SampleMap[SAM].NR++;
-       }
-
+			nd++;
+			
+			int eP1a=(*ie).pos-(*ie).posU/2;     
+			int eP1b=int((*ie).pos)+int((*ie).posU/2);
+			int eP2a=int((*ie).pos)+int((*ie).length)-int((*ie).posU/2);
+			int eP2b=int((*ie).pos)+int((*ie).length)+int((*ie).posU/2);
+			
+			// beginning of event well beyond this fragment
+			if ((eP1a-1000)>p1) { break;}        
+			
+			// end of event not yet reaching this fragment
+			if (eP2b<p1) { continue;}       
+			
+			// check for reads starts inside event window eP1b-eP2a
+			if ((p1>=eP1b)&(p1<=eP2a)&((*is).q>=Qmin)) {       
+				(*ie).SampleMap[SAM].NR++;
+			}
+			
     }
-    // start next loop over events where this one left off - 3
+		
+		// start next loop over events where this one left off - 3
     if (ie!=ie1)  ie1=ie--;
     if (ie1!=evt.begin())  ie1--;
     if (ie1!=evt.begin())  ie1--;
@@ -3684,114 +4036,118 @@ void C_SV::genotype(C_contig  & contig, C_libraries & libraries, RunControlParam
   // fill depth from umpairs 
   N = contig.umpairs.size();
   list<C_umpair>::iterator iu;
- 
+	
   for(iu=contig.umpairs.begin(); iu != contig.umpairs.end(); ++iu) {
     if ((*iu).read[0].q<Qmin) {continue;}
     ReadGroupCode1 = (*iu).ReadGroupCode;  
     SAM = libraries.libmap[ReadGroupCode1].Info.SampleName;
-
+		
     // read start
     int p1=int((*iu).read[0].pos);
-
-    // loop over events
+		
+		// loop over events
     int nd=0;
     for ( ie=ie1 ; ie != ie2; ++ie ) {
-       nd++;
-
-       int eP1a=(*ie).pos-(*ie).posU/2;     
-       int eP1b=int((*ie).pos)+int((*ie).posU/2);
-       int eP2a=int((*ie).pos)+int((*ie).length)-int((*ie).posU/2);
-       int eP2b=int((*ie).pos)+int((*ie).length)+int((*ie).posU/2);
- 
-       // beginning of event well beyond this fragment
-       if ((eP1a-1000)>p1) { break;}        
-       
-       // end of event not yet reaching this fragment
-       if (eP2b<p1) { continue;}       
- 
-       // check for reads starts inside event window eP1b-eP2a
-       if ((p1>=eP1b)&(p1<=eP2a)&((*iu).read[0].q>=Qmin)) {       
-          (*ie).SampleMap[SAM].NR++;
-       }
-
+			nd++;
+			
+			int eP1a=(*ie).pos-(*ie).posU/2;     
+			int eP1b=int((*ie).pos)+int((*ie).posU/2);
+			int eP2a=int((*ie).pos)+int((*ie).length)-int((*ie).posU/2);
+			int eP2b=int((*ie).pos)+int((*ie).length)+int((*ie).posU/2);
+			
+			// beginning of event well beyond this fragment
+			if ((eP1a-1000)>p1) { break;}        
+			
+			// end of event not yet reaching this fragment
+			if (eP2b<p1) { continue;}       
+			
+			// check for reads starts inside event window eP1b-eP2a
+			if ((p1>=eP1b)&(p1<=eP2a)&((*iu).read[0].q>=Qmin)) {       
+				(*ie).SampleMap[SAM].NR++;
+			}
+			
     }
-    // start next loop over events where this one left off - 3
+		
+		// start next loop over events where this one left off - 3
     if (ie!=ie1)  ie1=ie--;
     if (ie1!=evt.begin())  ie1--;
     if (ie1!=evt.begin())  ie1--;
   }
+
+	 
   // fill depth from unique ends 
   N = contig.singleton.size();
   for(is=contig.singleton.begin(); is != contig.singleton.end(); ++is) {
     if ((*is).q<Qmin) {continue;}
     ReadGroupCode1 = (*is).ReadGroupCode;  
     SAM = libraries.libmap[ReadGroupCode1].Info.SampleName;
-
+		
     // read start
     int p1=int((*is).pos);
-
+		
     // loop over events
     int nd=0;
     for ( ie=ie1 ; ie != ie2; ++ie ) {
-       nd++;
-       int eP1a=(*ie).pos-(*ie).posU/2;     
-       int eP1b=int((*ie).pos)+int((*ie).posU/2);
-       int eP2a=int((*ie).pos)+int((*ie).length)-int((*ie).posU/2);
-       int eP2b=int((*ie).pos)+int((*ie).length)+int((*ie).posU/2);
- 
-       // beginning of event well beyond this fragment
-       if ((eP1a-1000)>p1) { break;}        
-       
-       // end of event not yet reaching this fragment
-       if (eP2b<p1) { continue;}       
- 
-       // check for reads starts inside event window eP1b-eP2a
-       if ((p1>=eP1b)&(p1<=eP2a)&((*is).q>=Qmin)) {       
-          (*ie).SampleMap[SAM].NR++;
-       }
+			nd++;
+			int eP1a=(*ie).pos-(*ie).posU/2;     
+			int eP1b=int((*ie).pos)+int((*ie).posU/2);
+			int eP2a=int((*ie).pos)+int((*ie).length)-int((*ie).posU/2);
+			int eP2b=int((*ie).pos)+int((*ie).length)+int((*ie).posU/2);
+			
+			// beginning of event well beyond this fragment
+			if ((eP1a-1000)>p1) { break;}        
+			
+			// end of event not yet reaching this fragment
+			if (eP2b<p1) { continue;}       
+			
+			// check for reads starts inside event window eP1b-eP2a
+			if ((p1>=eP1b)&(p1<=eP2a)&((*is).q>=Qmin)) {       
+				(*ie).SampleMap[SAM].NR++;
+			}
     }
-    // start next loop over events where this one left off - 3
+		// start next loop over events where this one left off - 3
     if (ie!=ie1)  ie1=ie--;
     if (ie1!=evt.begin())  ie1--;
     if (ie1!=evt.begin())  ie1--;
   }
+	*/
   
 }
 
 ostream &operator<<(ostream &output, C_SV & sv)
 {
-
+	
   // SVCF header
   output  << sv.SVCF;
- 
+	
   size_t NS = sv.samples.size();
- 
+	
   char b[200];
   string s;
   
   // format 
-  size_t NFMT=sv.SVCF.Format.size();
-  string FMT=sv.SVCF.Format[0];
+  size_t NFMT=sv.SVCF.FMT.size();
+  string FMT=sv.SVCF.FMT[0].Id;
   for (int f=1; f<int(NFMT); f++) {
-     FMT=FMT+":"+sv.SVCF.Format[f];
+		FMT=FMT+":"+sv.SVCF.FMT[f].Id;
   }
   // events
   list<C_SV1>::iterator i;
   for(i=sv.evt.begin(); i != sv.evt.end(); ++i) {
-      output << (*i);
-      
-      output << "\t" << FMT ;
-                  
-      for (int ns=0; ns<int(NS); ns++) {
-        s=sv.samples[ns];
-        // double cn = 2.0*double((*i).SampleMap[s].NR)/((*i).SampleMap[s].ER+0.01);
-        // sprintf(b,"\t%d:%d:%d:%d:%d:%.1f",(*i).SampleMap[s].N,(*i).SampleMap[s].NN,(*i).SampleMap[s].N5,(*i).SampleMap[s].N3,(*i).SampleMap[s].NR,(*i).SampleMap[s].ER); //cn);
-        //sprintf(b,"\t%d:%d:%d:%.1f",(*i).SampleMap[s].N,(*i).SampleMap[s].NN,(*i).SampleMap[s].NR,(*i).SampleMap[s].ER); //cn);
-        sprintf(b,"\t%d",(*i).SampleMap[s].N); //cn);
-        s = b;
-        output << s;
-      }
-      output  << endl;  
+		output << (*i);
+		
+		output << "\t" << FMT ;
+		
+		for (int ns=0; ns<int(NS); ns++) {
+			s=sv.samples[ns];
+			// double cn = 2.0*double((*i).SampleMap[s].NR)/((*i).SampleMap[s].ER+0.01);
+			// sprintf(b,"\t%d:%d:%d:%d:%d:%.1f",(*i).SampleMap[s].N,(*i).SampleMap[s].NN,(*i).SampleMap[s].N5,(*i).SampleMap[s].N3,(*i).SampleMap[s].NR,(*i).SampleMap[s].ER); //cn);
+			//sprintf(b,"\t%d:%d:%d:%.1f",(*i).SampleMap[s].N,(*i).SampleMap[s].NN,(*i).SampleMap[s].NR,(*i).SampleMap[s].ER); //cn);
+			sprintf(b,"\t%d",(*i).SampleMap[s].N); //cn);
+			s = b;
+			output << s;
+		}
+		output  << endl;  
   }  
   return output;
 }
@@ -3979,12 +4335,16 @@ ostream &operator<<(ostream &output, C_SVR1 & e1)
   //  text file position coordinates are 1 based (not c convention)
   //----------------------------------------------------------------------------  
   char b [200];
-  string s="I:"+e1.type;
-  sprintf(b,"%d\t%d\t%d\t.\t%s\t%d\t0\t", e1.anchor, e1.pos+1,e1.id, s.c_str(),e1.q);
+  string s="INS:"+e1.type;
+  string sf="PASS";
+  if ((e1.NfragCluster[0]==0)|(e1.NfragCluster[1]==0)) {
+		sf="1_SIDE";
+	}
+  sprintf(b,"%d\t%d\t%d\t.\t<%s>\t%d\t%s\t", e1.anchor, e1.pos+1,e1.id, s.c_str(),e1.q,sf.c_str());
   s = b;
   output << s;
 
-  sprintf(b,"L=%d;NF=%d;UP=%d;UL=%d;", e1.length, int(e1.cls5.inp.size())+int(e1.cls3.inp.size()), e1.posU,e1.lenU);
+  sprintf(b,"SVLEN=%d;NFF=%d;NFR=%d;CIPOS=%d,%d;", e1.length, e1.NfragCluster[0],e1.NfragCluster[1],-e1.posU,e1.lenU);
   s = b;
   output << s;
 
@@ -3993,11 +4353,12 @@ ostream &operator<<(ostream &output, C_SVR1 & e1)
   int PC=(e1.NfragCluster[1]>0? e1.p3[0]-e1.pos:0);
   int PD=(e1.NfragCluster[1]>0? e1.p3[1]-e1.pos:0);
   
-  sprintf(b,"N5=%d;N3=%d;PA=%d;PB=%d;PC=%d;PD=%d;",e1.NfragCluster[0],e1.NfragCluster[1],PA,PB,PC,PD);
+  sprintf(b,"PC1=%d,%d;PC2=%d,%d;",PA,PB,PC,PD);
   s = b;
   output << s;
 
-  sprintf(b,"NR=%d;ER=%.1f;MR=%d;", e1.cov.N,e1.cov.eN,(e1.merge5|e1.merge3)?1:0);
+  /*
+	 sprintf(b,"NR=%d;ER=%.1f;MR=%d;", e1.cov.N,e1.cov.eN,(e1.merge5|e1.merge3)?1:0);
   s = b;
   output << s;  
 
@@ -4005,8 +4366,17 @@ ostream &operator<<(ostream &output, C_SVR1 & e1)
   s = b;
   output << s;  
 
-  s=e1.subtype.substr(e1.type.size()+1);  
-  sprintf(b,"EL=%s;V0=%d;V1=%d;V5=%d;V3=%d;", s.c_str(),int(e1.Qsubtype),int(e1.QsubtypeI),int(e1.Qsubtype5),int(e1.Qsubtype3));
+  */
+	
+	
+	s=e1.subtype;  
+	size_t t=s.find(".");
+	if (t!=string::npos) {
+	  s=s.substr(t+1);
+	}
+	
+  //sprintf(b,"EL=%s;V0=%d;V1=%d;V5=%d;V3=%d;", s.c_str(),int(e1.Qsubtype),int(e1.QsubtypeI),int(e1.Qsubtype5),int(e1.Qsubtype3));
+  sprintf(b,"EL=%s;", s.c_str());
   s = b;
   output << s;  
 
@@ -4239,6 +4609,7 @@ void C_SVR::finalize(C_contig  & contig, C_libraries & libraries, RunControlPara
 
     
     string stype=ename[0];    
+
     (*ie).subtype=stype;
 
     // most popular votes
@@ -4663,10 +5034,10 @@ ostream &operator<<(ostream &output, C_SVR & sv)
   string s;
   
   // format 
-  size_t NFMT=sv.SVCF.Format.size();
-  string FMT=sv.SVCF.Format[0];
+  size_t NFMT=sv.SVCF.FMT.size();
+  string FMT=sv.SVCF.FMT[0].Id;
   for (int f=1; f<int(NFMT); f++) {
-     FMT=FMT+":"+sv.SVCF.Format[f];
+     FMT=FMT+":"+sv.SVCF.FMT[f].Id;
   }
   // events
   list<C_SVR1>::iterator i;
@@ -4678,7 +5049,8 @@ ostream &operator<<(ostream &output, C_SVR & sv)
       for (int ns=0; ns<int(NS); ns++) {
         s=sv.samples[ns];
         // double cn = 2.0*double((*i).SampleMap[s].NR)/((*i).SampleMap[s].ER+0.01);
-        sprintf(b,"\t%d:%d:%d:%d:%d:%.1f",(*i).SampleMap[s].N,(*i).SampleMap[s].NN,(*i).SampleMap[s].N5,(*i).SampleMap[s].N3,(*i).SampleMap[s].NR,(*i).SampleMap[s].ER); //cn);
+        //sprintf(b,"\t%d:%d:%d:%d:%d:%.1f",(*i).SampleMap[s].N,(*i).SampleMap[s].NN,(*i).SampleMap[s].N5,(*i).SampleMap[s].N3,(*i).SampleMap[s].NR,(*i).SampleMap[s].ER); //cn);
+        sprintf(b,"\t%d:%d",(*i).SampleMap[s].N5,(*i).SampleMap[s].N3); //cn);
         s = b;
         output << s;
       }
@@ -5316,11 +5688,12 @@ ostream &operator<<(ostream &output, C_SVV & sv)
   string s;
   
   // format 
-  size_t NFMT=sv.SVCF.Format.size();
-  string FMT=sv.SVCF.Format[0];
+	size_t NFMT=sv.SVCF.FMT.size();
+  string FMT=sv.SVCF.FMT[0].Id;
   for (int f=1; f<int(NFMT); f++) {
-     FMT=FMT+":"+sv.SVCF.Format[f];
+		FMT=FMT+":"+sv.SVCF.FMT[f].Id;
   }
+	
   // events
   list<C_SVV1>::iterator i;
   for(i=sv.evt.begin(); i != sv.evt.end(); ++i) {
@@ -6054,11 +6427,12 @@ ostream &operator<<(ostream &output, C_SVX & sv)
   string s;
   
   // format 
-  size_t NFMT=sv.SVCF.Format.size();
-  string FMT=sv.SVCF.Format[0];
+	size_t NFMT=sv.SVCF.FMT.size();
+  string FMT=sv.SVCF.FMT[0].Id;
   for (int f=1; f<int(NFMT); f++) {
-     FMT=FMT+":"+sv.SVCF.Format[f];
+		FMT=FMT+":"+sv.SVCF.FMT[f].Id;
   }
+	
   // events
   list<C_SVX1>::iterator i;
   for(i=sv.evt.begin(); i != sv.evt.end(); ++i) {
@@ -6827,7 +7201,7 @@ C_SpannerRetroCluster::C_SpannerRetroCluster(C_contig & c1,  C_libraries & libs1
     // select retro free element frags  -> alu5, alu3
     // UM with M hitting alu,  and no satisfied frag length criteria
     //-------------------------------------------------------------------------
-    int Qmin = pars.getQmin();
+	  int Qmin = 0; //pars.getQmin();
     selectRetro(c1, Qmin);
     //-------------------------------------------------------------------------
     // set neighborhood window to some scale of fragment length width 
@@ -7516,7 +7890,13 @@ ostream &operator<<(ostream &output, C_NominalCov & sc)
 //------------------------------------------------------------------------------
 // create list of retro elements from the anchor info
 //------------------------------------------------------------------------------
-C_retroElements::C_retroElements(C_anchorinfo & a1) {
+C_retroElements::C_retroElements(C_anchorinfo & a1, string & prefix) {
+
+	// element name pattern
+	string patternElement("^"+prefix+"(\\S+)\\.\\S+");
+	string match;
+	
+	
 
   // fill elements in anchor object
   a1.anchorElements();
@@ -7539,6 +7919,12 @@ C_retroElements::C_retroElements(C_anchorinfo & a1) {
          N++;
          elist.push_back(a1.element[i]);
          nmap[a1.element[i]]=a1.names[i].substr(0,3);
+				
+				 // check pattern for template
+				 if (RE2::FullMatch(a1.names[i].c_str(),patternElement.c_str(),&match) ) {
+				  	nmap[a1.element[i]] = match;
+				}
+				
       }
     }
   }

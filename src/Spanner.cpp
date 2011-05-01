@@ -132,11 +132,12 @@ int main (int argc, char *  argv[]) {    //int main (int argc, char * const argv
   ValueArg<string> cmd_MEIMask("M", "MASKFILE", "Event masking file", false, "", "string", cmd);
 
   // Mobile element classes
-  ValueArg<string> cmd_elements("E", "element", "names of inserted elements", false, "", "string", cmd);
+  //ValueArg<string> cmd_elements("E", "element", "names of inserted elements", false, "", "string", cmd);
+  ValueArg<string> cmd_elements("S", "specialtag", "prefix of element names in special reference", false, "", "string", cmd);
 	
 	// mapping Q min 
-	int BamZADefault=0;
-  ValueArg<int> cmd_BamZA("Z", "ZR", "bam access mode (1=ZAtag, 2=SortedByReadName) ", false,BamZADefault,"int",cmd);
+	int BamZADefault=1;
+  ValueArg<int> cmd_BamZA("Z", "Zmode", "bam access mode (1=ZAtag, 2=SortedByReadName) ", false,BamZADefault,"int",cmd);
 
 
   //----------------------------------------------------------------------------
@@ -240,6 +241,13 @@ int main (int argc, char *  argv[]) {    //int main (int argc, char * const argv
     pars.setMaxFragments(maxFrag);
   }
  
+	//----------------------------------------------------------------------------
+	//don't DupRemove unless build or scan
+	//----------------------------------------------------------------------------
+	if (!(build||scan)) {
+    pars.setDupRemove(false);		
+	}	
+
 	//----------------------------------------------------------------------------
 	//overide Uniquify if present on command line
 	//----------------------------------------------------------------------------

@@ -92,11 +92,11 @@ RunControlParameters::RunControlParameters( const string & filename)
   setCNslosh(0);
   setDupRemove(1);
   //setDoRepeatCheck(true);
-  string mobs[] = {"moblist_ALU","moblist_L1","moblist_SVA","moblist_ERV"};
-  vector<string> mobv(mobs, mobs + 4);
+  string mobs[] = {"moblist_"};
+  vector<string> mobv(mobs, mobs + 1);
   setMobileElements(mobv);
   setMobiMaskFile("");
-	setBamZA(0);
+	setBamZA(1);
   
   // Regex Fragment Length Window 
   spatternFLWIN="FragmentLengthWindow";

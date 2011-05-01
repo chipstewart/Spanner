@@ -510,29 +510,33 @@ C_HistoGroups::C_HistoGroups() {
 //========================================================================
 
 C_HistoGroups::C_HistoGroups(string & filename) {
- ifstream file1;
- file1.open(filename.c_str(), ios::in);
- if (!file1) {
-	cerr << "C_Histos unable to open file: " << filename << endl;
-	exit(124);
- }
- bool more =true;
- while (more){ 
-	C_Histos h1(file1);
-	if (h1.h.size()>0) {
-	 this->Groups.push_back(h1);
-	 for (int rg=0; rg<h1.ReadGroupTag.size(); rg++) {
-		size_t pos = h1.ReadGroupTag[rg].find("ID:");      // position after "ID:" in str
-		string str1 = h1.ReadGroupTag[rg].substr(pos+3);   // get from "ID:" to the end
-		str1.erase( str1.find_first_of( "\t" ) );
-		str1.erase( str1.find_last_not_of( " " ) + 1 );
-		str1.erase( 0, str1.find_first_not_of( " " ) );
-		this->ReadGroupIndex[str1]=this->Groups.size()-1;
-	 }
-	} else {
-	 more = false;
+	ifstream file1;
+	file1.open(filename.c_str(), ios::in);
+	if (!file1) {
+		cerr << "C_Histos unable to open file: " << filename << endl;
+		exit(124);
 	}
- }
+	bool more =true;
+	while (more){ 
+		C_Histos h1(file1);
+		if (h1.h.size()>0) {
+			this->Groups.push_back(h1);
+			for (int rg=0; rg<h1.ReadGroupTag.size(); rg++) {
+				size_t pos = h1.ReadGroupTag[rg].find("ID:");      // position after "ID:" in str
+				string str1 = h1.ReadGroupTag[rg].substr(pos+3);   // get from "ID:" to the end
+				if (str1.find("\t")!=string::npos) {
+					str1.erase( str1.find_first_of( "\t" ) );
+				}
+				if (str1.find(" ")!=string::npos) {
+					str1.erase( str1.find_last_not_of( " " ) + 1 );
+					str1.erase( 0, str1.find_first_not_of( " " ) );
+				}
+				this->ReadGroupIndex[str1]=this->Groups.size()-1;
+			}
+		} else {
+			more = false;
+		}
+	}
 }
 //========================================================================
 // multiple histogram  group class constructor from stored file 
@@ -689,19 +693,35 @@ C_Histos::C_Histos(ifstream & file1) {
 		
 		
 		// scan file until "@RG" tags are found in the line...
-		while ((line.find("RG") == string::npos) & (line.find("ID") == string::npos)) {
+		//while ((line.find("RG") == string::npos) & (line.find("ID") == string::npos)) {
+		while (line.find("RG") == string::npos)  {
 			more=getline(file1, line);
 			if (!more) exit(126);
 				
 		}
 		// scan file until "@RG" tags are not found in the line...
-		while ((line.find("RG") != string::npos) & (line.find("ID") != string::npos)) {
+		//while ((line.find("RG") != string::npos) & (line.find("ID") != string::npos)) {
+		while (line.find("RG") != string::npos) {
+			if  (line.find("ID") == string::npos) {
+				cerr << " missing ID: tag in stat file RG header" << endl;
+				cerr << line<< endl;
+				exit(119);
+			}
 			ReadGroupTag.push_back(line);
 			more=getline(file1, line);
 			if (!more) exit(127);
-		}
+		}		
 		break;
+	}	
+	
+	// check for optional Mapping quality threshold line
+	if (line.find("Mapping quality threshold") != string::npos)  {
+		more=getline(file1, line);
+		if (!more) exit(120);
 	}		
+	
+	//
+	
 	n = 0;
 	char L = '1';
 	while (more) {

@@ -30,6 +30,7 @@ using std::ostream;
 using std::istream;
 using std::cin;
 using std::cout;
+using std::cerr;
 using std::clog;
 using std::endl;
 using std::string;

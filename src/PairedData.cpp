@@ -154,6 +154,7 @@ C_readmaps& C_readmaps::operator=(const C_readmaps &rhs)
 C_pairedread::C_pairedread() {              // constructor
   Nend=0;
   ReadGroupCode=0;
+	Qproperpair=0;
 	Name="";
 }
  
@@ -161,6 +162,8 @@ ostream &operator<<(ostream &output, const C_pairedread & rhs)
 {
     output << rhs.read[0] << endl;
     output << rhs.read[1] << endl;
+		output << rhs.Qproperpair << endl;
+		output << rhs.ReadGroupCode << endl;	
     return output;
 }
 
@@ -169,15 +172,17 @@ ostream &operator<<(ostream &output, const C_pairedread & rhs)
 // anchorinfo
 //------------------------------------------------------------------------------
 C_anchorinfo::C_anchorinfo() {               // constructor
- source = "";
- use.clear();
+	source = "";
+	special = "";
+  use.clear();
 }
 
 //------------------------------------------------------------------------------
 // anchorinfo copy constructor
 //------------------------------------------------------------------------------
 C_anchorinfo::C_anchorinfo(const C_anchorinfo & rhs) {               // constructor
-  source = rhs.source;
+  source = rhs.source;  
+	special = rhs.special;
   L=rhs.L;
   use=rhs.use;
   element=rhs.element;
@@ -189,9 +194,14 @@ C_anchorinfo::C_anchorinfo(string & anchorfile) {              // constructor
   // anchor file patterns
   string patternHead("number.+\\s+(\\d+)$");
   //string patternLine("(\\d+)\\.\\s+(\\S+)\\s+(\\d+)\\s*$");
-	string patternLine("^\\s*(\\d+)\\.\\s+(\\w+)\\s+(\\d+)\\s*$");
+	string patternLine("^\\s*(\\d+)\\.\\s+(\\S+)\\s+(\\d+)\\s*$");
   source=anchorfile;
-  fstream file1;
+	special="";
+	size_t found=anchorfile.find("special");
+  if (found!=string::npos)	{
+		special="moblist_";
+	}
+	fstream file1;
   file1.open(anchorfile.c_str(), ios::in);	
   if (!file1) {
     cerr << "Unable to open anchor file: " << anchorfile << endl;
@@ -227,109 +237,8 @@ C_anchorinfo::C_anchorinfo(char t) {               // constructor for build 36.1
   }
 }
 
-//------------------------------------------------------------------------------
-// Mosaik anchor info filler
-//------------------------------------------------------------------------------
-C_anchorinfo::C_anchorinfo(Mosaik::CAlignmentReader & ar1) {             
-  source = "MSK";
-  
-  // retrieve the reference sequence data
-  vector<Mosaik::ReferenceSequence> ref1=ar1.GetReferenceData();
-  int Nref = ref1.size();
 
-  // reset 
-  names.clear();
-  L.clear();
-  use.clear();
-  element.clear();
-  
-  // allocate names and use
-  names.resize(Nref,"");
-  use.resize(Nref,true);
-  element.resize(Nref,0);
 
-  // loop over ref
-  for (int id=0; id<Nref; id++) {
-	names[id]=ref1[id].Name;
-    L[names[id]]=ref1[id].NumBases;	
-    // turn off SV detection from "NT_" (random) contigs
-    size_t found=names[id].find("NT_");
-    if (found==0) use[id]=false;  
-	found=names[id].find("NC_");
-	if (found==0) use[id]=false;  
-	found=names[id].find("GL0",0,3);
-	if (found==0) use[id]=false;  
-  }
-	
-  if (!anchorElements()) {
-    cerr << " anchorelements not found " << endl;
-  }
-}
-
-/*
-//------------------------------------------------------------------------------
-// Mosaik anchor info filler
-//------------------------------------------------------------------------------
-C_anchorinfo::C_anchorinfo(BamReader & br1) {             
-  source = "BAM";
-  string ht=br1.GetHeaderText();
-  // retrieve the reference sequence data
-  vector<Mosaik::ReferenceSequence> ref1=GetAnchorInfoFromBamHeader(ht);
-  int Nref = ref1.size();
-
-  // reset 
-  names.clear();
-  L.clear();
-  use.clear();
-  element.clear();
-  
-  // allocate names and use
-  names.resize(Nref,"");
-  use.resize(Nref,true);
-  element.resize(Nref,0);
-
-  // loop over ref
-  for (int id=0; id<Nref; id++) {
-		names[id]=ref1[id].Name;
-    L[names[id]]=ref1[id].NumBases;	
-  }
-  if (!anchorElements()) {
-    cerr << " anchorelements not found " << endl;
-  }
-}
-
-vector<Mosaik::ReferenceSequence> C_anchorinfo::GetAnchorInfoFromBamHeader(string & ht) 
-{
-//@SQ	SN:1	LN:247249719
-  vector<Mosaik::ReferenceSequence> References;
-  string line,thing;
-  stringstream stream1(ht); //stringstream::out | stringstream::in);
-  //stream1 << ht;
-  while( getline(stream1, line) ) {
-      if (line.find("@SQ")!=string::npos) {      
-        cout << line << "\n";
-        Mosaik::ReferenceSequence RS1;
-        stringstream stream2(line); 
-        while( getline(stream2,thing,'\t') ) {
-          string token="SN:";
-          size_t f1=thing.find(token);
-          if (f1!=string::npos) {      
-            RS1.Name=thing.substr(f1+token.length());
-          }
-          token="LN:";
-          f1=thing.find(token);
-          if (f1!=string::npos) {      
-            string nb=thing.substr(f1+token.length());
-            RS1.NumBases=string2Int(nb);          
-          }
-        }
-        References.push_back(RS1);
-      }
-  }
-  return References;
-}
-
-*/
 
 int C_anchorinfo::operator==(const C_anchorinfo &rhs) const
 {
@@ -414,19 +323,61 @@ void C_anchorinfo::anchorlimit(string & allow) {
 }
 
 bool C_anchorinfo::anchorElements() {         
+	
+  string match;
+	string patternElement("^(moblist_\\S+)\\.\\S+");  
+	vector<string> elements1;
+  for (size_t i = 0; i<names.size(); i++) {
+		// skip this ContigName if not present in AllowContigs
+		if ( RE2::FullMatch(names[i].c_str(),patternElement.c_str(),&match) ) {
+			if (elements1.size()>0) {
+				if (match.compare(elements1[elements1.size()-1])==0) {
+					continue;
+				}
+			}
+			elements1.push_back(match);
+		}
+  }
 
-    string e0[] = {"moblist_ALU","moblist_L1","moblist_SVA","moblist_ERV"};
-    vector<string> elements1(e0, e0 + 4);
-    
-    return(anchorElements(elements1));
+	vector<string>::iterator it;
+	it = unique (elements1.begin(), elements1.end()); 
+	
+  elements1.resize( it - elements1.begin() ); 
+	
+	
+  //string e0[] = {"moblist_ALU","moblist_L1","moblist_SVA","moblist_ERV"};
+  //vector<string> elements1(e0, e0 + 4);
+	
+	return(anchorElements(elements1));
 }
 
 
 //------------------------------------------------------------------------------
 // add list of reference elements to anchorinfo  
 //------------------------------------------------------------------------------
-bool C_anchorinfo::anchorElements(vector<string> & elements1) {         
-  
+bool C_anchorinfo::anchorElements(vector<string> & elements0) {         
+
+	vector<string> elements1;
+
+	if(elements0.size()==1) {
+		// build elements from pattern elements0
+		string match;
+		string patternElement("^("+elements0[0]+"\\S+)\\.\\S+");  
+
+		for (size_t i = 0; i<names.size(); i++) {
+			if ( RE2::FullMatch(names[i].c_str(),patternElement.c_str(),&match) ) {			
+				elements1.push_back(match);
+			}
+		}
+		
+		vector<string>::iterator it;
+		it = unique (elements1.begin(), elements1.end()); 	
+		elements1.resize( it - elements1.begin() ); 
+	} else {
+		//  elements are already listed in elements0
+		elements1=elements0;
+	}
+
   // init
   bool done=false;
   string name=" ";
@@ -436,12 +387,13 @@ bool C_anchorinfo::anchorElements(vector<string> & elements1) {
   
   // loop over anchors
   for (size_t i = 0; i<names.size(); i++) {
-      name= names[i].substr(0,10);
       
       // loop over elements
       for (size_t e = 0; e<elements1.size(); e++) {
-        elem= elements1[e].substr(0,10);
-
+				
+        elem= elements1[e];
+				name= names[i].substr(0,elem.size());
+				
         // set element index 
         if (name==elem) {
            element[i]=e;
@@ -473,6 +425,7 @@ unsigned int C_anchorinfo::anchorMinElement() {
 }
 
 
+
 //------------------------------------------------------------------------------
 // get anchor index - return -1 if no anchor name found
 //------------------------------------------------------------------------------
@@ -486,9 +439,6 @@ char C_anchorinfo::anchorIndex(string & name1){
 	a1=-1;
 	return a1;
 }
-
-char anchorIndex(string &);   // return anchor index given anchor name 
-
 
 
 ostream &operator<<(ostream &output,  C_anchorinfo & a)
@@ -539,6 +489,7 @@ C_libraryinfo::C_libraryinfo()                          // constructor default
     NSingle=0;
     NPairRedundant=0;
     NSingleRedundant=0;
+	  source = "";
 }
 
 C_libraryinfo::C_libraryinfo(const C_libraryinfo & rhs)     // copy constructor
@@ -565,7 +516,15 @@ C_libraryinfo::C_libraryinfo(const C_libraryinfo & rhs)     // copy constructor
     Info.PlatformUnit=rhs.Info.PlatformUnit;
     Info.ReadGroupID=rhs.Info.ReadGroupID;
     Info.SampleName=rhs.Info.SampleName;    
+  	source = rhs.source;
 }
+
+bool C_libraryinfo::isSpecial()     // check if source is "special.bam"
+{
+	size_t found=source.find(".special.");
+	return (found!=string::npos);   
+}
+
 
 ostream &operator<<(ostream &output,  C_libraryinfo & lib)
 {
@@ -587,7 +546,8 @@ ostream &operator<<(ostream &output,  C_libraryinfo & lib)
     output << "\t NPE:\t"<< lib.NPair;
     output << "\t Redundnat:\t"<< lib.NPairRedundant << endl;
     output << "\t NSE:\t"<< lib.NSingle;
-    output << "\t Redundnat:\t"<< lib.NSingleRedundant << endl;
+  	output << "\t Redundant: \t"<< lib.NSingleRedundant << endl;
+	  output << "\t source: \t"<< lib.source  << endl;
     return output;
 }
 
@@ -608,9 +568,10 @@ C_libraries::C_libraries(string & infilename)      // load lib info
       cerr << "Unable to open library.span file: " << infilename << endl;
   }
   C_headerSpan h(input);
-
   C_librarymap::iterator it;
   C_libraryinfo lib1;    
+	
+	lib1.source = infilename;
 
   int N= h.N;
   //----------------------------------------------------------------------------
@@ -736,6 +697,7 @@ C_libraries::C_libraries(string & infilename)      // load lib info
   //----------------------------------------------------------------------------
   int Na;
   input.read(reinterpret_cast<  char *>(&Na), sizeof(int));
+	anchorinfo.source=infilename;
   anchorinfo.names.resize(Na);
   anchorinfo.use.resize(Na);
   for(size_t i=0; int(i)<Na; ++i) {
@@ -750,7 +712,7 @@ C_libraries::C_libraries(string & infilename)      // load lib info
     input.read(reinterpret_cast< char *>(&use), sizeof(bool));
     anchorinfo.use[i]=use;
   }
- 
+	
    input.close();
 
 }
@@ -760,23 +722,12 @@ C_libraries::C_libraries( const C_libraries & rhs)              // constructor
   libmap=rhs.libmap;
   anchorinfo=rhs.anchorinfo;
 	ReadGroupID2Code=rhs.ReadGroupID2Code;
-
 }    
 
-C_libraries::C_libraries(Mosaik::CAlignmentReader & ar1) // constructor - load from Mosaik file    
-{
-  vector<Mosaik::ReadGroup> readGroups;
-	readGroups=ar1.GetReadGroups();
-  int N = readGroups.size();
-  C_libraryinfo lib1;
-  for (int i=0; i<N; i++) {
-    unsigned int ReadGroupCode=readGroups[i].ReadGroupCode;
-		libmap[ReadGroupCode].Info=readGroups[i];
-		ReadGroupID2Code[readGroups[i].ReadGroupID]=ReadGroupCode;
-  }
-}    
 
-//C_libraries::C_libraries(BamReader  & br1)              // constructor - load from BAM file    
+//------------------------------------------------------------------------------
+// initialize libraries from bam info
+//------------------------------------------------------------------------------
 C_libraries::C_libraries(BamMultiReader  & br1)              // constructor - load from BAM file    
 {
   string ht=br1.GetHeaderText();
@@ -795,6 +746,9 @@ C_libraries::C_libraries(BamMultiReader  & br1)              // constructor - lo
   }
 }    
 
+//------------------------------------------------------------------------------
+// extract read groups from libraries 
+//------------------------------------------------------------------------------
 vector<Mosaik::ReadGroup> C_libraries::GetReadGroups(string & ht) 
 {
 // @RG	ID:ERR001607	PL:ILLUMINA	PU:1000G-mpimg-081010-2_3	LB:NA 19210.11	PI:200	SM:NA19210	CN:MPIMG
@@ -857,6 +811,9 @@ vector<Mosaik::ReadGroup> C_libraries::GetReadGroups(string & ht)
   return readGroups;
 }
 
+//------------------------------------------------------------------------------
+// get Sequence Tech from libraries
+//------------------------------------------------------------------------------
 vector<char> C_libraries::getSequencingTechnology() 
 {
 	C_librarymap::iterator it;
@@ -875,6 +832,9 @@ vector<char> C_libraries::getSequencingTechnology()
     return p;
 }
 
+//------------------------------------------------------------------------------
+// text stream output   libraries
+//------------------------------------------------------------------------------
 ostream &operator<<(ostream &output,  C_libraries & libs)
 {
   C_librarymap::iterator it;
@@ -890,6 +850,9 @@ ostream &operator<<(ostream &output,  C_libraries & libs)
     return output;
 }
 
+//------------------------------------------------------------------------------
+// print  libraries info
+//------------------------------------------------------------------------------
 void C_libraries::printLibraryInfo(string & file1)      // print lib info 
 {
   fstream output(file1.c_str(), ios::out);
@@ -1048,7 +1011,9 @@ void C_libraries::writeLibraryInfo(string & outfilename, string & setName)      
   output.close();
 }
 
+//------------------------------------------------------------------------------
 // max fragment length in this set of libraries
+//------------------------------------------------------------------------------
 int C_libraries::maxLF()              
 {
   C_librarymap::iterator it;
@@ -1063,7 +1028,9 @@ int C_libraries::maxLF()
   return LMmax;
 }    
     
+//------------------------------------------------------------------------------
 // return tailcut from first library    
+//------------------------------------------------------------------------------
 double C_libraries::getTailcut()
 {
   C_librarymap::iterator it;
@@ -1077,7 +1044,9 @@ double C_libraries::getTailcut()
   return t;
 }
 
+//------------------------------------------------------------------------------
 // set frag limits LMlow, LMhigh by new tailcut 
+//------------------------------------------------------------------------------
 void C_libraries::resetFragLimits(double tailcut)
 {
   C_librarymap::iterator it;
@@ -1106,7 +1075,9 @@ void C_libraries::resetFragLimits(double tailcut)
   }
 }
 
+//------------------------------------------------------------------------------
 // read fractions for each sample
+//------------------------------------------------------------------------------
 map<string, double, less<string> > C_libraries::readFractionSamples() 
 {
   map<string, double, less<string> >  rX;
@@ -1395,6 +1366,7 @@ C_umpair::C_umpair() {
     nmap=0;
     nmapA=0;
     elements=0;
+		Qproperpair=0;
     ReadGroupCode = 0;
 }
 
@@ -1405,6 +1377,7 @@ C_umpair::C_umpair(const C_umpair &copyin)   // Copy constructor to handle pass 
    nmap=copyin.nmap;
    nmapA=copyin.nmapA;
    elements=copyin.elements;
+	 Qproperpair=copyin.Qproperpair;
    ReadGroupCode=copyin.ReadGroupCode;
 }
 
@@ -1412,8 +1385,10 @@ C_umpair::C_umpair(const C_readmap  & read0, const C_readmap  & read1,
    int nmap1, int elements1, unsigned int ReadGroupCode1) {
    read[0] = read0;
    read[1] = read1;
-   nmap = nmap1;
+	 nmap = nmap1;
+	 nmapA = 0;
    elements=elements1;
+ 	 Qproperpair=0;
    ReadGroupCode=ReadGroupCode1;
 }
 
@@ -1465,8 +1440,14 @@ C_umpair::C_umpair(const C_pairedread  & pair1, const C_anchorinfo & anchor1) {
   read[1] = pair1.read[em].align[0];  
   // Total mumber of mappings at M end
   nmapA = NM;
-  
-  // loop over alignments to count *only* element hits for nmap
+	
+  //consistency with fragment length dist (high Q ~ aberrant pair)
+	Qproperpair=pair1.Qproperpair;
+	
+	// overwrite original useless multiple mapping quality with Qproperpair 	
+  read[1].q=pair1.Qproperpair;  
+	
+	// loop over alignments to count *only* element hits for nmap
   nmap=nmapA;
   /*
   for (int i=0; i<N0 ; i++) { 
@@ -1488,7 +1469,7 @@ C_umpair::C_umpair(const C_pairedread  & pair1, const C_anchorinfo & anchor1) {
 ostream &operator<<(ostream &output, const C_umpair & x)
 {
    output << x.read[0] << "\t" << x.read[1] << "\t "<< x.ReadGroupCode;
-   output << "\t" << x.nmap << "\t" << int2binary(x.elements) << endl;
+   output << "\t" << x.nmap << "\t" << int2binary(x.elements) << "\t" << x.Qproperpair << endl;
    return output;
 }
 
@@ -1498,6 +1479,7 @@ C_umpair& C_umpair::operator=(const C_umpair &rhs)
    read[1] = rhs.read[1];
    nmap = rhs.nmap;
    elements=rhs.elements;
+	 Qproperpair=rhs.Qproperpair;
    ReadGroupCode=rhs.ReadGroupCode;
    return *this;
 }
@@ -2676,41 +2658,6 @@ void C_contig::uniquify() {
     
 }
 
-/*
-void C_contig::uniquifyBam() {
-
-    // check if already done, bug out if done    
-    if (uniquified>2) return;
-
-    int N0 = localpairs.size();               
-    localpairs.unique(isRedundantPairBam);               
-    int NU = localpairs.size();
-    printf(" remove %d of %d (%5.2f%%) localpairs\n",N0-NU,N0,100.*double(N0-NU)/N0);               
-    N0 = crosspairs.size();               
-    crosspairs.unique(isRedundantCross);               
-    NU = crosspairs.size();               
-    printf(" remove %d of %d (%5.2f%%) crosspairs\n",N0-NU,N0,100.*double(N0-NU)/N0);               
-    //-------------------------------------------------------------
-    // single reads redundant? 
-    // remove only for variable read length platforms (454 / Helicos)
-    //-------------------------------------------------------------     
-    if ( (sLR/aLR)>0.25 ) {  // large variable read length
-      N0 = dangle.size();               
-      dangle.unique(isRedundantRead);               
-      NU = dangle.size();               
-      printf(" remove %d of %d (%5.2f%%) dangles\n",N0-NU,N0,100.*double(N0-NU)/N0);               
-      N0 = singleton.size();               
-      singleton.unique(isRedundantRead);               
-      NU = singleton.size();               
-      printf(" remove %d of %d (%5.2f%%) singletons\n",N0-NU,N0,100.*double(N0-NU)/N0);               
-      N0 = umpairs.size();               
-      umpairs.unique(isRedundantMulti);               
-      NU = umpairs.size();               
-      printf(" remove %d of %d (%5.2f%%) U-M\n",N0-NU,N0,100.*double(N0-NU)/N0);               
-    }
-    uniquified=3;
-}
-*/
 
 // I/O function for contigset
 void C_contig::writePairs(string & outfilename) //const
@@ -3010,6 +2957,13 @@ void C_contig::writeMulti(string & outfilename, list<C_umpair> &  um)
       unsigned short a0 = (*i).read[e].anchor;    // anchor index  
       char  s0 = (*i).read[e].sense;              // sense 
       char  q0 = (*i).read[e].q;                  // quality
+			
+			/* doesn't work with linked span file input...
+			if (e>0) {
+				q0=(*i).Qproperpair;											// aberrant pair metric
+			}
+			*/
+
       char mm0 = (*i).read[e].mm;                 // mm  
       //position
       output.write(reinterpret_cast<const char *>(&p0), sizeof(int));
@@ -3618,8 +3572,8 @@ C_set::C_set(string & setName1, RunControlParameters & pars1) {
   this->Npair_11o = 0;
   this->Npair_1N = 0;
   this->Npair_NN = 0;
-	
-  // Initialize stats 
+ 
+	// Initialize stats 
   // labels: 0=no map; 1=one-map; N=multi-map;
   string pairCountLab1[] = {"0-0","0-1","0-N","X","1-1","1-N","X","X","N-N"};
   vector<string> pairCountLab(pairCountLab1, pairCountLab1 + 9);
@@ -3664,7 +3618,8 @@ C_set::C_set(string & setName1, RunControlParameters & pars1) {
   */
   //
   elementMinAnchor=255; // init min element anchor index
-
+	SpannerMode = 0;
+	
 }
 
 void C_set::initContigs() {
@@ -3731,6 +3686,7 @@ void C_set::processPair(C_pairedread & pair1, char constrain) {
   // bump N if the unique hit is ANY element
   // prevent mobile-element hits from going into UU pairs
   // want them to go to UM pairs
+	// this is problematic for non-repeat elements (eg. virus, bacteria, vector...)
   //----------------------------------------------------------------------------
   if ( (pair1.read[0].element!=0)&&(N0==1) ) {
      N0++;
@@ -4042,22 +3998,37 @@ void C_set::write() {
       }
   
       if (contig[cn1].Length>0) { 
-        //cout << "write output for contig " << cn1 << endl;
-        fname = basename+".pair.span";
-        cout << "\t " << fname << "\t " << contig[cn1].localpairs.size() << endl;
-        contig[cn1].writePairs(fname);
-        fname = basename+".cross.span";
-        cout << "\t " << fname << "\t " << contig[cn1].crosspairs.size() << endl;
-        contig[cn1].writeCross(fname);
-        fname = basename+".repeat.span";
-        cout << "\t " << fname << "\t " << contig[cn1].repeat.n.size() << endl;
-        contig[cn1].writeDepth(fname, contig[cn1].repeat);
-        fname = basename+".dangle.span";
-        cout << "\t " << fname << "\t " << contig[cn1].dangle.size() << endl;
-        contig[cn1].writeEnd(fname, contig[cn1].dangle);
-        fname = basename+".multi.span";
-        cout << "\t " << fname << "\t " << contig[cn1].umpairs.size() << endl;
-        contig[cn1].writeMulti(fname, contig[cn1].umpairs);
+				
+				if (SpannerMode!=SPANNER_MOBI) {
+					//cout << "write output for contig " << cn1 << endl;
+					fname = basename+".pair.span";
+					cout << "\t " << fname << "\t " << contig[cn1].localpairs.size() << endl;
+					contig[cn1].writePairs(fname);
+					fname = basename+".cross.span";
+					cout << "\t " << fname << "\t " << contig[cn1].crosspairs.size() << endl;
+					contig[cn1].writeCross(fname);
+					//
+					/* skip repeat write
+					 fname = basename+".repeat.span";
+					 cout << "\t " << fname << "\t " << contig[cn1].repeat.n.size() << endl;
+					 contig[cn1].writeDepth(fname, contig[cn1].repeat);
+
+					//
+					fname = basename+".dangle.span";
+					cout << "\t " << fname << "\t " << contig[cn1].dangle.size() << endl;
+					contig[cn1].writeEnd(fname, contig[cn1].dangle);
+				  */
+				}
+				if (SpannerMode!=SPANNER_BUILD) {					
+					string notspecial = basename;
+					size_t found = notspecial.find(".special.");
+					if (found!=string::npos) {
+						notspecial.erase (found,8);
+					}
+          fname = notspecial+".multi.span";
+          cout << "\t " << fname << "\t " << contig[cn1].umpairs.size() << endl;
+          contig[cn1].writeMulti(fname, contig[cn1].umpairs);
+				}
       }
    }
 }
@@ -4763,7 +4734,7 @@ void C_pairedfiles::inputcheck( string & in1, RunControlParameters & pars)
 	//boost::regex patternAB("^>\\d+\\_\\d+\\_\\d+\\_");
 	//string patternAB("^>\\S+\\_[F|R]3");
 	// fasta header line Mosiak RAR map file
-	string patternMSK("^MSKAA");
+	// string patternMSK("^MSKAA");
 	// fasta header line Helicos csv map file
 	//string patternHS("^Reference_ID");
 	// attempt parsing set of Spanner files if there is no in2 filename
@@ -4772,8 +4743,8 @@ void C_pairedfiles::inputcheck( string & in1, RunControlParameters & pars)
   
 	C_headerSpan h1;
 	if (checkSpannerDirectory(in1))  {
-          inputType='D';  // spanner files      
-          return;
+		inputType='D';  // spanner files      
+		return;
 	}
 	
 	if (checkBamDirectory(in1))  {
@@ -4784,33 +4755,33 @@ void C_pairedfiles::inputcheck( string & in1, RunControlParameters & pars)
 	if (checkSpannerFiles(in1)) {
 		//if (headers.size()!=6) return; 
 		if (headers.size()!=4) return; 
-         bool ok = true;
-         C_headers::iterator i;
-         for(i=headers.begin(); i != headers.end(); ++i) {
-            string filename = i->first;
-            h1 = i->second;
-            //cout  << filename << " \t " << h1 << endl;
-            ok = ok && ((h1.V>=201)|(h1.V<=207));
-         }
-         if (ok) { 
-            // if all Spanner files are ok, then put the setName into vector as element 0
-            setNames.clear();
-            setNames.push_back(h1.setName);
-            // input type "S" for Spanner....
-            inputType='S';  // spanner files      
-            return;
-         }
-      }
-      //==================================
-      // must be a file of some sort
-      // check if file exists
-      //==================================
-      file1.open(in1.c_str(), ios::in);	
-      if (!file1) {
-        cerr << "Unable to open file: " << in1 << endl;
-        exit(1);
-      }
-      file1.close();
+		bool ok = true;
+		C_headers::iterator i;
+		for(i=headers.begin(); i != headers.end(); ++i) {
+			string filename = i->first;
+			h1 = i->second;
+			//cout  << filename << " \t " << h1 << endl;
+			ok = ok && ((h1.V>=201)|(h1.V<=207));
+		}
+		if (ok) { 
+			// if all Spanner files are ok, then put the setName into vector as element 0
+			setNames.clear();
+			setNames.push_back(h1.setName);
+			// input type "S" for Spanner....
+			inputType='S';  // spanner files      
+			return;
+		}
+	}
+	//==================================
+	// must be a file of some sort
+	// check if file exists
+	//==================================
+	file1.open(in1.c_str(), ios::in);	
+	if (!file1) {
+		cerr << "Unable to open file: " << in1 << endl;
+		exit(1);
+	}
+	file1.close();
   
   //==================================
   // check non-Spanner input files....
@@ -4820,29 +4791,33 @@ void C_pairedfiles::inputcheck( string & in1, RunControlParameters & pars)
     cerr << "Unable to open file: " << in1 << endl;
     exit(1);
   }
+	
+	/*
   string line;
   string match;
   inputType='X';
   int n = 0;
   while ( (getline(file1, line).good()) && (inputType=='X') && (n<4) ) {		
-	//================
+		//================
     // line test
-	//================
-	if (RE2::FullMatch(line.c_str(),patternMSK.c_str(),&match) ) {
-        inputType='M'; 
-    };	
-    n++;	
-    // skip comment lines in header (Helicos...)
-    if (line[0]=='#') {
-      n--;
-    }
+		//================
+
+		 if (RE2::FullMatch(line.c_str(),patternMSK.c_str(),&match) ) {
+		 inputType='M'; 
+		 };	
+		 n++;	
+		 // skip comment lines in header (Helicos...)
+		 if (line[0]=='#') {
+		 n--;
+		 }
 	};
+	*/
   file1.close();
-  if (inputType=='X') {
+  //if (inputType=='X') {
     if (checkBamFile(in1))  {
-        inputType='Z';  // Bam files      
+			inputType='Z';  // Bam files      
     }
-  }
+  //}
 }
 
 //------------------------------------------------------------------------------
@@ -4899,7 +4874,7 @@ void C_pairedfiles::loadSpanner( string  & file1,  RunControlParameters & pars)
   // setName in contig should be setName in set
   set[0].contig[contigname].setName=set[0].getSetName();
   //if (headers.size()!=4) return;    
-	if (headers.size()!=4) return;  
+	if (headers.size()<1) return;  
 
   // libraries loaded in checkSpannerFiles
   set[0].libraries=libraries;
@@ -4930,18 +4905,22 @@ void C_pairedfiles::loadSpanner( string  & file1,  RunControlParameters & pars)
         case 1:
           set[0].contig[contigname].loadCross(filename);
           break;
+				/*
         case 100:
           set[0].contig[contigname].loadSingleton(filename);
           break;
         case 2:
           set[0].contig[contigname].loadDangle(filename);
           break;
-        case 3:
+        */
+				case 3:
           set[0].contig[contigname].loadMultipairs(filename);
           break;
+				/*
         case 101:
           set[0].contig[contigname].loadRepeat(filename);
           break;
+				*/
       }
   }
   //---------------------------------------------------------------------------
@@ -4989,11 +4968,6 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 		SpannerMode=SPANNER_BUILD;
 	}
 
-	vector<string> elements =pars.getMobileElements();
-	bool moblist=elements.size()>0;
-	if ( (!scan) & moblist ) {
-		SpannerMode=SPANNER_MOBI;
-	}
 		
 	// get Max Fragments
 	MaxFragments  = pars.getMaxFragments();    
@@ -5038,15 +5012,19 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 	//---------------------------------------------------------------------------
 	
 	BamMultiReader ar1,ar2;	
-	BamReader br1,br2;
+	//BamReader br1,br2;
 	
 	BamAlignment ba;
 		
 	//ar1.Open(BamFileNames,BamZ<1,false);
 	ar1.Open(BamFileNames);
+	ar2.Open(BamFileNames);
 	if (BamZ<1) {
 		if (ar1.LocateIndexes()) {
 			ar1.OpenIndexes(BamFileNames);
+		}
+		if (ar2.LocateIndexes()) {
+			ar2.OpenIndexes(BamFileNames);
 		}
 	}
 	
@@ -5063,27 +5041,18 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 		ar1.Rewind(); 
 	}
 	
-	if ( (BamZ<1) ) {
-		
-		//ar2.Open(BamFileNames,true,false);
-		ar2.Open(BamFileNames);
-		if (BamZ<1) {
-			if (ar2.LocateIndexes()) {
-				ar2.OpenIndexes(BamFileNames);
-			}
+
+	if (ar2.GetReferenceCount()<1) {
+		cout << "ERROR: Unable to open the BAM file twice (" << file1.c_str() << ")." << endl;
+		exit(104);
+	}  else {
+		if (!ar2.GetNextAlignment(ba)) {
+			cerr << " ERROR: Unable to load record BAM file  (" << file1.c_str() << ")." << endl;
+			exit(105);
 		}
-		if (ar2.GetReferenceCount()<1) {
-			cout << "ERROR: Unable to open the BAM file twice (" << file1.c_str() << ")." << endl;
-			exit(104);
-		}  else {
-			if (!ar2.GetNextAlignment(ba)) {
-				cerr << " ERROR: Unable to load record BAM file  (" << file1.c_str() << ")." << endl;
-				exit(105);
-			}
-			ar2.Rewind(); 
-		}
-		
-  }
+		ar2.Rewind(); 
+	}
+	
 	
 	// retrieve the header text BAM 
 	string samHeader = ar1.GetHeaderText();	
@@ -5097,16 +5066,25 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 		C_anchorinfo anchorf(anchorfile1);
 		anchor1=anchorf;
 	}
+	
 	if (scan) {
 		AllowContigsRegex = "doScanOnlyDoesNotUseContigs!";		
 	}
 	
 	// only process specified contigs
 	anchor1.anchorlimit(AllowContigsRegex);
+
+
+	vector<string> elements =pars.getMobileElements();
+	
 	// bookeep mobile element anchors default
-	anchor1.anchorElements(elements);
+	bool moblist = anchor1.anchorElements(elements);
 	// set this object anchors
 	anchors = anchor1;
+	
+	if ( (!scan) & moblist ) {
+		SpannerMode=SPANNER_MOBI;
+	}
 	
 	//---------------------------------------------------------------------------
 	// fetch library info from BAM alignments file
@@ -5138,7 +5116,7 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 	pars.setReadPairSenseConfig(MateMode);
 	
 	//---------------------------------------------------------------------------
-	// make multiple sets only for Scan, one set for build, detect *(or 454 scan) 
+	// make multiple sets only for Scan, one set for build or 454 scan (too many sets) 
 	//---------------------------------------------------------------------------
 	int Nset=0;
 	if ((scan)&&(seqtech1!=ST_454)) { 
@@ -5158,6 +5136,8 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 	int iset;
 	for (iset=0; iset<Nset; iset++) {
 		set[iset].initContigs();
+		set[iset].SpannerMode = SpannerMode;
+		
 	}
 	
 	
@@ -5174,7 +5154,8 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 	// clear doneFrag map
 	doneFrag.clear();
 
-	if ( BamFileNames.size()==1 ) {
+	/*
+	 if ( BamFileNames.size()==1 ) {
 		br1.Open(file1);
 		//br2.Open(file1,"",true);
 		br2.Open(file1);
@@ -5182,7 +5163,8 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 			br2.OpenIndex(file1);
 		}
 	}
-		
+	*/
+	
 	bool next = true;
 	//---------------------------------------------------------------------------
 	// loop through file to load non-proper pairs 
@@ -5191,7 +5173,7 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 		//if (BamFileNames.size()>1) { 
 		//	next = nextBamAlignmentPair(ar1,ar2,mr)&&(Nfrag<=MaxFragments);
 		//} else if (BamFileNames.size()==1) {
-			next= nextBamAlignmentPair(br1,br2,pair1)&&(Nfrag<=MaxFragments);
+			next= nextBamAlignmentPair(ar1,ar2,pair1)&&(Nfrag<=MaxFragments);
 		//}
 		if (!next) continue;
 		
@@ -5275,6 +5257,7 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 			if (!scan) {
 				set[iset].processPair(pair1,constrain);
 			}
+			
 			//------------------------------------------------------------------------
 			// count paired read alignments for set[0] pairstats
 			//------------------------------------------------------------------------
@@ -5308,8 +5291,8 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 	if  (BamZ<1)  {
 		ar2.Close();
 	}
-	br1.Close();
-	br2.Close();
+	//ar1.Close();
+	//ar2.Close();
 	
 	// finalize histos
 	for (iset=0; iset<Nset; iset++) {
@@ -5687,493 +5670,6 @@ int C_pairedfiles::makeOneSetFromLibs(string & name,
 	return 1;
 }
 
-/*
-//------------------------------------------------------------------------------
-// samtools compare function for query name sorting
-//------------------------------------------------------------------------------
-int C_pairedfiles::strnum_cmp(const string & a0, const string & b0)
-{
-  const char *a = a0.c_str();
-  const char *b = b0.c_str();
-	char *pa, *pb;
-	pa = (char*)a; pb = (char*)b;
-	while (*pa && *pb) {
-		if (isdigit(*pa) && isdigit(*pb)) {
-			long ai, bi;
-			ai = strtol(pa, &pa, 10);
-			bi = strtol(pb, &pb, 10);
-			if (ai != bi) return ai<bi? -1 : ai>bi? 1 : 0;
-		} else {
-			if (*pa != *pb) break;
-			++pa; ++pb;
-		}
-	}
-	if (*pa == *pb)
-		return (pa-a) < (pb-b)? -1 : (pa-a) > (pb-b)? 1 : 0;
-	return *pa<*pb? -1 : *pa>*pb? 1 : 0;
-}
-*/
-
-
-
-
-/*
-//------------------------------------------------------------------------------
-// extract read mapping info from MosaikAligner file - put into PairData objects
-//------------------------------------------------------------------------------
-void C_pairedfiles::loadMosaik( string  & file1, RunControlParameters & pars)
-{
-  // bam file pattern
-  string patternFile("^.* /(.+)(\\.align|\\.dat|\\.mka)");
-  // get allowed contig name regexp
-  string AllowContigsRegex=pars.getAllowContigsRegex();
-  // Read info ID
-  string IDRegex=pars.getReadIDRegex();
-  string patternID(IDRegex);
-  // Read info Number
-  string NumberRegex=pars.getReadNumberRegex();
-  string patternNumber(NumberRegex);
-  // regex match
-  string match;
-  // Debug level 
-  int dbg =pars.getDbg();
-  // flip relative to Illumina short PE FR convention
-  MateMode =pars.getReadPairSenseConfig();
-  // Scan only? 
-  bool scan =pars.getDoScanOnly();
-  // get Max Fragments
-  int MaxFragments  = pars.getMaxFragments();
-
-  // get Minimum Q mapping value for unique read
-  Qmin  = pars.getQmin();
-
-  // declare some relevant stringy vars
-  string s,s1,s2;
-  // read identifiers 
-  string readName=" "; 
-  // declare   pair read objects
-  C_pairedread pair1, pair2;
-  // set name
-  string name="MSK";
-  if  (RE2::FullMatch(file1.c_str(),patternFile.c_str(),&match) )  {
-      name=match;
-  }
-
-
-  // ReadGroups
-  unsigned int ReadGroupCode = 0;
-  unsigned int ReadGroupCode0 = 0;
-
-  // data set
-  C_set set1(name, pars); 
-  setNames.push_back(name);
-  // local set class
-  set.push_back(set1);
-  //
-
-  //---------------------------------------------------------------------------
-  // extract set name from MOSAIK alignment filename
-  //---------------------------------------------------------------------------
-  if (RE2::FullMatch(file1.c_str(),patternFile.c_str(),&match) ) {
-    string f = match;
-    set[0].setFileName(f);
-  }
-  
-  //---------------------------------------------------------------------------
-  // Check if this is a valid MOSAIK alignment file (optional)
-	//---------------------------------------------------------------------------
-  if (!Mosaik::CAlignmentReader::CheckFile(file1, true))  {
-    cout << "Error opening " << file1 << " for input" << endl;
-    exit(-1);
-  }
-  
-  
-  //---------------------------------------------------------------------------
-  // open the MOSAIK alignments file
-  //---------------------------------------------------------------------------
-  Mosaik::CAlignmentReader ar;
-  ar.Open(file1);
-
-  //---------------------------------------------------------------------------
-  // the number of reads in the archive
-  //---------------------------------------------------------------------------
-  int Ntotal =int(ar.GetNumReads());
-  // revise MaxFragments if warranted
-  if (Ntotal<MaxFragments) { MaxFragments = Ntotal;} 
-  cout << "-----------------------------------------------------------" <<   endl;
-  cout << " load " << file1 <<   endl;
-  cout << " Pairs " << Ntotal <<  "\t Max " << MaxFragments <<   endl;  
-
-  //---------------------------------------------------------------------------
-  // anchorinfo 
-  //---------------------------------------------------------------------------
-  C_anchorinfo anchor1(ar); 
-  anchors=anchor1;
-  // override anchors with anchorfile? 
-  string anchorfile1=pars.getAnchorfile();
-  if (anchorfile1.size()>0) {
-    C_anchorinfo anchorf(anchorfile1);
-    anchors=anchorf;
-  }
-  if (scan) {
-     AllowContigsRegex = "doScanOnlyDoesNotUseContigs!";
-  }
-  anchors.anchorlimit(AllowContigsRegex);
-  // the only set is set[0]
-  set[0].anchors = anchors;
-  set[0].elementMinAnchor=anchors.anchorMinElement(); 
-
-  //---------------------------------------------------------------------------
-	// fetch library info from MOSAIK alignments file
-  //---------------------------------------------------------------------------
-  C_libraries libs(ar);
-  if (libs.libmap.size()>1) {
-    cerr << "Multiple ReadGroups" << endl;
-    cerr << libs << endl;
-    exit(-1);
-  }
-  set[0].libraries = libs; 
-  // anchorinfo -> libraries
-  set[0].libraries.anchorinfo=anchors;
-  // ReadGroupCode from header
-  ReadGroupCode0=(*set[0].libraries.libmap.begin()).first;
-  //----------------------------------------------------------------------------
-  // read mapping histograms
-  //----------------------------------------------------------------------------
-  set[0].initContigs();
-	
-  //---------------------------------------------------------------------------
-  // declare two Mosaik read objects
-  //---------------------------------------------------------------------------
-
-  Mosaik::AlignedRead mr;
-  // debug
-  int Nuu[2]={0,0};
-  //---------------------------------------------------------------------------
-  // loop through file...
-  //---------------------------------------------------------------------------
-  while(ar.LoadNextRead(mr)&&(int(set[0].Nfrag)<=MaxFragments)) {
-    set[0].Nfrag++;
-    // skip if read 
-    if (mr.Name.size()==0) { 
-        cout << " bad record " << set[0].Nfrag << " in " << file1 << endl;
-        exit(-1);
-    }      
-    // unique read id part of read name
-    readName="";
-    if (RE2::FullMatch(mr.Name.c_str(),patternID.c_str(),&match) ) {
-          readName=match;
-    }
-    pair1 = Mosaik2pair(mr);
-
-    // ReadGroupCode
-    ReadGroupCode = mr.ReadGroupCode;
-    if ( (set[0].Nfrag==1) &(ReadGroupCode!=ReadGroupCode0) ) {  // hacked fix for sim
-      set[0].libraries.libmap[ReadGroupCode]=set[0].libraries.libmap[ReadGroupCode0];
-      set[0].libraries.libmap[ReadGroupCode].Info.ReadGroupCode=ReadGroupCode;
-      set[0].libraries.libmap.erase(ReadGroupCode0);   
-      ReadGroupCode0=ReadGroupCode;
-    }
-    if ( ReadGroupCode!=ReadGroupCode0) {
-      cerr << "Changing ReadGroup\t " << ReadGroupCode0 << "\t to \t"<< ReadGroupCode << endl;
-      exit(-1);
-    }
-    ReadGroupCode0=ReadGroupCode;
-    
-    int e;
-    for (e = 0; e<2; e++) {
-      int Nmap = pair1.read[e].align.size();
-      set[0].repeatStats.Fill1(Nmap);   
-      //--------------------------------------------------------------------------
-      // repeat map
-      //--------------------------------------------------------------------------
-      if ( (Nmap>1) && (!scan) ) {
-         set[0].processRepeat(pair1.read[e]); 
-      }
-    }
-    
-    //--------------------------------------------------------------------------
-    // occasional status report 
-    //--------------------------------------------------------------------------
-    if ( (dbg!=0)&&(elapsedtime()>float(dbg))) {
-      time(&tprev);
-      if (scan) {
-        printf("\t Reads %15d \t uufragments %12d\t normal %12d\n",
-          set[0].Nfrag,Nuu[0]+Nuu[1],Nuu[1]);
-      } else {  
-        cout << set[0];
-      }
-    }      
-    
-    //------------------------------------------------------------------------
-    // this is a complete pair
-    //------------------------------------------------------------------------
-    if (scan) {
-      pair2=pair1;
-    } else {
-      // pair2 is the same as pair1 except the closest constrained pair is first
-      pair2 = set[0].resolvePairConstraint(pair1);
-      
-      //--------------------------------------------------------------------------
-      // debug
-      //--------------------------------------------------------------------------
-      int N0=pair2.read[0].align.size();
-      int N1=pair2.read[1].align.size();      
-      bool um=( ( (N0>1)&&(N1==1) ) || ( (N1>1)&&(N0==1) ) ); 
-      if (um && (dbg >10000) && ((pair2.read[0].element==1)|| (pair2.read[1].element==1)) ) {
-				int lmt=set[0].Fraglength(pair2);
-				if (abs(lmt-140)>100) {
-					cerr << " unconstrained alu " << mr.Name << "\t " << N0 
-					<< "\t " << pair2.read[0].align[0].anchor 
-					<< "\t " << pair2.read[0].align[0].pos+1 << "\t " << N1
-					<< "\t " << pair2.read[1].align[0].anchor  
-					<< "\t " << pair2.read[1].align[0].pos+1 << "\t " << lmt << endl;
-				}
-      }
-      //--------------------------------------------------------------------------
- 
-
-    }
-        
-    bool bothends = (pair2.read[0].align.size()*pair2.read[1].align.size())>0;
-    bool uu = (pair2.read[0].align.size()*pair2.read[1].align.size())==1;
-    char constrain = 0; 
-    if (bothends) {
-        if (uu) {
-          //constrain = (pair1.read[0].align.size()>1) + 2*(pair1.read[1].align.size()>1);          
-          //----------------------------------------------------------------------
-          // make some stats with this unique mapped fragment  
-          //----------------------------------------------------------------------
-          int lm = set[0].Fraglength(pair2);   
-          if (lm!=-100000) {
-             // make frag dist with high quality mapped pairs (q>30)
-            if ( (pair1.read[0].align[0].q>30)&&(pair1.read[1].align[0].q>Qmin) ) { 
-               set[0].fragStats.Fill1(lm);         
-            }
-            Nuu[1]++;  
-          } else {
-            Nuu[0]++;
-          }
-          set[0].lengthStats.Fill1(pair2.read[0].align[0].len);         
-          set[0].lengthStats.Fill1(pair2.read[1].align[0].len);   
-          set[0].qStats.Fill1(pair2.read[0].align[0].q);         
-          set[0].qStats.Fill1(pair2.read[1].align[0].q);   
-        }
-        //------------------------------------------------------------------------
-        // process pair for SV info
-        //------------------------------------------------------------------------
-        if (!scan) {
-          set[0].processPair(pair2,constrain);
-        }
-        //------------------------------------------------------------------------
-        // count paired read alignments for set[0] pairstats
-        //------------------------------------------------------------------------
-        int N1[2]={int(pair1.read[0].align.size()), int(pair1.read[1].align.size())};
-        if (N1[0]*N1[1]==1) set[0].Npair_11o++; 
-        int N2[2]={int(pair2.read[0].align.size()), int(pair2.read[1].align.size())};
-        int n2[2]= {N2[0],N2[1]};
-        if (n2[1]<n2[0]) { n2[1]=N2[0]; n2[0]=N2[1];}
-        if (n2[0]>2) n2[0]=2;
-        if (n2[1]>2) n2[1]=2;
-        int npc = n2[0]*3 + n2[1];
-        set[0].pairCountStats.Fill1(npc);   // e is paired            
-    } else { 
-        //------------------------------------------------------------------------
-        // not pair - dangling end
-        //------------------------------------------------------------------------
-        int np1 = pair1.read[0].align.size();
-        int np2 = pair1.read[1].align.size();
-        int np = (np1==0? np2: np1);
-        if (np>2) { np=2; }
-        set[0].pairCountStats.Fill1(np);  
-        if (!scan) {
-          // dangling missing ends
-            set[0].processPair(pair1,false);
-        }      
-    }
-  }
-  // finalize histos
-  set[0].pairCountStats.Finalize();         
-  set[0].qStats.Finalize();         
-  set[0].fragStats.Finalize();         
-  set[0].lengthStats.Finalize();
-  set[0].repeatStats.Finalize();
-  cout << "-----------------------------------------------------------------\n";
-  cout << "final stats: "<< file1 << endl;
-  summaryLog();
-  cout << "-----------------------------------------------------------------\n";
-  
-  // finalize library: fragment length
-  //double lowf = (1.0-pars.getFragmentLengthWindow()/100.0)/2.0;
-  //double highf = (1.0-lowf); // half tail on high side  
-  HistObj h=set[0].fragStats.h;
-  // store fraglength info from pars to library (override this data set)
-  set[0].libraries.libmap[ReadGroupCode].LM=int(pars.getFragmentLength()); //int(h.mode);
-  set[0].libraries.libmap[ReadGroupCode].tailcut = pars.getFragmentLengthWindow();
-  set[0].libraries.libmap[ReadGroupCode].LMlow=int(pars.getFragmentLengthLo()); ;
-  set[0].libraries.libmap[ReadGroupCode].LMhigh=int(pars.getFragmentLengthHi()); //int(h.p2xTrim(highf));
-  // store fraglength histogram from this data set to library
-  set[0].libraries.libmap[ReadGroupCode].fragHist=h;
-
-    
-  // Read length
-  h=set[0].lengthStats.h;
-  set[0].libraries.libmap[ReadGroupCode].readLengthHist=h;
-  set[0].libraries.libmap[ReadGroupCode].LR=int(set[0].lengthStats.h.mode);
-  set[0].libraries.libmap[ReadGroupCode].LRmax=int(h.xc[h.xc.size()-1]);
-  int nb=h.n.size();
-  int xmin= set[0].libraries.libmap[ReadGroupCode].LRmax;
-  for (int ib=nb; ib>0; ib--) {
-     if ( (h.n[ib-1]>0)&&(h.xc[ib-1]<xmin) ) xmin=h.xc[ib-1];
-  }
-  set[0].libraries.libmap[ReadGroupCode].LRmin=xmin;
-
-  // Redundancy
-  
-  set[0].calcLibraryRedundancy(set[0].libraries.libmap[ReadGroupCode]);
-  
-}
-
-/*
-//--------------------------------------------------------------------------
-// utility function to extract Mosaik alignment into Spanner pairedread form 
-//--------------------------------------------------------------------------
-C_pairedread   C_pairedfiles::Mosaik2pair(  Mosaik::AlignedRead& mr) {
-
-  C_pairedread pair1a;	
-  
-  unsigned int numAlignments1 = mr.Mate1Alignments.size();
-  unsigned int numAlignments2 = mr.Mate2Alignments.size();
-  
-  if (numAlignments1>50000) {
-    cerr << "Nalign " << numAlignments1 << " " << mr.Name << endl;
-  }
-  if (numAlignments2>50000) {
-    cerr << "Nalign " << numAlignments2 << " " << mr.Name << endl;
-  }
-  
-  C_readmaps read1;	
-  bool mobhit=false;
-	
-  for(unsigned int i = 0; i < numAlignments1; i++) {
-    C_readmap r1;       
-    // 
-    r1.q = mr.Mate1Alignments[i].Quality;
-		
-    // *** skip low quality alignments ***
-    if ( (int(r1.q)< Qmin)&&(!scan) )   continue;
-    // *** skip false quality> 100 alignments ***
-    //if ( (int(r1.q)< Qmin) | (int(r1.q)>100)  ) continue;
-		
-    //--------------------------------------------------------------------------
-    r1.pos=mr.Mate1Alignments[i].ReferenceBegin;
-		// r1.len=1+mr.Mate1Alignments[i].QueryEnd-mr.Mate1Alignments[i].QueryBegin;
-		r1.len=1+mr.Mate1Alignments[i].ReferenceEnd-mr.Mate1Alignments[i].ReferenceBegin;
-		r1.anchor=mr.Mate1Alignments[i].ReferenceIndex;
-    r1.sense=(mr.Mate1Alignments[i].IsReverseStrand ? 'R' : 'F');
-    r1.mm = mr.Mate1Alignments[i].NumMismatches;
-    //--------------------------------------------------------------------------
-    // transform 454 long PE to Illumina short PE convention 
-    //--------------------------------------------------------------------------
-    if (MateMode==MATEMODE_454) r1.sense=(mr.Mate1Alignments[i].IsReverseStrand ? 'F' : 'R');
-		
-    if (r1.pos>=anchors.L[anchors.names[r1.anchor]]) {
-			// cerr << " bad coordinate " << mr.Name << endl;
-			continue;
-    }
-		
-    
-		// elements
-    if (r1.anchor>=(anchors.element.size())) {
-			cerr << " anchor mixup in Mosik2pair " << r1.anchor << " > " << anchors.element.size() << endl;
-			cerr << " read " << 	mr.Name  << " 1" << endl;
-			cerr << " Number of Alignments " << 	numAlignments1  << endl;
-			cerr << " Alignment anchor pos len sense " << 	r1.anchor  << "\t " << r1.pos << "\t " << r1.len << "\t " << r1.sense << endl;       
-			continue;
-    }
-    // check for mobhits
-    //mobhit=mobhit|(r1.anchor>24);
-    mobhit=mobhit|(anchors.element[r1.anchor]>0);
-		
-    //--------------------------------------------------------------------------
-    // skip if mobhit has more than 10 bases in poly-A tail (L1HS p>6030) -kludge 9/16/2009
-    //--------------------------------------------------------------------------
-    if ( mobhit && ((r1.pos+r1.len)>6040) && (r1.anchor>56) )  {
-      // cerr << "\t skip " << r1.anchor << "\t " << r1.pos << endl;
-      continue;
-    }
-    
-    read1.align.push_back(r1);
-    // mobile element
-    int me = anchors.element[r1.anchor];
-    if (me>=0) {
-      read1.element = read1.element | (1<<me);
-    }
-  }
-  read1.Nalign=numAlignments1;
-  pair1a.read[0]=read1;
-  read1.align.clear();      
-  read1.element=0; 
-	
-  for (unsigned int i = 0; i < numAlignments2; i++) {
-    C_readmap r2;       
-		
-		r2.q = mr.Mate2Alignments[i].Quality; 
-		// *** skip low quality alignments ***
-		if ( (int(r2.q)< Qmin) && (!scan)   ) continue;
-		// *** skip false quality> 100 alignments ***
-		//if ( (int(r2.q)< Qmin) | (int(r2.q)>100)  ) continue;
-		
-    r2.pos=mr.Mate2Alignments[i].ReferenceBegin; 
-    //r2.len=1+mr.Mate2Alignments[i].QueryEnd-mr.Mate2Alignments[i].QueryBegin;
-		r2.len=1+mr.Mate2Alignments[i].ReferenceEnd-mr.Mate2Alignments[i].ReferenceBegin;
-    r2.anchor=mr.Mate2Alignments[i].ReferenceIndex;
-    r2.sense=(mr.Mate2Alignments[i].IsReverseStrand ? 'R' : 'F');
-    r2.mm = mr.Mate2Alignments[i].NumMismatches;
-    //--------------------------------------------------------------------------
-    // transform AB SOLiD long PE to Illumina short PE convention 
-    //--------------------------------------------------------------------------
-    if (MateMode==MATEMODE_SOLID) r2.sense=(mr.Mate2Alignments[i].IsReverseStrand ? 'F' : 'R');
-		
-    if (r2.pos>=anchors.L[anchors.names[r2.anchor]]) {
-			// cerr << " bad coordinate " << mr.Name << endl;
-			continue;
-    }
-    
-    if (r2.anchor>=(anchors.element.size())) {
-			cerr << " anchor mixup in Mosik2pair " << r2.anchor << " > " << anchors.element.size() << endl;
-			cerr << " read " << 	mr.Name  << " 2" << endl;
-			cerr << " Number of Alignments " << 	numAlignments2  << endl;
-			cerr << " Alignment anchor pos len sense " << 	r2.anchor  << "\t " << r2.pos << "\t " << r2.len << "\t " << r2.sense << endl;       
-			continue;
-    }
-		
-    //mobhit=mobhit|(r2.anchor>24);
-    mobhit=mobhit|(anchors.element[r2.anchor]>0);
-		
-    //--------------------------------------------------------------------------
-    // skip if mobhit is in poly-A tail (L1HS p>6030) -kludge 9/14/2009
-    //--------------------------------------------------------------------------
-    if ( mobhit && (r2.pos>6025) && (r2.anchor>56) )  {
-      // cerr << "\t skip " << r2.anchor << "\t " << r2.pos << endl;
-      continue;
-    }
-    
-    read1.align.push_back(r2);
-    // mobile element
-    int me = anchors.element[r2.anchor];
-    if (me>=0) {
-      read1.element = read1.element | (1<<me);
-    }
-		
-  }
-  
-  read1.Nalign=numAlignments2;
-  pair1a.read[1]=read1;
-  pair1a.ReadGroupCode=mr.ReadGroupCode;
-  return pair1a;
-}
-*/
 
 //------------------------------------------------------------------------------
 // convert Bam read record with ZA tag to Mosaik aligned pair record 
@@ -6200,7 +5696,10 @@ int  C_pairedfiles::BamZA2PairedRead(BamAlignment & ba1, C_pairedread & pr1)
 	string tagMD = "MDs";
 	string ZA,mob;
 	if (!ba1.GetTag(tagZA,ZA) ) { 
-		return -1;
+		//return -1;		
+		cerr << "Missing ZA tag in bam record" << endl;
+		cerr << ba1.Name << endl;
+		exit(109);
 	} 			  
 	int q1,q2,nmap1;
 	string this1,mob1,cig1,md1;
@@ -6668,27 +6167,40 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
 	bool properOrientation=false;
 	bool rev = ra1.align[0].sense=='R';
 	bool revMate = ra2.align[0].sense=='R';
+	float p=0;
 	if (ra1.align[0].anchor==ra2.align[0].anchor) {
 		if (ra1.align[0].pos<ra2.align[0].pos) {				
 			properOrientation = (!rev)&&revMate;
 		}	else {
 			properOrientation = rev&&(!revMate);
 		}
+		p=libraries.libmap[rgcode].fragHist.x2pTrim(double(LF));
+		if (p>0.5) {
+			p=1-p;
+		}
 	}
-	
+	int q=round(-10*log10(p+1e-10));
+	if (q>99) q=99;
+	if (q<0) q=0;	
+
 	bool properpair=false;
 	if ( (LF>LMlow)&&(LF<LMhigh)&&properOrientation) {					
 		properpair=true;
 	}	
 	
-	// if 
 	if (properpair) {
 		pr1=pra;
 	} else {
 		pr1=prm;
+		// set nmap for element to reference mappings (not moblist mappings)
+		int im=(prm.read[0].element==0? 0: 1);
+		int ia=(pra.read[0].align[0].pos==prm.read[im].align[0].pos? 1: 0);
+		pr1.read[1-im].align[0].nmap=pra.read[ia].align[0].nmap;
 	}
 	pr1.ReadGroupCode=rgcode;
-
+  pr1.Qproperpair=char(q);
+	
+	
 	
 	return(NZA);
 	
@@ -6793,7 +6305,7 @@ bool  C_pairedfiles::parseBamReadName(string & name0, int & e1, string & id) {
 //------------------------------------------------------------------------------
 // convert a Bam read pair to one complete Mosaik aligned pair record 
 //------------------------------------------------------------------------------
-bool  C_pairedfiles::nextBamAlignmentPair( BamReader & ar1,BamReader & ar2, C_pairedread & pr1) 
+bool  C_pairedfiles::nextBamAlignmentPair( BamMultiReader & ar1,BamMultiReader & ar2, C_pairedread & pr1) 
 {
 	// reset pr1
 	pr1.read[0].align.clear();
@@ -6806,7 +6318,7 @@ bool  C_pairedfiles::nextBamAlignmentPair( BamReader & ar1,BamReader & ar2, C_pa
 	pr1.ReadGroupCode=0;
 
 	if (BamZ==1) {  
-		// use ZA tag to extract  all pair info from first end in bam 
+		// use ZA tag to extract  all pair info from first end in bam 		
 		return (nextBamAlignmentZA( ar1, pr1));
 	}
 	
@@ -6815,10 +6327,6 @@ bool  C_pairedfiles::nextBamAlignmentPair( BamReader & ar1,BamReader & ar2, C_pa
 		return (nextBamAlignmentPairSortedByName( ar1, pr1));
 	}
 	
-	if (BamZ==3) {  
-		// scan all pairs from first end in bam 
-		return (nextBamAlignmentPairSpecial( ar1, pr1));
-	}
 	
 	// scan all pairs jumping to mates in bam 
 	return (nextBamAlignmentJump( ar1, ar2, pr1));
@@ -6829,11 +6337,16 @@ bool  C_pairedfiles::nextBamAlignmentPair( BamReader & ar1,BamReader & ar2, C_pa
 //------------------------------------------------------------------------------
 // convert a Bam read pair to one semi-complete Mosaik aligned pair record 
 //------------------------------------------------------------------------------
-bool  C_pairedfiles::nextBamAlignmentZA( BamReader & ar1, C_pairedread & pr) 
+bool  C_pairedfiles::nextBamAlignmentZA( BamMultiReader & ar1, C_pairedread & pr) 
 {
 	
 	// Mosaik structures
 	//C_pairedread pr1;
+	
+	if (SpannerMode==SPANNER_MOBI) {  
+		// scan all pairs from first end in bam 
+		return (nextBamAlignmentPairSpecial( ar1, pr));
+	}
 	
 	// Bam structure
 	BamAlignment ba1;
@@ -6852,7 +6365,7 @@ bool  C_pairedfiles::nextBamAlignmentZA( BamReader & ar1, C_pairedread & pr)
 		if (doneFrag[ba1.Name]) {
 			continue;
 		}
-				
+			
 		doneFrag[ba1.Name]=true;
 		
 		// skip unmapped reads (another program somewhere ...)
@@ -6948,7 +6461,7 @@ bool  C_pairedfiles::nextBamAlignmentZA( BamReader & ar1, C_pairedread & pr)
 //------------------------------------------------------------------------------
 // convert a Bam read pair to one complete Mosaik aligned pair record 
 //------------------------------------------------------------------------------
-bool  C_pairedfiles::nextBamAlignmentPairSortedByName( BamReader & ar1, C_pairedread & pr) 
+bool  C_pairedfiles::nextBamAlignmentPairSortedByName( BamMultiReader & ar1, C_pairedread & pr) 
 {
 	
 	
@@ -7098,7 +6611,7 @@ bool  C_pairedfiles::nextBamAlignmentPairSortedByName( BamReader & ar1, C_paired
 //------------------------------------------------------------------------------
 // convert a Bam read pair to one complete Mosaik aligned pair record 
 //------------------------------------------------------------------------------
-bool  C_pairedfiles::nextBamAlignmentJump( BamReader & ar1, BamReader & ar2, C_pairedread & pr) 
+bool  C_pairedfiles::nextBamAlignmentJump( BamMultiReader & ar1, BamMultiReader & ar2, C_pairedread & pr) 
 {
 	
 	//------------------------------------------------------------------------------
@@ -7299,7 +6812,7 @@ bool  C_pairedfiles::nextBamAlignmentJump( BamReader & ar1, BamReader & ar2, C_p
 //------------------------------------------------------------------------------
 // convert a Bam read pair to one complete Mosaik aligned pair record 
 //------------------------------------------------------------------------------
-bool  C_pairedfiles::nextBamAlignmentPairSpecial( BamReader & ar1, C_pairedread & pr) 
+bool  C_pairedfiles::nextBamAlignmentPairSpecial( BamMultiReader & ar1, C_pairedread & pr) 
 {
 	
 	
@@ -7327,7 +6840,18 @@ bool  C_pairedfiles::nextBamAlignmentPairSpecial( BamReader & ar1, C_pairedread 
 	
 	while ( ar1.GetNextAlignment(ba1) ) {
 		
-		ar1.GetNextAlignment(ba2);
+		bool same = false;
+		while (!same) { 
+			ar1.GetNextAlignment(ba2);		
+  		// make sure read names match		
+  		same = (ba1.Name.compare(ba2.Name) == 0); 
+			if (!same) {
+					// this can happen if an read pair only hits moblist, not reference 
+ 				  // cerr << "Problem in special bam record order\n " << ba1.Name << " is not " << ba2.Name << "\n";				
+				  // keep going   exit(97);
+				  ba1=ba2;
+			}
+		}
 		
 		if (doneFrag[ba1.Name]) {
 			continue;
@@ -7432,2176 +6956,6 @@ bool  C_pairedfiles::nextBamAlignmentPairSpecial( BamReader & ar1, C_pairedread 
 }
 
 
-/*
- 
- //------------------------------------------------------------------------------
- // convert pair of Bam read records to Mosaik aligned pair record 
- // returns:
- //			0 = only end mapped
- //          1 = first of pair 
- //          2 = second in pair
- //          <1 = no mapping
- //------------------------------------------------------------------------------
- int  C_pairedfiles::Bam2MosaikPair(BamAlignment & ba1, BamAlignment & ba2, Mosaik::Alignment & ma1, 
- Mosaik::Alignment & ma2) 
- {   
- 
- if ((BamZ==1)&&(ba1.MateRefID>=0))  {
- int pe = BamZA2Mosaik(ba1,ma1,ma2);
- return pe;
- }
- 
- ma1.ReferenceBegin=0;
- ma1.ReferenceEnd=0;
- ma1.ReferenceIndex=0;
- ma1.Quality=0;
- ma1.QueryBegin=0;
- ma1.QueryEnd=0;
- ma1.IsReverseStrand=false;
- ma1.IsPairedEnd=false;
- ma1.IsResolvedAsPair=false;
- ma1.NumMismatches=0;
- ma1.IsFirstMate=false;
- ma2.ReferenceBegin=0;
- ma2.ReferenceEnd=0;
- ma1.ReferenceIndex=0;
- ma2.Quality=0;
- ma2.QueryBegin=0;
- ma2.QueryEnd=0;
- ma2.IsReverseStrand=false;
- ma2.IsPairedEnd=false;
- ma2.IsResolvedAsPair=false;
- ma2.NumMismatches=0;
- ma2.IsFirstMate=false;
- 
- int pe=0;
- 
- if ( ba1.IsMapped() ) {
- 
- ma1.ReferenceBegin=ba1.Position;
- int len=BamCigarData2Len(ba1.CigarData,false);
- ma1.ReferenceEnd=ma1.ReferenceBegin+len; //ba1.Length-1;
- ma1.ReferenceIndex=ba1.RefID;
- ma1.QueryBegin=1;
- ma1.QueryEnd=BamCigarData2Len(ba1.CigarData,true); //ba1.QueryBases.size();
- ma1.Quality=ba1.MapQuality;
- ma1.IsReverseStrand=ba1.IsReverseStrand();
- ma1.IsPairedEnd=ba1.IsPaired();
- ma2.IsPairedEnd=ba1.IsPaired();
- ma1.IsResolvedAsPair=ba1.IsProperPair();
- ma1.IsFirstMate=ba1.IsFirstMate();
- 
- // convert ReadGroupID to readGroupCode (Mosaik/Spanner) 
- string ReadGroupID;
- ba1.GetReadGroup(ReadGroupID);
- 
- // all libraries stored in every set for this map to work 
- ma1.ReadGroupCode=ReadGroupID2Code[ReadGroupID];
- ma2.ReadGroupCode=ma1.ReadGroupCode;
- 
- // mismatches NM
- string tag="NMs";
- int itag;
- if (ba1.GetTag(tag,itag)) {
- ma1.NumMismatches=(itag>=0? itag: 0);
- } else { 
- int mm=BamCigarData2mm(ba1.CigarData);
- tag="MDs";
- string MD;
- if (ba1.GetTag(tag,MD)) {						
- mm+=getMDMismatchCount(MD);
- }
- ma1.NumMismatches=mm;
- }
- 
- }
- 
- if ( ba1.IsMapped() & ba2.IsMapped() ) {
- 
- ma2.ReferenceBegin=ba2.Position;
- int len=BamCigarData2Len(ba2.CigarData,false);
- ma2.ReferenceEnd=ma2.ReferenceBegin+len; //ba1.Length-1;
- //ma2.ReferenceEnd=ma2.ReferenceBegin+ba2.AlignedBases.size()-1; //ba1.Length-1;
- ma2.ReferenceIndex=ba2.RefID;
- ma2.QueryBegin=1;
- ma2.QueryEnd=BamCigarData2Len(ba2.CigarData,true); //ba2.QueryBases.size();
- ma2.Quality=ba2.MapQuality;
- ma2.IsReverseStrand=ba2.IsReverseStrand();
- ma2.IsFirstMate=ba2.IsFirstMate();
- 
- // consistency check
- if (ba1.MateRefID != ba2.RefID) {
- cerr << " bad bam mate: " << ba1.Name << "\t" << ba1.MateRefID << "\t" << ba2.RefID << "\n";
- return(-1);
- }
- if (ba1.MatePosition != ba2.Position) {
- cerr << " bad bam mate: " << ba1.Name << "\t" << ba1.MatePosition << "\t" << ba2.Position << "\n";
- return(-2);
- }
- if (ba1.IsMateReverseStrand() != ba2.IsReverseStrand() )  {
- cerr << " bad bam mate: " << ba1.Name << "\t" << ba1.IsMateReverseStrand() << "\t" << ba2.IsReverseStrand() << "\n";
- return(-3);
- }
- 
- // convert ReadGroupID to readGroupCode (Mosaik/Spanner) 
- string ReadGroupID;
- ba1.GetReadGroup(ReadGroupID);
- 
- // mismatches NM
- string tag="NMs";
- int itag;
- if (ba2.GetTag(tag,itag)) {
- ma2.NumMismatches=(itag>=0? itag: 0);
- } else { 
- int mm=BamCigarData2mm(ba2.CigarData);
- tag="MDs";
- string MD;
- if (ba2.GetTag(tag,MD)) {						
- mm+=getMDMismatchCount(MD);
- }
- ma2.NumMismatches=mm;
- }
- }	
- 
- // return index to first end in machine order
- if (ba1.IsFirstMate() && ba1.IsMapped() && ba2.IsMapped()) {
- pe=1;
- } else 	if (ba2.IsFirstMate() && ba1.IsMapped() && ba2.IsMapped()) {
- pe=2;
- }
- 
- return pe;
- }
- 
- 
- 
- //------------------------------------------------------------------------------
- // convert one Bam record to Mosaik aligned pair record from position sorted bam
- // returns:
- //			0 = no mapped reads (error)
- //          1 = single end  
- //          2 = pair
- //------------------------------------------------------------------------------
- int  C_pairedfiles::Bam2MosaikScan(BamAlignment & ba1,  Mosaik::Alignment & ma1, 
- Mosaik::Alignment & ma2) 
- {   
- 
- if ((BamZ==1)&&(ba1.MateRefID>=0))  {
- int pe = BamZA2Mosaik(ba1,ma1,ma2);
- return pe;
- }
- 
- ma1.ReferenceBegin=0;
- ma1.ReferenceEnd=0;
- ma1.ReferenceIndex=0;
- ma1.Quality=0;
- ma1.QueryBegin=0;
- ma1.QueryEnd=0;
- ma1.IsReverseStrand=false;
- ma1.IsPairedEnd=false;
- ma1.IsResolvedAsPair=false;
- ma1.NumMismatches=0;
- ma1.IsFirstMate=false;
- ma2.ReferenceBegin=0;
- ma2.ReferenceEnd=0;
- ma1.ReferenceIndex=0;
- ma2.Quality=0;
- ma2.QueryBegin=0;
- ma2.QueryEnd=0;
- ma2.IsReverseStrand=false;
- ma2.IsPairedEnd=false;
- ma2.IsResolvedAsPair=false;
- ma2.NumMismatches=0;
- ma2.IsFirstMate=false;
- 
- int pe=0;
- 
- if ( ba1.IsMapped() ) {
- 
- pe=1;
- 
- ma1.ReferenceBegin=ba1.Position;
- int len=BamCigarData2Len(ba1.CigarData,false);
- ma1.ReferenceEnd=ma1.ReferenceBegin+len; //ba1.Length-1;
- //ma1.ReferenceEnd=ma1.ReferenceBegin+ba1.AlignedBases.size()-1; //ba1.Length-1;
- ma1.ReferenceIndex=ba1.RefID;
- ma1.QueryBegin=1;
- len=BamCigarData2Len(ba1.CigarData,true);
- ma1.QueryEnd=len; //ba1.QueryBases.size();
- ma1.Quality=ba1.MapQuality;
- if (ba1.MapQuality>100) ma1.Quality=100; 
- ma1.IsReverseStrand=ba1.IsReverseStrand();
- ma1.IsPairedEnd=ba1.IsPaired();
- ma1.IsResolvedAsPair=ba1.IsProperPair();
- ma1.IsFirstMate=ba1.IsFirstMate();
- 
- // convert ReadGroupID to readGroupCode (Mosaik/Spanner) 
- string ReadGroupID;
- ba1.GetReadGroup(ReadGroupID);
- // all libraries stored in every set for this map to work 
- ma1.ReadGroupCode=ReadGroupID2Code[ReadGroupID];
- 
- // mismatches NM
- string tag="NMs";
- int itag;
- if (ba1.GetTag(tag,itag)) {
- ma1.NumMismatches=(itag>=0? itag: 0);
- } else { 
- int mm=BamCigarData2mm(ba1.CigarData);
- tag="MDs";
- string MD;
- if (ba1.GetTag(tag,MD)) {						
- mm+=getMDMismatchCount(MD);
- }
- ma1.NumMismatches=mm;
- }
- 
- 
- if (ma1.IsPairedEnd && ba1.IsMateMapped()) {
- 
- pe=2;
- 
- ma2.ReadGroupCode=ma1.ReadGroupCode;
- ma2.IsPairedEnd=ba1.IsPaired();
- ma2.IsFirstMate=!ba1.IsFirstMate();
- ma2.IsReverseStrand=ba1.IsMateReverseStrand();
- ma2.ReferenceIndex=ba1.MateRefID;
- ma2.ReferenceBegin=ba1.MatePosition;
- 
- 
- // awful hack for scan  
- ma2.Quality=ma1.Quality;
- ma2.NumMismatches=ma1.NumMismatches;
- 
- ma2.QueryBegin=1;
- // no info
- ma2.QueryEnd=0; // ma2.ReferenceEnd-ma2.ReferenceStart;
- //ma2.Quality=0; //ma1.Quality;
- 
- // 454 & SOLiD pair orientation gymnastics
- if (MateMode==MATEMODE_454) {  // 454
- if (ma1.IsFirstMate) {
- ma1.IsReverseStrand=!ma1.IsReverseStrand;
- } else {
- ma2.IsReverseStrand=!ma2.IsReverseStrand;
- }
- } else if (MateMode==MATEMODE_SOLID) { // SOLiD
- if (!ma1.IsFirstMate) {
- ma1.IsReverseStrand=!ma1.IsReverseStrand;
- } else {
- ma2.IsReverseStrand=!ma2.IsReverseStrand;
- }
- }
- 
- // FR orientation ... not for 454, SOLiD....
- bool FR = (!ma1.IsReverseStrand)&&(ma2.IsReverseStrand)&&(ba1.InsertSize>0);
- if  (FR) {
- ma2.ReferenceEnd=ma1.ReferenceBegin+ba1.InsertSize;
- } else {
- // hack - mate2 is like mate1 for scan....
- ma2.ReferenceEnd=ma2.ReferenceBegin+ma1.ReferenceEnd-ma1.ReferenceBegin;
- }
- 
- }
- 
- }	
- 
- return pe;
- }
- 
- 
- //------------------------------------------------------------------------------
- // convert pair of Bam read records to Mosaik aligned pair record 
- // returns:
- //			0 = only end mapped
- //          1 = first of pair 
- //          2 = second in pair
- //          <1 = no mapping
- //------------------------------------------------------------------------------
- int  C_pairedfiles::Bam2MosaikRead(BamAlignment & ba1,  Mosaik::Alignment & ma1) 
- {   
- ma1.ReferenceBegin=0;
- ma1.ReferenceEnd=0;
- ma1.ReferenceIndex=0;
- ma1.Quality=0;
- ma1.QueryBegin=0;
- ma1.QueryEnd=0;
- ma1.IsReverseStrand=false;
- ma1.IsPairedEnd=false;
- ma1.IsResolvedAsPair=false;
- ma1.NumMismatches=0;
- ma1.IsFirstMate=false;
- 
- int pe=-1;
- 
- if ( ba1.IsMapped() ) {
- 
- ma1.ReferenceBegin=ba1.Position;
- ma1.ReferenceIndex=ba1.RefID;
- ma1.QueryBegin=1;
- if (ba1.AlignedBases.size()>0) {  
- ma1.ReferenceEnd=ma1.ReferenceBegin+ba1.AlignedBases.size()-1; //ba1.Length-1;
- ma1.QueryEnd=ba1.QueryBases.size();
- }
- ma1.Quality=ba1.MapQuality;
- ma1.IsReverseStrand=ba1.IsReverseStrand();
- ma1.IsPairedEnd=ba1.IsPaired();
- ma1.IsFirstMate=ba1.IsFirstMate();
- if(ba1.IsMateMapped()&&ma1.IsPairedEnd) {
- // cerr << " Problem in Bam2MosaikRead: " << ba1.Name << "\n";
- //return(pe);
- }
- 
- //if (opt>0)  { 
- // convert ReadGroupID to readGroupCode (Mosaik/Spanner) 
- string ReadGroupID;
- ba1.GetReadGroup(ReadGroupID);
- 
- // all libraries stored in every set for this map to work 
- ma1.ReadGroupCode=ReadGroupID2Code[ReadGroupID];
- //}
- 
- // mismatches NM
- string tag="NMs";
- int itag;
- if (ba1.GetTag(tag,itag)) {
- ma1.NumMismatches=(itag>=0? itag: 0);
- } else { 
- int mm=BamCigarData2mm(ba1.CigarData);
- tag="MDs";
- string MD;
- if (ba1.GetTag(tag,MD)) {						
- mm+=getMDMismatchCount(MD);
- }
- ma1.NumMismatches=mm;
- }
- 
- pe=0;
- 
- }
- 
- 
- return pe;
- }
- 
- 
- //------------------------------------------------------------------------------
- // convert Bam read records to Mosaik aligned pair record 
- // returns:
- //          0 = single unique mapping
- //          1 = first of pair in unique mapping
- //          2 = second of pair in unique mapping
- //         -1 = no mapping
- //          0+10*NM = single-end mapped read with NM mappings
- //          1+10*NM = first of pair with NM mappings
- //          2+10*NM = second of pair with NM mappings
- //------------------------------------------------------------------------------
- int  C_pairedfiles::Bam2Mosaik(BamAlignment & ba1, Mosaik::Alignment & ma1, 
- Mosaik::Alignment & ma2) 
- {      
- if ((BamZ==1)&&(ba1.IsPaired())&&(ba1.MateRefID>=0) ) {
- int pe = BamZA2Mosaik(ba1,ma1,ma2);
- return pe;
- }
- 
- if ( ba1.IsMapped() ) {
- // check all this with Michael
- ma1.ReferenceBegin=ba1.Position;
- ma1.ReferenceEnd=ma1.ReferenceBegin+ba1.AlignedBases.size()-1; //ba1.Length-1;
- ma1.ReferenceIndex=ba1.RefID;
- ma1.QueryBegin=1;
- ma1.QueryEnd=ba1.QueryBases.size();
- ma1.Quality=ba1.MapQuality;
- ma1.IsReverseStrand=ba1.IsReverseStrand();
- ma1.IsPairedEnd=ba1.IsPaired();
- ma2.IsPairedEnd=ba1.IsPaired();
- ma1.IsResolvedAsPair=ba1.IsProperPair();
- ma2.IsResolvedAsPair=ba1.IsProperPair();
- 
- // convert ReadGroupID to readGroupCode (Mosaik/Spanner) 
- string ReadGroupID;
- ba1.GetReadGroup(ReadGroupID);
- 
- // all libraries stored in every set for this map to work 
- ma1.ReadGroupCode=ReadGroupID2Code[ReadGroupID];
- ma2.ReadGroupCode=ma1.ReadGroupCode;
- 
- // mismatches NM
- string tag="NMs";
- int itag;
- if (ba1.GetTag(tag,itag)) {
- ma1.NumMismatches=(itag>=0? itag: 0);
- } else { 
- int mm=BamCigarData2mm(ba1.CigarData);
- tag="MDs";
- string MD;
- if (ba1.GetTag(tag,MD)) {						
- mm+=getMDMismatchCount(MD);
- }
- ma1.NumMismatches=mm;
- }
- 
- // non-unique alignments - H0+H1+H2 
- int nmap=0;
- if (!ma1.IsResolvedAsPair) {		  
- tag = "H0s";
- if (ba1.GetTag(tag,itag) ) { 
- if (itag>=0) nmap+=itag;
- }
- tag = "H1s";
- if (ba1.GetTag(tag,itag) ) { 
- if (itag>=0) nmap+=itag;
- }
- tag = "H2s";
- if (ba1.GetTag(tag,itag) ) { 
- if (itag>=0) nmap+=itag;
- }
- }
- 
- // mate mapping Q in pair 
- tag = "MQs";
- int Q2 = 0;
- if (ba1.GetTag(tag,itag) ) { 
- if (itag>=0) Q2=itag;
- }
- 
- // set missing mate mismatches to 99 to flag as Bam mated end  
- // no optional flag for this
- ma2.NumMismatches=99;
- 
- if ( ba1.IsMateMapped() & (ba1.MateRefID>=0) & (ba1.MatePosition>=0)) {
- 
- 
- ma2.ReferenceIndex=ba1.MateRefID;      // ID for reference sequence that mate was aligned to
- ma2.ReferenceBegin=ba1.MatePosition;   // position that mate was aligned to
- ma2.IsReverseStrand=ba1.IsMateReverseStrand();
- ma2.QueryBegin=1;	
- 
- 
- }
- 
- // single end
- return 10*nmap;
- 
- } else {
- 
- // no ends
- ma1.ReferenceBegin=0;
- ma1.ReferenceEnd=0;
- ma1.ReferenceIndex=0;
- ma1.Quality=0;
- ma1.QueryBegin=0;
- ma1.QueryEnd=0;
- ma1.IsReverseStrand=false;
- ma1.IsPairedEnd=false;
- ma1.IsResolvedAsPair=false;
- ma1.NumMismatches=0;
- ma2.ReferenceBegin=0;
- ma2.ReferenceIndex=0;
- ma2.Quality=0;
- }
- return -1;
- }
- 
- //------------------------------------------------------------------------------
- // convert Bam read record with ZA tag to Mosaik aligned pair record 
- // returns:
- //         -1 = error 
- //          0 = no reads
- //          1 = one read
- //          2 = both ends
- //------------------------------------------------------------------------------
- int  C_pairedfiles::BamZA2Mosaik(BamAlignment & ba1, Mosaik::Alignment & ma1, 
- Mosaik::Alignment & ma2) 
- {      
- // ZA tag pattern
- 
- 
- //RE2 patternZA("<(.);(\\d?);(\\d?);(.?);(\\d*);(.*?)>");
- RE2 patternZA("<(.);(\\d*?);(\\d*?);(.*?);(\\d*?);(.*?)>");
- 
- 
- // <@;Q1;Q2;Mob;# mappings;> <=;Q1;Q2;Mob;# mappings;CIGAR>
- // example: <@;0;0;;518;><=;0;0;;518;45M1I30M>
- 
- 
- // clear Mosaik structures
- ma1.ReferenceBegin=0;
- ma1.ReferenceEnd=0;
- ma1.ReferenceIndex=0;
- ma1.QueryBegin=0;
- ma1.QueryEnd=0;
- ma1.Quality=0;
- ma1.NumMismatches=0;
- ma2.ReferenceBegin=0;
- ma2.ReferenceEnd=0;
- ma2.ReferenceIndex=0;
- ma2.QueryBegin=0;
- ma2.QueryEnd=0;
- ma2.Quality=0;
- ma2.NumMismatches=0;
- 
- int NZA=0;
- string tagZA = "ZAs";
- string tagNM = "NMs";
- string tagMD = "MDs";
- string ZA;
- if (!ba1.GetTag(tagZA,ZA) ) { 
- return -1;
- } 			  
- int q1,q2,nmap1;
- string this1,mob1,cig1,md1;
- string ReadGroupID1;
- 
- StringPiece ZASP(ZA);    // Wrap a StringPiece around it
- int lenQ,lenR, mm;
- while (RE2::FindAndConsume(&ZASP,patternZA,&this1,&q1,&q2,&mob1,&nmap1,&cig1) ) {
- 
- char t1 = this1[0];
- switch (t1) {
- 
- case '@':
- 
- NZA++;
- 
- ma1.ReferenceIndex=ba1.RefID;
- // define start of query at start of mapped part
- ma1.QueryBegin=1;  
- // length of read mapping in query coordinates
- lenQ=BamCigarData2Len(ba1.CigarData,0);
- ma1.QueryEnd=ma1.QueryBegin+lenQ-1;
- 
- ma1.ReferenceBegin=ba1.Position;
- // length of read mapping in reference coordinates
- lenR=BamCigarData2Len(ba1.CigarData,1);
- ma1.ReferenceEnd=ma1.ReferenceBegin+lenR-1; //ba1.Length-1;
- 
- 
- ma1.Quality=ba1.MapQuality;
- ma1.IsReverseStrand=ba1.IsReverseStrand();
- ma1.IsPairedEnd=ba1.IsPaired();
- ma1.IsFirstMate=ba1.IsFirstMate();
- 
- // convert ReadGroupID to readGroupCode (Mosaik/Spanner) 
- 
- ba1.GetReadGroup(ReadGroupID1);							
- // all libraries stored in every set for this map to work 
- ma1.ReadGroupCode=ReadGroupID2Code[ReadGroupID1];
- 
- // mismatches NM
- if (ba1.GetTag(tagNM,mm)) {
- ma1.NumMismatches=(mm>=0? mm: 0);
- } else { 
- int mm=BamCigarData2mm(ba1.CigarData);
- string MD;
- if (ba1.GetTag(tagMD,MD)) {						
- mm+=getMDMismatchCount(MD);
- }
- ma1.NumMismatches=mm;
- }
- 
- break;
- 
- // mate
- case '=':  
- 
- NZA++;
- 
- ma2.ReadGroupCode=ma1.ReadGroupCode;
- ma2.IsPairedEnd=ba1.IsPaired();
- ma2.IsFirstMate=!ba1.IsFirstMate();
- ma2.IsReverseStrand=ba1.IsMateReverseStrand();
- ma2.ReferenceIndex=ba1.MateRefID;
- ma2.ReferenceBegin=ba1.MatePosition;	
- 
- if (!getCigarLengths(cig1,lenQ,lenR,mm)) continue;
- 
- ma2.Quality=q1;
- int mm=getCigarMismatchCount(cig1);
- // fix this with MD
- md1="";
- mm+=getMDMismatchCount(md1);
- ma2.NumMismatches=mm;
- 
- // mate read starts with first mapped base
- ma2.QueryBegin=1;
- ma2.QueryEnd=ma2.QueryBegin+lenQ-1;
- 
- ma2.ReferenceBegin=ba1.MatePosition;	
- ma2.ReferenceEnd=ma2.ReferenceBegin+lenR-1;
- 
- // 454 & SOLiD pair orientation gymnastics
- if (MateMode==MATEMODE_454) { // 454
- if (ma1.IsFirstMate) {
- ma1.IsReverseStrand=!ma1.IsReverseStrand;
- } else {
- ma2.IsReverseStrand=!ma2.IsReverseStrand;
- }
- } else if (MateMode==MATEMODE_SOLID) { // SOLiD
- if (!ma1.IsFirstMate) {
- ma1.IsReverseStrand=!ma1.IsReverseStrand;
- } else {
- ma2.IsReverseStrand=!ma2.IsReverseStrand;
- }
- }
- 
- }
- }
- 
- if (NZA<1) {
- cerr << "no ZA tag info \n";
- }
- 
- return NZA;
- }
- 
-
- 
-//------------------------------------------------------------------------------
-// convert a Bam read pair to one complete Mosaik aligned pair record 
-//------------------------------------------------------------------------------
-bool  C_pairedfiles::nextBamAlignmentPair( BamMultiReader & ar1,BamMultiReader & ar2, Mosaik::AlignedRead & mr1) 
-{
-	
-	if (BamZ==1) {  
-		// use ZA tag to extract  all pair info from first end in bam 
-		return (nextBamAlignmentScan( ar1, mr1));
-	}
-	
-	if (BamZ==2) {  
-		// scan all pairs from first end in bam 
-		return (false) ; //nextBamAlignmentPairSortedByName( ar1, mr1));
-	}
-	
-	if (scan) {  
-		// scan all pairs from first end in bam 
-		return (nextBamAlignmentScan( ar1, mr1));
-	}
-	
-	
-	
-	//------------------------------------------------------------------------------
-	// select abberant pairs that meet Qmin criteria, include dangling (unmapped) ends
-	//------------------------------------------------------------------------------
-	
-	// Mosaik structures
-	Mosaik::Alignment ma1,ma2;
-	Mosaik::Alignment mz1,mz2;
-	
-	// Bam structure
-	BamAlignment ba1,ba2;
-	
-	// clear Mosaik structures
-	ma1.ReferenceBegin=0;
-	ma1.ReferenceEnd=0;
-	ma1.ReferenceIndex=0;
-	ma1.QueryBegin=0;
-	ma1.QueryEnd=0;
-	ma1.Quality=0;
-	ma1.IsPairedEnd=false;
-	ma1.IsReverseStrand=false;
-	ma2.ReferenceBegin=0;
-	ma2.ReferenceEnd=0;
-	ma2.ReferenceIndex=0;
-	ma2.QueryBegin=0;
-	ma2.QueryEnd=0;
-	ma2.Quality=0;
-	ma2.IsPairedEnd=false;
-	ma2.IsReverseStrand=false;
-	mr1.Mate1Alignments.clear();
-	mr1.Mate2Alignments.clear();
-	
-	
-	int LF=0;
-	bool findmate=false;	
-	int NmateFound=-1;
-	string FR="FR";
-	bool rev,revMate;
-	bool properOrientation = false;	
-	
-	while ( ar1.GetNextAlignment(ba1) ) {
-		
-		if (doneFrag[ba1.Name]) {
-			continue;
-		}
-		
-		doneFrag[ba1.Name]=true;
-		
-		// skip unmapped reads (another function in a module somewhere ...)
-		if (ba1.RefID<0) {
-			continue;
-		}	
-		
-		// single ends not processed here
-		if (!ba1.IsPaired()) { 
-			continue;
-		}
-		
-		if ( (ba1.MapQuality<Qmin) && (!scan) ) {
-			continue;
-		}	
-		
-		// dangling end is processed
-		if (!ba1.IsMateMapped() ) {
-			NmateFound=1;  // set to mark dangling end
-			break;
-		}	
-		
-		//if (ba1.Position>=1130515) { 
-		// cerr << endl; }
-		
-		// skip proper pairs	=  abberant pair criteria 	
-		LF = ba1.InsertSize;
-		// SLX RP only  ??? 
-		if (ba1.IsReverseStrand()) LF=-LF; 
-		string rgid;
-		ba1.GetReadGroup(rgid);
-		unsigned int rgcode=libraries.ReadGroupID2Code[rgid];
-		int LMlow = libraries.libmap[rgcode].LMlow;
-		int LMhigh = libraries.libmap[rgcode].LMhigh;
-		
-		// orientation transform to Illumina FR
-		
-		rev=ba1.IsReverseStrand();
-		revMate=ba1.IsMateReverseStrand();
-		
-		//454 -> IL
-		if ( MateMode==MATEMODE_454) {
-			if (ba1.IsFirstMate()) {
-				rev=!rev;			
-			} else {
-				revMate=!revMate;
-			}
-			// SOLiD -> IL
-		} else if ( MateMode==MATEMODE_SOLID) {
-			if (ba1.IsFirstMate()) {
-				revMate=!revMate;
-			} else {
-				rev=!rev;			
-			}
-		}		
-		
-		
-		if (ba1.RefID==ba1.MateRefID) {
-			if (ba1.Position<ba1.MatePosition) {				
-				properOrientation = (!ba1.IsReverseStrand())&&ba1.IsMateReverseStrand();
-			}	else {
-				properOrientation = ba1.IsReverseStrand()&&(!ba1.IsMateReverseStrand());
-			}
-		}
-		
-		//-------------------------------------------------------------------------------
-		// skip proper pairs
-		//-------------------------------------------------------------------------------
-		if (ba1.IsMateMapped()&&(LF>LMlow)&&(LF<LMhigh)&&properOrientation) {					
-			continue;
-		}	
-		
-		// artifact check for mate mapped = this read (illumina problem)
-		if  ( (ba1.RefID==ba1.MateRefID) && (ba1.Position==ba1.MatePosition) ) { 
-			continue;
-		}
-		
-		//------------------------------------------------------------------------------
-		// go mate hunting
-		//------------------------------------------------------------------------------		
-		findmate=false;
-		
-		int matePosGuess = ba1.Position+ba1.InsertSize-1;
-		
-		if (ba1.RefID!=ba1.MateRefID)			{
-			matePosGuess = ba1.MatePosition+5;
-		}
-		
-		// jump to first alignment that overlaps mate
-		if ( ar2.Jump(ba1.MateRefID, matePosGuess) ) {
-			
-			int nshot=0;
-			
-			while ( ar2.GetNextAlignment(ba2) ) {
-				
-				nshot++;
-				
-				if (ba2.RefID!=ba1.MateRefID) {
-					Shots2Mate.push_back(nshot);
-					// this set of bam files doesn't have mateRefID.... log this somewhere other than cerr, cout
-					//cerr << "no mate RefID in bam:  want " << ba1.MateRefID << "\tget" << ba2.RefID << "\n";  // oops
-					break;
-				}
-				
-				// check read name should be the same but not the same read (depend on First/Second mate flags). 
-				if ( ( ba1.Name.compare(ba2.Name)==0 ) && (ba1.IsFirstMate()!=ba2.IsFirstMate()) )  { 
-					findmate=true;					
-					NmateFound=2;
-					Shots2Mate.push_back(nshot);
-					//if (nskip>500)  { 
-					//	cerr << "bam find after large skip " << nskip << "\n";  // oops
-					//	cerr << ba1.Name << "\t " << matePosGuess << "\t " << ba2.Position << "\t " << ba2.Length << endl;
-					//}
-					break;
-				}
-				
-				if (ba2.Position>ba1.MatePosition) {
-					cerr << "bam jump too far " << ba1.MatePosition << "\t" << ba2.Position << "\n";  // oops
-					// jump to first alignment that overlaps mate
-					if ( ar2.Jump(ba1.MateRefID, matePosGuess-5) ) {						
-						continue;
-					}
-				}
-				
-				if( nshot>10000) { // pileup hot spot for bad alignments - bail on this pair
-					if (ba1.Position>(NbadPos+1000)) { 
-						cerr << "bam jump skip " << ba1.Name << "\t " << matePosGuess << "\t " << ba2.Position << "\t " << ba2.Length << endl;
-						NbadPos=ba1.Position;
-					}
-					break;
-				}
-				
-			}
-			
-		}
-		
-		if (findmate && (scan||(ba2.MapQuality>=Qmin ) )) {
-			break;
-		}	
-		
-		if (findmate && (!scan)&& (ba2.MapQuality<Qmin )) {
-			// back up to next first alignment
-			findmate=false;
-			NmateFound=0;
-			continue;
-		}	
-		
-		
-	}	
-	
-	if(NmateFound<0) {
-		return(false);
-	}
-	
-	if (findmate ) {
-		
-		NmateFound = Bam2MosaikPair(ba1, ba2, ma1,ma2);
-		
-		// check consistent LF
-		if ( (ba1.RefID==ba2.MateRefID) & properOrientation) {		
-			int LF1=ma2.ReferenceEnd-ma1.ReferenceBegin-1;
-			if (LF1!=LF)  {
-				char i=char(1-ma1.IsReverseStrand*1);
-				char s1=FR[i];
-				i=char(1-ma2.IsReverseStrand*1);
-				char s2=FR[i];
-				//s+= FR[char(1-ma2.IsReverseStrand*1)];
-				cerr	 << " fraglength problem " << LF1 << "\t" << LF << "\t" << s1 << s2 << "\t" << ba1.Name << endl;
-			}
-		}	
-		
-	} else {
-		NmateFound = Bam2MosaikRead(ba1, ma1);
-	}
-	
-	if (NmateFound>=0)  {
-		
-		mr1.Name=ba1.Name;
-		mr1.ReadGroupCode=ma1.ReadGroupCode;
-		
-		// shortest read length
-		// shortestReadLength=(shortestReadLength<ma1.QueryEnd) ? shortestReadLength: ma1.QueryEnd;
-		
-		switch (NmateFound) {
-				
-			case 1:
-				mr1.Mate1Alignments.push_back(ma1);
-				mr1.Mate2Alignments.push_back(ma2);
-				mr1.IsPairedEnd=true;
-				break;
-				
-			case 2:
-				mr1.Mate1Alignments.push_back(ma2);
-				mr1.Mate2Alignments.push_back(ma1);
-				mr1.IsPairedEnd=true;
-				break;
-				
-			case 0:
-				mr1.Mate1Alignments.push_back(ma1);
-				
-		} 
-		
-		
-	}  //else {
-	//cerr << " problem finding mate \t" << ba1.Name << " in chrom " << ba1.MateRefID << "\n"; 
-	//}
-	
-	return (true);		
-}
-
-
-//------------------------------------------------------------------------------
-// convert a Bam read pair to one complete Mosaik aligned pair record 
-//------------------------------------------------------------------------------
-bool  C_pairedfiles::nextBamAlignmentPair( BamReader & ar1,BamReader & ar2, Mosaik::AlignedRead & mr1) 
-{
-	
-	if (BamZ==1) {  
-		// use ZA tag to extract  all pair info from first end in bam 
-		return (nextBamAlignmentZA( ar1, mr1));
-	}
-	
-	if (BamZ==2) {  
-		// scan all pairs from first end in bam 
-		return (nextBamAlignmentPairSortedByName( ar1, mr1));
-	}
-	
-	if (scan) {  
-		// scan all pairs from first end in bam 
-		return (nextBamAlignmentScan( ar1, mr1));
-	}
-	
-	
-	
-	//------------------------------------------------------------------------------
-	// select abberant pairs that meet Qmin criteria, include dangling (unmapped) ends
-	//------------------------------------------------------------------------------
-	
-	// Mosaik structures
-	Mosaik::Alignment ma1,ma2;
-	Mosaik::Alignment mz1,mz2;
-	
-	// Bam structure
-	BamAlignment ba1,ba2;
-	
-	// clear Mosaik structures
-	ma1.ReferenceBegin=0;
-	ma1.ReferenceEnd=0;
-	ma1.ReferenceIndex=0;
-	ma1.QueryBegin=0;
-	ma1.QueryEnd=0;
-	ma1.Quality=0;
-	ma1.IsPairedEnd=false;
-	ma1.IsReverseStrand=false;
-	ma2.ReferenceBegin=0;
-	ma2.ReferenceEnd=0;
-	ma2.ReferenceIndex=0;
-	ma2.QueryBegin=0;
-	ma2.QueryEnd=0;
-	ma2.Quality=0;
-	ma2.IsPairedEnd=false;
-	ma2.IsReverseStrand=false;
-	mr1.Mate1Alignments.clear();
-	mr1.Mate2Alignments.clear();
-	
-	
-	int LF=0;
-	bool findmate=false;	
-	int NmateFound=-1;
-	string FR="FR";
-	bool rev,revMate;
-	bool properOrientation = false;	
-	
-	while ( ar1.GetNextAlignment(ba1) ) {
-		
-		if (doneFrag[ba1.Name]) {
-			continue;
-		}
-		
-		doneFrag[ba1.Name]=true;
-		
-		// skip unmapped reads (another function in a module somewhere ...)
-		if (ba1.RefID<0) {
-			continue;
-		}	
-		
-		// single ends not processed here
-		if (!ba1.IsPaired()) { 
-			continue;
-		}
-		
-		if ( (!scan)&&(ba1.MapQuality<Qmin) ) {
-			continue;
-		}	
-		
-		// dangling end is processed
-		if (!ba1.IsMateMapped() ) {
-			NmateFound=1;  // set to mark dangling end
-			break;
-		}	
-		
-		//if (ba1.Position>=1130515) { 
-		// cerr << endl; }
-		
-		// skip proper pairs	=  abberant pair criteria 	
-		LF = ba1.InsertSize;
-		// SLX RP only  ??? 
-		if (ba1.IsReverseStrand()) LF=-LF; 
-		string rgid;
-		ba1.GetReadGroup(rgid);
-		unsigned int rgcode=libraries.ReadGroupID2Code[rgid];
-		int LMlow = libraries.libmap[rgcode].LMlow;
-		int LMhigh = libraries.libmap[rgcode].LMhigh;
-		
-		// orientation transform to Illumina FR
-		
-		rev=ba1.IsReverseStrand();
-		revMate=ba1.IsMateReverseStrand();
-		
-		//454 -> IL
-		if ( MateMode==MATEMODE_454) {
-			if (ba1.IsFirstMate()) {
-				rev=!rev;			
-			} else {
-				revMate=!revMate;
-			}
-			// SOLiD -> IL
-		} else if ( MateMode==MATEMODE_SOLID) {
-			if (ba1.IsFirstMate()) {
-				revMate=!revMate;
-			} else {
-				rev=!rev;			
-			}
-		}		
-		
-		
-		if (ba1.RefID==ba1.MateRefID) {
-			if (ba1.Position<ba1.MatePosition) {				
-				properOrientation = (!ba1.IsReverseStrand())&&ba1.IsMateReverseStrand();
-			}	else {
-				properOrientation = ba1.IsReverseStrand()&&(!ba1.IsMateReverseStrand());
-			}
-		}
-		
-		//-------------------------------------------------------------------------------
-		// skip proper pairs
-		//-------------------------------------------------------------------------------
-		if (ba1.IsMateMapped()&&(LF>LMlow)&&(LF<LMhigh)&&properOrientation) {					
-			continue;
-		}	
-		
-		// artifact check for mate mapped = this read (illumina problem)
-		if  ( (ba1.RefID==ba1.MateRefID) && (ba1.Position==ba1.MatePosition) ) { 
-			continue;
-		}
-		
-		//------------------------------------------------------------------------------
-		// go mate hunting
-		//------------------------------------------------------------------------------		
-		findmate=false;
-		
-		int matePosGuess = ba1.Position+ba1.InsertSize-1;
-		
-		if (ba1.RefID!=ba1.MateRefID)			{
-			matePosGuess = ba1.MatePosition+5;
-		}
-		
-		// jump to first alignment that overlaps mate
-		if ( ar2.Jump(ba1.MateRefID, matePosGuess) ) {
-			
-			int nshot=0;
-			
-			while ( ar2.GetNextAlignment(ba2) ) {
-				
-				nshot++;
-				
-				if (ba2.RefID!=ba1.MateRefID) {
-					Shots2Mate.push_back(nshot);
-					// this set of bam files doesn't have mateRefID.... log this somewhere other than cerr, cout
-					//cerr << "no mate RefID in bam:  want " << ba1.MateRefID << "\tget" << ba2.RefID << "\n";  // oops
-					break;
-				}
-				
-				// check read name should be the same but not the same read (depend on First/Second mate flags). 
-				if ( ( ba1.Name.compare(ba2.Name)==0 ) && (ba1.IsFirstMate()!=ba2.IsFirstMate()) )  { 
-					findmate=true;					
-					NmateFound=2;
-					Shots2Mate.push_back(nshot);
-					//if (nskip>500)  { 
-					//	cerr << "bam find after large skip " << nskip << "\n";  // oops
-					//	cerr << ba1.Name << "\t " << matePosGuess << "\t " << ba2.Position << "\t " << ba2.Length << endl;
-					//}
-					break;
-				}
-				
-				if (ba2.Position>ba1.MatePosition) {
-					cerr << "bam jump too far " << ba1.MatePosition << "\t" << ba2.Position << "\n";  // oops
-					// jump to first alignment that overlaps mate
-					if ( ar2.Jump(ba1.MateRefID, matePosGuess-5) ) {						
-						continue;
-					}
-				}
-				
-				if( nshot>10000) { // pileup hot spot for bad alignments - bail on this pair
-					if (ba1.Position>(NbadPos+1000)) { 
-						cerr << "bam jump skip " << ba1.Name << "\t " << matePosGuess << "\t " << ba2.Position << "\t " << ba2.Length << endl;
-						NbadPos=ba1.Position;
-					}
-					break;
-				}
-				
-			}
-			
-		}
-		
-		if (findmate && (scan||(ba2.MapQuality>=Qmin) )) {
-			break;
-		}	
-		
-		if (findmate && (!scan) && (ba2.MapQuality<Qmin )) {
-			// back up to next first alignment
-			findmate=false;
-			NmateFound=0;
-			continue;
-		}	
-		
-		
-	}	
-	
-	if(NmateFound<0) {
-		return(false);
-	}
-	
-	if (findmate ) {
-		
-		NmateFound = Bam2MosaikPair(ba1, ba2, ma1,ma2);
-		
-		// check consistent LF
-		if ( (ba1.RefID==ba2.MateRefID) & properOrientation) {		
-			int LF1=ma2.ReferenceEnd-ma1.ReferenceBegin-1;
-			if (LF1!=LF)  {
-				char i=char(1-ma1.IsReverseStrand*1);
-				char s1=FR[i];
-				i=char(1-ma2.IsReverseStrand*1);
-				char s2=FR[i];
-				//s+= FR[char(1-ma2.IsReverseStrand*1)];
-				cerr	 << " fraglength problem " << LF1 << "\t" << LF << "\t" << s1 << s2 << "\t" << ba1.Name << endl;
-			}
-		}	
-		
-	} else {
-		NmateFound = Bam2MosaikRead(ba1, ma1);
-	}
-	
-	if (NmateFound>=0)  {
-		
-		mr1.Name=ba1.Name;
-		mr1.ReadGroupCode=ma1.ReadGroupCode;
-		
-		// shortest read length
-		// shortestReadLength=(shortestReadLength<ma1.QueryEnd) ? shortestReadLength: ma1.QueryEnd;
-		
-		switch (NmateFound) {
-				
-			case 1:
-				mr1.Mate1Alignments.push_back(ma1);
-				mr1.Mate2Alignments.push_back(ma2);
-				mr1.IsPairedEnd=true;
-				break;
-				
-			case 2:
-				mr1.Mate1Alignments.push_back(ma2);
-				mr1.Mate2Alignments.push_back(ma1);
-				mr1.IsPairedEnd=true;
-				break;
-				
-			case 0:
-				mr1.Mate1Alignments.push_back(ma1);
-				
-		} 
-		
-		
-	}  //else {
-	//cerr << " problem finding mate \t" << ba1.Name << " in chrom " << ba1.MateRefID << "\n"; 
-	//}
-	
-	return (true);		
-}
-
-
-
-
-//------------------------------------------------------------------------------
-// convert a Bam read pair to one semi-complete Mosaik aligned pair record 
-//------------------------------------------------------------------------------
-//bool  C_pairedfiles::nextBamAlignmentScan( BamReader & ar1, Mosaik::AlignedRead & mr1) 
-bool  C_pairedfiles::nextBamAlignmentScan( BamMultiReader & ar1, Mosaik::AlignedRead & mr1) 
-{
-	
-	// Mosaik structures
-	Mosaik::Alignment ma1,ma2;
-	
-	// Bam structure
-	BamAlignment ba1;
-	
-	// clear Mosaik structures
-	ma1.ReferenceBegin=0;
-	ma1.ReferenceEnd=0;
-	ma1.ReferenceIndex=0;
-	ma1.QueryBegin=0;
-	ma1.QueryEnd=0;
-	ma1.Quality=0;
-	ma1.IsPairedEnd=false;
-	ma1.IsReverseStrand=false;
-	ma2.ReferenceBegin=0;
-	ma2.ReferenceEnd=0;
-	ma2.ReferenceIndex=0;
-	ma2.QueryBegin=0;
-	ma2.QueryEnd=0;
-	ma2.Quality=0;
- 	ma2.IsPairedEnd=false;
-	ma2.IsReverseStrand=false;
-	mr1.Mate1Alignments.clear();
-	mr1.Mate2Alignments.clear();
-	
-	int pe=-1;
-	
-	int ndone = 0;
-	bool ok=false;
-	while ( ar1.GetNextAlignment(ba1) ) {
-		
-		// skip unmapped reads (another program somewhere ...)
-		if (ba1.RefID<0) {
-			continue;
-		}	
-		if (!ba1.IsMapped() ) {
-			continue;
-		}	
-		
-		int LF = ba1.InsertSize;
-		// SLX RP only
-		if (ba1.IsReverseStrand()) LF=-LF; 
-		
-		// check if fragment done already
-		ndone++;
-		if (ba1.Name.size()<1) {			
-			cerr << "empty read name: " << ba1.RefID+1 <<"\t"<< ba1.Position+1<<"\t"<< ba1.MateRefID+1<<"\t"<< ba1.MatePosition+1 <<"\t"<< ndone << endl;
-			continue;
-		}
-		
-		if (!doneFrag[ba1.Name]) {
-			ok=true;
-			break;
-		}
-		
-	}
-	
-	// check out when GetNextAlignment returns false
-	if (!ok) { 
-		cerr << ba1.Name.c_str() << ba1.RefID << endl;
-		return(ok);
-	}
-	
-	if (ndone>1000) {
-		cerr << "problem in nextBamAlignmentPair: " << ndone << "\n";
-	}
-	
-	// mark this one as done
-	doneFrag[ba1.Name]=true;
-		
-	pe = Bam2MosaikScan(ba1, ma1,ma2);
-	
-	if (pe>=0)  {
-		
-		mr1.Name=ba1.Name;
-		mr1.ReadGroupCode=ma1.ReadGroupCode;
-		
-		// shortest read length
-		//shortestReadLength=(shortestReadLength<ma1.QueryEnd) ? shortestReadLength: ma1.QueryEnd;
-		
-		switch (pe) {
-				
-			case 2:
-				mr1.IsPairedEnd=true;
-				if  (!ma1.IsReverseStrand) { 
-					mr1.Mate1Alignments.push_back(ma1);
-					mr1.Mate2Alignments.push_back(ma2);
-				} else {
-					mr1.Mate1Alignments.push_back(ma2);
-					mr1.Mate2Alignments.push_back(ma1);
-				}
-				break;
-				
-			case 1:
-				mr1.Mate1Alignments.push_back(ma1);
-				
-		} 
-		
-		
-	} else {
-		cerr << ba1.Name.c_str() << ba1.RefID << endl;
-	}
-	
-	// trap this 
-	if (mr1.Name.size()==0) {
-		cerr << ba1.Name.c_str() << ba1.RefID << endl;
-	}		
-	
-	return (pe>=0);		
-}
-
-
-//------------------------------------------------------------------------------
-// convert a Bam read pair to one semi-complete Mosaik aligned pair record 
-//------------------------------------------------------------------------------
-bool  C_pairedfiles::nextBamAlignmentScan( BamReader & ar1, Mosaik::AlignedRead & mr1) 
-{
-	
-	// Mosaik structures
-	Mosaik::Alignment ma1,ma2;
-	
-	// Bam structure
-	BamAlignment ba1;
-	
-	// clear Mosaik structures
-	ma1.ReferenceBegin=0;
-	ma1.ReferenceEnd=0;
-	ma1.ReferenceIndex=0;
-	ma1.QueryBegin=0;
-	ma1.QueryEnd=0;
-	ma1.Quality=0;
-	ma1.IsPairedEnd=false;
-	ma1.IsReverseStrand=false;
-	ma2.ReferenceBegin=0;
-	ma2.ReferenceEnd=0;
-	ma2.ReferenceIndex=0;
-	ma2.QueryBegin=0;
-	ma2.QueryEnd=0;
-	ma2.Quality=0;
- 	ma2.IsPairedEnd=false;
-	ma2.IsReverseStrand=false;
-	mr1.Mate1Alignments.clear();
-	mr1.Mate2Alignments.clear();
-	
-	int pe=-1;
-	
-	int ndone = 0;
-	bool ok=false;
-	
-	bool rev,revMate,skip;
-	bool properOrientation = false;
-	
-	while ( ar1.GetNextAlignment(ba1) ) {
-		
-		// skip unmapped reads (another program somewhere ...)
-		if (ba1.RefID<0) {
-			continue;
-		}	
-		if (!ba1.IsMapped() ) {
-			continue;
-		}	
-		
-		
-		int LF = ba1.InsertSize;
-		// SLX RP only
-		if (ba1.IsReverseStrand()) LF=-LF; 
-		
-		// check if fragment done already
-		ndone++;
-		if (ba1.Name.size()<1) {			
-			cerr << "empty read name: " << ba1.RefID+1 <<"\t"<< ba1.Position+1<<"\t"<< ba1.MateRefID+1<<"\t"<< ba1.MatePosition+1 <<"\t"<< ndone << endl;
-			continue;
-		}
-
-		//-------------------------------------------------------------------------------
-		// skip proper pairs to save span file space from  build
-		//-------------------------------------------------------------------------------
-		skip=false;
-  	if (!scan) { 
-	
-			string rgid;
-			ba1.GetReadGroup(rgid);
-			unsigned int rgcode=libraries.ReadGroupID2Code[rgid];
-			int LMlow = libraries.libmap[rgcode].LMlow;
-			int LMhigh = libraries.libmap[rgcode].LMhigh;
-			
-			// orientation transform to Illumina FR			
-			rev=ba1.IsReverseStrand();
-			revMate=ba1.IsMateReverseStrand();
-			
-			//454 -> IL
-			if ( MateMode==MATEMODE_454) {
-				if (ba1.IsFirstMate()) {
-					rev=!rev;			
-				} else {
-					revMate=!revMate;
-				}
-				// SOLiD -> IL
-			} else if ( MateMode==MATEMODE_SOLID) {
-				if (ba1.IsFirstMate()) {
-					revMate=!revMate;
-				} else {
-					rev=!rev;			
-				}
-			}		
-			
-			if (ba1.RefID==ba1.MateRefID) {
-				if (ba1.Position<ba1.MatePosition) {				
-					properOrientation = (!rev)&&revMate;
-				}	else {
-					properOrientation = rev&&(!revMate);
-				}
-			}
-			
-			if (ba1.IsMateMapped()&&(LF>LMlow)&&(LF<LMhigh)&&properOrientation) {					
-				skip=true;
-			}	
-			
-		}
-
-		if (skip) continue;
-		
-		if (!doneFrag[ba1.Name]) {
-			ok=true;
-			break;
-		}
-						
-	}
-	
-	// check out when GetNextAlignment returns false
-	if (!ok) { 
-		cerr << ba1.Name.c_str() << ba1.RefID << endl;
-		return(ok);
-	}
-	
-	if (ndone>1000) {
-		cerr << "problem in nextBamAlignmentPair: " << ndone << "\n";
-	}
-	
-	// mark this one as done
-	doneFrag[ba1.Name]=true;
-	
-	pe = Bam2MosaikScan(ba1, ma1,ma2);
-	
-	if (pe>=0)  {
-		
-		mr1.Name=ba1.Name;
-		mr1.ReadGroupCode=ma1.ReadGroupCode;
-				
-		switch (pe) {
-				
-			case 2:
-				mr1.IsPairedEnd=true;
-				if  (!ma1.IsReverseStrand) { 
-					mr1.Mate1Alignments.push_back(ma1);
-					mr1.Mate2Alignments.push_back(ma2);
-				} else {
-					mr1.Mate1Alignments.push_back(ma2);
-					mr1.Mate2Alignments.push_back(ma1);
-				}
-				break;
-				
-			case 1:
-				mr1.Mate1Alignments.push_back(ma1);
-				
-		} 
-		
-		
-	} else {
-		cerr << "bad read \t";
-		cerr << ba1.Name.c_str() << ba1.RefID << endl;
-	}
-	
-	// trap this 
-	if (mr1.Name.size()==0) {
-		cerr << "baf read name " << ba1.Name.c_str() << ba1.RefID << endl;
-	}		
-	
-	return (pe>=0);		
-}
-
-
-
-//------------------------------------------------------------------------------
-// convert a Bam read pair to one semi-complete Mosaik aligned pair record 
-//------------------------------------------------------------------------------
-bool  C_pairedfiles::nextBamAlignmentZA( BamReader & ar1, Mosaik::AlignedRead & mr1) 
-{
-	
-	// Mosaik structures
-	Mosaik::Alignment ma1,ma2;
-	
-	// Bam structure
-	BamAlignment ba1;
-	
-	// clear Mosaik structures
-	ma1.ReferenceBegin=0;
-	ma1.ReferenceEnd=0;
-	ma1.ReferenceIndex=0;
-	ma1.QueryBegin=0;
-	ma1.QueryEnd=0;
-	ma1.Quality=0;
-	ma1.IsPairedEnd=false;
-	ma1.IsReverseStrand=false;
-	ma2.ReferenceBegin=0;
-	ma2.ReferenceEnd=0;
-	ma2.ReferenceIndex=0;
-	ma2.QueryBegin=0;
-	ma2.QueryEnd=0;
-	ma2.Quality=0;
- 	ma2.IsPairedEnd=false;
-	ma2.IsReverseStrand=false;
-	mr1.Mate1Alignments.clear();
-	mr1.Mate2Alignments.clear();
-	
-	int pe=-1;
-	
-	int ndone = 0;
-	bool ok=false;
-	
-	bool rev,revMate,skip;
-	bool properOrientation = false;
-	
-	while ( ar1.GetNextAlignment(ba1) ) {
-		
-		// skip unmapped reads (another program somewhere ...)
-		if (ba1.RefID<0) {
-			continue;
-		}	
-		if (!ba1.IsMapped() ) {
-			continue;
-		}	
-		
-		
-		int LF = ba1.InsertSize;
-		// SLX RP only
-		if (ba1.IsReverseStrand()) LF=-LF; 
-		
-		// check if fragment done already
-		ndone++;
-		if (ba1.Name.size()<1) {			
-			cerr << "empty read name: " << ba1.RefID+1 <<"\t"<< ba1.Position+1<<"\t"<< ba1.MateRefID+1<<"\t"<< ba1.MatePosition+1 <<"\t"<< ndone << endl;
-			continue;
-		}
-		
-		//-------------------------------------------------------------------------------
-		// skip proper pairs to save span file space from  build
-		//-------------------------------------------------------------------------------
-		skip=false;
-  	if (!scan) { 
-			
-			string rgid;
-			ba1.GetReadGroup(rgid);
-			unsigned int rgcode=libraries.ReadGroupID2Code[rgid];
-			int LMlow = libraries.libmap[rgcode].LMlow;
-			int LMhigh = libraries.libmap[rgcode].LMhigh;
-			
-			// orientation transform to Illumina FR			
-			rev=ba1.IsReverseStrand();
-			revMate=ba1.IsMateReverseStrand();
-			
-			//454 -> IL
-			if ( MateMode==MATEMODE_454) {
-				if (ba1.IsFirstMate()) {
-					rev=!rev;			
-				} else {
-					revMate=!revMate;
-				}
-				// SOLiD -> IL
-			} else if ( MateMode==MATEMODE_SOLID) {
-				if (ba1.IsFirstMate()) {
-					revMate=!revMate;
-				} else {
-					rev=!rev;			
-				}
-			}					
-			
-			if (ba1.RefID==ba1.MateRefID) {
-				if (ba1.Position<ba1.MatePosition) {				
-					properOrientation = (!rev)&&revMate;
-				}	else {
-					properOrientation = rev&&(!revMate);
-				}
-			}
-			
-			if (ba1.IsMateMapped()&&(LF>LMlow)&&(LF<LMhigh)&&properOrientation) {					
-				skip=true;
-			}	
-			
-		}
-		
-		if (skip) continue;
-		
-		if (!doneFrag[ba1.Name]) {
-			ok=true;
-			break;
-		}
-		
-	}
-	
-	// check out when GetNextAlignment returns false
-	if (!ok) { 
-		cerr << ba1.Name.c_str() << ba1.RefID << endl;
-		return(ok);
-	}
-	
-	if (ndone>1000) {
-		cerr << "problem in nextBamAlignmentPair: " << ndone << "\n";
-	}
-	
-	// mark this one as done
-	doneFrag[ba1.Name]=true;
-	
-	pe = BamZA2Mosaik(ba1, ma1,ma2);
-	
-	if (pe>=0)  {
-		
-		mr1.Name=ba1.Name;
-		mr1.ReadGroupCode=ma1.ReadGroupCode;
-		
-		switch (pe) {
-				
-			case 2:
-				mr1.IsPairedEnd=true;
-				if  (!ma1.IsFirstMate) { 
-					mr1.Mate1Alignments.push_back(ma1);
-					mr1.Mate2Alignments.push_back(ma2);
-				} else {
-					mr1.Mate1Alignments.push_back(ma2);
-					mr1.Mate2Alignments.push_back(ma1);
-				}
-				break;
-				
-			case 1:
-				mr1.Mate1Alignments.push_back(ma1);
-				
-		} 
-		
-		
-	} else {
-		cerr << "bad read \t";
-		cerr << ba1.Name.c_str() << ba1.RefID << endl;
-	}
-	
-	// trap this 
-	if (mr1.Name.size()==0) {
-		cerr << "baf read name " << ba1.Name.c_str() << ba1.RefID << endl;
-	}		
-	
-	return (pe>=0);		
-}
-
-
-
-
-
-
-//------------------------------------------------------------------------------
-// convert a Bam read pair to one complete Mosaik aligned pair record 
-//------------------------------------------------------------------------------
-bool  C_pairedfiles::nextBamAlignmentPairSortedByName( BamReader & ar1, Mosaik::AlignedRead & mr1) 
-{
-	
-	
-	//------------------------------------------------------------------------------
-	// select abberant pairs that meet Qmin criteria, include dangling (unmapped) ends
-	//------------------------------------------------------------------------------
-	
-	// Mosaik structures
-	Mosaik::Alignment ma1,ma2;
-	Mosaik::Alignment mz1,mz2;
-	
-	// Bam structure
-	BamAlignment ba1,ba2;
-	
-	// clear Mosaik structures
-	ma1.ReferenceBegin=0;
-	ma1.ReferenceEnd=0;
-	ma1.ReferenceIndex=0;
-	ma1.QueryBegin=0;
-	ma1.QueryEnd=0;
-	ma1.Quality=0;
-	ma1.IsPairedEnd=false;
-	ma1.IsReverseStrand=false;
-	ma2.ReferenceBegin=0;
-	ma2.ReferenceEnd=0;
-	ma2.ReferenceIndex=0;
-	ma2.QueryBegin=0;
-	ma2.QueryEnd=0;
-	ma2.Quality=0;
- 	ma2.IsPairedEnd=false;
-	ma2.IsReverseStrand=false;
-	mr1.Mate1Alignments.clear();
-	mr1.Mate2Alignments.clear();
-	
-	
-	int LF=0;
-	bool findmate=false;	
-	int NmateFound=-1;
-	string FR="FR";
-	bool rev,revMate;
-	bool properOrientation = false;	
-	
-	
-	while ( ar1.GetNextAlignment(ba1) ) {
-		
-		if (doneFrag[ba1.Name]) {
-			continue;
-		}
-		
-		doneFrag[ba1.Name]=true;
-		
-		// skip unmapped reads (another function in a module somewhere ...)
-		if (ba1.RefID<0) {
-			continue;
-		}	
-		
-		// single ends not processed here
-		if (!ba1.IsPaired()) {
-  		continue;
-		}
-		
-		
-		// dangling end is processed
-		if (ba1.IsMateMapped() ) {
-			ar1.GetNextAlignment(ba2);
-		} else {
-			NmateFound=1;  // set to mark dangling end
-			break;
-		}	
-
-		if ( (!scan) && (ba1.MapQuality<Qmin) ) {
-			continue;
-		}	
-		
-		
-		//if (ba1.Position>=1130515) { 
-		// cerr << endl; }
-		
-		// skip proper pairs	=  abberant pair criteria 	
-		LF = ba1.InsertSize;
-		// SLX RP only  ??? 
-		if (ba1.IsReverseStrand()) LF=-LF; 
-		string rgid;
-		ba1.GetReadGroup(rgid);
-		unsigned int rgcode=libraries.ReadGroupID2Code[rgid];
-		int LMlow = libraries.libmap[rgcode].LMlow;
-		int LMhigh = libraries.libmap[rgcode].LMhigh;
-		
-		// orientation transform to Illumina FR
-    
-		rev=ba1.IsReverseStrand();
-		revMate=ba1.IsMateReverseStrand();
-		
-		//454 -> IL
-		//454 -> IL
-		if ( MateMode==MATEMODE_454) {
-			if (ba1.IsFirstMate()) {
-				rev=!rev;			
-			} else {
-				revMate=!revMate;
-			}
-			// SOLiD -> IL
-		} else if ( MateMode==MATEMODE_SOLID) {
-			if (ba1.IsFirstMate()) {
-				revMate=!revMate;
-			} else {
-				rev=!rev;			
-			}
-		}		
-		
-		// now in Illumina convention... check proper pair orientation
-		if (ba1.RefID==ba1.MateRefID) {
-			if (ba1.Position<ba1.MatePosition) {				
-				properOrientation = (!ba1.IsReverseStrand())&&ba1.IsMateReverseStrand();
-			}	else {
-				properOrientation = ba1.IsReverseStrand()&&(!ba1.IsMateReverseStrand());
-			}
-		}
-		
-		//-------------------------------------------------------------------------------
-		// skip proper pairs
-		//-------------------------------------------------------------------------------
-		if ( (LF>LMlow)&&(LF<LMhigh)&&properOrientation&&(!scan)) {					
-			continue;
-		}	
-		
-		// artifact check for mate mapped = this read (illumina problem)
-		if  ( (ba1.RefID==ba1.MateRefID) && (ba1.Position==ba1.MatePosition) ) { 
-			continue;
-		}
-		
-		//------------------------------------------------------------------------------
-		// go mate hunting
-		//------------------------------------------------------------------------------		
-		findmate=false;		
-		
-		if (ba2.RefID!=ba1.MateRefID) {
-			// this set of bam files doesn't have mateRefID.... log this somewhere other than cerr, cout
-			cerr << " Mates out of order :   " << ba1.Name <<"\t" << ba1.MateRefID << "\t" << ba2.RefID << "\n";  // oops
-			break;
-		}
-		
-		// check read name should be the same but not the same read (depend on First/Second mate flags). 
-		if ( ( ba1.Name.compare(ba2.Name)==0 ) && (ba1.IsFirstMate()!=ba2.IsFirstMate()) )  { 
-			findmate=true;			
-			NmateFound++;
-			if (scan) break;
-			if (ba2.MapQuality>=Qmin )  break;
-			// low quality reads 
-			NmateFound=0;
-		}										
-		
-	}	
-	
-  if(NmateFound<0) {
-		return(false);
-	}
-	
-	if (findmate ) {
-		
-		NmateFound = Bam2MosaikPair(ba1, ba2, ma1,ma2);
-		
-		// check consistent LF
-    if ( (ba1.RefID==ba2.MateRefID) && (ba1.RefID==ba1.MateRefID) && (ma1.IsReverseStrand!=ma2.IsReverseStrand)  ) {		
-			int LF1=int(ma2.ReferenceEnd)-int(ma1.ReferenceBegin)-1;
-			if (ma1.IsReverseStrand) { 
-				LF1=int(ma1.ReferenceEnd)-int(ma2.ReferenceBegin)-1;
-			}
-			string s=FR;
-			if (LF1!=LF)  {				
-				if (ma1.ReferenceBegin>ma2.ReferenceBegin) { 
-					reverse(s.begin(),s.end());
-				}
-				cerr	 << " fraglength problem " << LF1 << "\t" << LF << "\t" << s << "\t" << ba1.Name << endl;
-			}
-		}	
-		
-	} else {
-		NmateFound = Bam2MosaikRead(ba1, ma1);
-	}
-	
-	if (NmateFound>=0)  {
-		
-		mr1.Name=ba1.Name;
-		mr1.ReadGroupCode=ma1.ReadGroupCode;
-		
-		// shortest read length
-		// shortestReadLength=(shortestReadLength<ma1.QueryEnd) ? shortestReadLength: ma1.QueryEnd;
-		
-		switch (NmateFound) {
-				
-			case 1:
-				mr1.Mate1Alignments.push_back(ma1);
-				mr1.Mate2Alignments.push_back(ma2);
-				mr1.IsPairedEnd=true;
-				break;
-				
-			case 2:
-				mr1.Mate1Alignments.push_back(ma2);
-				mr1.Mate2Alignments.push_back(ma1);
-				mr1.IsPairedEnd=true;
-				break;
-				
-			case 0:
-				mr1.Mate1Alignments.push_back(ma1);
-				
-		} 
-		
-		
-	}  //else {
-	//cerr << " problem finding mate \t" << ba1.Name << " in chrom " << ba1.MateRefID << "\n"; 
-	//}
-	
-	return (true);		
-}
-
-//------------------------------------------------------------------------------
-// convert a Bam read pair to one complete Mosaik aligned pair record 
-//------------------------------------------------------------------------------
-bool  C_pairedfiles::nextBamAlignmentPairSortedByName( BamMultiReader & ar1, Mosaik::AlignedRead & mr1) 
-{
-	
-	
-	//------------------------------------------------------------------------------
-	// select abberant pairs that meet Qmin criteria, include dangling (unmapped) ends
-	//------------------------------------------------------------------------------
-	
-	// Mosaik structures
-	Mosaik::Alignment ma1,ma2;
-	Mosaik::Alignment mz1,mz2;
-	
-	// Bam structure
-	BamAlignment ba1,ba2;
-	
-	// clear Mosaik structures
-	ma1.ReferenceBegin=0;
-	ma1.ReferenceEnd=0;
-	ma1.ReferenceIndex=0;
-	ma1.QueryBegin=0;
-	ma1.QueryEnd=0;
-	ma1.Quality=0;
-	ma1.IsPairedEnd=false;
-	ma1.IsReverseStrand=false;
-	ma2.ReferenceBegin=0;
-	ma2.ReferenceEnd=0;
-	ma2.ReferenceIndex=0;
-	ma2.QueryBegin=0;
-	ma2.QueryEnd=0;
-	ma2.Quality=0;
- 	ma2.IsPairedEnd=false;
-	ma2.IsReverseStrand=false;
-	mr1.Mate1Alignments.clear();
-	mr1.Mate2Alignments.clear();
-	
-	
-	int LF=0;
-	bool findmate=false;	
-	int NmateFound=-1;
-	string FR="FR";
-	bool rev,revMate;
-	bool properOrientation = false;	
-	
-	
-	while ( ar1.GetNextAlignment(ba1) ) {
-		
-		if (doneFrag[ba1.Name]) {
-			continue;
-		}
-		
-		doneFrag[ba1.Name]=true;
-		
-		// skip unmapped reads (another function in a module somewhere ...)
-		if (ba1.RefID<0) {
-			continue;
-		}	
-		
-		// single ends not processed here
-		if (!ba1.IsPaired()) { 
-			continue;
-		}
-		
-		if ( (!scan)&&(ba1.MapQuality<Qmin) ) {
-			continue;
-		}	
-		
-		// dangling end is processed
-		if (!ba1.IsMateMapped() ) {
-			NmateFound=1;  // set to mark dangling end
-			break;
-		}	
-		
-		//if (ba1.Position>=1130515) { 
-		// cerr << endl; }
-		
-		// skip proper pairs	=  abberant pair criteria 	
-		LF = ba1.InsertSize;
-		// SLX RP only  ??? 
-		if (ba1.IsReverseStrand()) LF=-LF; 
-		string rgid;
-		ba1.GetReadGroup(rgid);
-		unsigned int rgcode=libraries.ReadGroupID2Code[rgid];
-		int LMlow = libraries.libmap[rgcode].LMlow;
-		int LMhigh = libraries.libmap[rgcode].LMhigh;
-		
-		// orientation transform to Illumina FR
-    
-		rev=ba1.IsReverseStrand();
-		revMate=ba1.IsMateReverseStrand();
-		
-		//454 -> IL
-		if ( MateMode==MATEMODE_454) {
-			if (ba1.IsFirstMate()) {
-				rev=!rev;			
-			} else {
-				revMate=!revMate;
-			}
-			// SOLiD -> IL
-		} else if ( MateMode==MATEMODE_SOLID) {
-			if (ba1.IsFirstMate()) {
-				revMate=!revMate;
-			} else {
-				rev=!rev;			
-			}
-		}		
-		
-		
-		if (ba1.RefID==ba1.MateRefID) {
-			if (ba1.Position<ba1.MatePosition) {				
-				properOrientation = (!ba1.IsReverseStrand())&&ba1.IsMateReverseStrand();
-			}	else {
-				properOrientation = ba1.IsReverseStrand()&&(!ba1.IsMateReverseStrand());
-			}
-		}
-		
-		//-------------------------------------------------------------------------------
-		// skip proper pairs
-		//-------------------------------------------------------------------------------
-		if (ba1.IsMateMapped()&&(LF>LMlow)&&(LF<LMhigh)&&properOrientation&&(!scan)) {					
-			continue;
-		}	
-		
-		// artifact check for mate mapped = this read (illumina problem)
-		if  ( (ba1.RefID==ba1.MateRefID) && (ba1.Position==ba1.MatePosition) ) { 
-			continue;
-		}
-		
-		//------------------------------------------------------------------------------
-		// go mate hunting
-		//------------------------------------------------------------------------------		
-		findmate=false;		
-		
-		if ( ar1.GetNextAlignment(ba2) ) {
-			
-			if (ba2.RefID!=ba1.MateRefID) {
-				// this set of bam files doesn't have mateRefID.... log this somewhere other than cerr, cout
-				cerr << " Mates out of order :   " << ba1.Name <<"\t" << ba1.MateRefID << "\t" << ba2.RefID << "\n";  // oops
-				break;
-			}
-			
-			// check read name should be the same but not the same read (depend on First/Second mate flags). 
-			if ( ( ba1.Name.compare(ba2.Name)==0 ) && (ba1.IsFirstMate()!=ba2.IsFirstMate()) )  { 
-				findmate=true;			
-				NmateFound++;
-				break;
-			}								
-			
-		}
-		
-		
-		if (findmate && (scan || (ba2.MapQuality>=Qmin) )) {
-			break;
-		}	
-		
-		if (findmate && (!scan) && (ba2.MapQuality<Qmin )) {
-			// back up to next first alignment
-			findmate=false;
-			NmateFound=0;
-			continue;
-		}	
-		
-		
-	}	
-	
-  if(NmateFound<0) {
-		return(false);
-	}
-	
-	if (findmate ) {
-		
-		NmateFound = Bam2MosaikPair(ba1, ba2, ma1,ma2);
-		
-		// check consistent LF
-    if ( (ba1.RefID==ba2.MateRefID) & properOrientation) {		
-			int LF1=ma2.ReferenceEnd-ma1.ReferenceBegin-1;
-			if (ma1.ReferenceBegin>ma2.ReferenceBegin) 
-				LF1=ma1.ReferenceEnd-ma2.ReferenceBegin-1;
-			if (LF1!=LF)  {
-				char i=char(1-ma1.IsReverseStrand*1);
-				char s1=FR[i];
-				i=char(1-ma2.IsReverseStrand*1);
-				char s2=FR[i];
-				//s+= FR[char(1-ma2.IsReverseStrand*1)];
-				cerr	 << " fraglength problem " << LF1 << "\t" << LF << "\t" << s1 << s2 << "\t" << ba1.Name << endl;
-		  }
-		}	
-		
-	} else {
-		NmateFound = Bam2MosaikRead(ba1, ma1);
-	}
-	
-	if (NmateFound>=0)  {
-		
-		mr1.Name=ba1.Name;
-		mr1.ReadGroupCode=ma1.ReadGroupCode;
-		
-		// shortest read length
-		// shortestReadLength=(shortestReadLength<ma1.QueryEnd) ? shortestReadLength: ma1.QueryEnd;
-		
-		switch (NmateFound) {
-				
-			case 1:
-				mr1.Mate1Alignments.push_back(ma1);
-				mr1.Mate2Alignments.push_back(ma2);
-				mr1.IsPairedEnd=true;
-				break;
-				
-			case 2:
-				mr1.Mate1Alignments.push_back(ma2);
-				mr1.Mate2Alignments.push_back(ma1);
-				mr1.IsPairedEnd=true;
-				break;
-				
-			case 0:
-				mr1.Mate1Alignments.push_back(ma1);
-				
-		} 
-		
-		
-	}  //else {
-	//cerr << " problem finding mate \t" << ba1.Name << " in chrom " << ba1.MateRefID << "\n"; 
-	//}
-	
-	return (true);		
-}
-
-
-
-
-//------------------------------------------------------------------------------
-// convert a Bam read to one complete Mosaik aligned read record 
-//------------------------------------------------------------------------------
-bool  C_pairedfiles::nextBamAlignmentRead( BamMultiReader & ar1,Mosaik::AlignedRead & mr1, bool checkName=false) 
-{
-	
-	// Mosaik structures
-	Mosaik::Alignment ma1;
-	
-	// Bam structure
-	BamAlignment ba1;
-	
-	// clear Mosaik structures
-	ma1.ReferenceBegin=0;
-	ma1.ReferenceEnd=0;
-	ma1.ReferenceIndex=0;
-	ma1.QueryBegin=0;
-	ma1.QueryEnd=0;
-	ma1.Quality=0;
-	ma1.IsPairedEnd=false;
-	ma1.IsReverseStrand=false;
-	
-	int pe1=-1;
-	
-	int ndone = 0;
-	bool ok=false;
-	while ( ar1.GetNextAlignment(ba1) ) {
-		
-		if (!checkName) {
-			ok = true;
-			break; 
-		}
-		
-		// check if fragment done already
-		ndone++;
-		if (!doneFrag[ba1.Name]) {
-			ok=true;
-			break;
-		}
-		
-	}
-	
-	// check out when GetNextAlignment returns false
-	if (!ok) return(ok);
-	
-	if (ndone>1000) {
-		cerr << "problem in nextBamAlignmentPair: " << ndone << "\n";
-	}
-	
-	// mark this one as done
-	if(checkName) doneFrag[ba1.Name]=true;
-		
-	pe1 = Bam2MosaikRead(ba1, ma1);
-	
-	if (pe1>=0)  {
-		
-		mr1.Name=ba1.Name;
-		mr1.ReadGroupCode=ma1.ReadGroupCode;
-		
-		mr1.Mate1Alignments.push_back(ma1);
-		
-		return (true);		
-		
-	} 
-	return (false);		
-}
-
-*/
 
 int C_pairedfiles::BamCigarData2Len(vector<CigarOp> CigarData, bool Query) {
 	// iterate over CIGAR operations to calculate length 
@@ -9652,190 +7006,10 @@ int C_pairedfiles::BamCigarData2mm(vector<CigarOp> CigarData) {
 }
 
 				
-/*			
-				
-//------------------------------------------------------------------------------
-// convert one Bam read record to one (incomplete) Mosaik aligned pair record 
-//------------------------------------------------------------------------------
-bool  C_pairedfiles::nextBamAlignmentPair1( BamReader & ar1, Mosaik::AlignedRead & mr1) 
-{
 
-    // Mosaik structures
-    Mosaik::Alignment ma1,ma2;
-    
-    // Bam structure
-    BamAlignment ba1;
-
-    // clear Mosaik structures
-    ma1.ReferenceBegin=0;
-    ma1.ReferenceEnd=0;
-    ma1.ReferenceIndex=0;
-    ma1.QueryBegin=0;
-    ma1.QueryEnd=0;
-    ma1.Quality=0;
-    ma2.ReferenceBegin=0;
-    ma2.ReferenceEnd=0;
-    ma2.ReferenceIndex=0;
-    ma2.QueryBegin=0;
-    ma2.QueryEnd=0;
-    ma2.Quality=0;
-  	mr1.Mate1Alignments.clear();
-	mr1.Mate2Alignments.clear();
-    
-	int pe1=-1;
-	
-    while ( ar1.GetNextAlignment(ba1) ) {
-
-        // fill first mr1 alignment record
-        mr1.Name=ba0.Name;
-        // stash alignment info into one end or the other
-		
-		int optZA=1;
-        pe1 = Bam2Mosaik(ba1, ma1,ma2,optZA);
-		if (pe1>=0) break;
-	}
-    
-    if (pe1>=0)  {
-		mr1.Name=ba1.Name;
-		mr1.ReadGroupCode=ma1.ReadGroupCode;
-
-        switch (pe1) {
-        case 1:
-          mr1.Mate1Alignments.push_back(ma1);
-          mr1.Mate2Alignments.push_back(ma2);
-          mr1.IsPairedEnd=true;
-          break;
-        case 2:
-          mr1.Mate1Alignments.push_back(ma2);
-          mr1.Mate2Alignments.push_back(ma1);
-          mr1.IsPairedEnd=true;
-          break;
-        case 0:
-          mr1.Mate1Alignments.push_back(ma1);
-        } 
-        
-		return (true);		
-  
-    } 
-    return (false);		
-}
-*/
-
-
-/*
-
-//------------------------------------------------------------------------------
-// convert Bam read records to Mosaik aligned pair record 
-// This function will fetch the info the the last BAM record loaded, and continue
-// to load BAM records until the read name changes
-// Name0 is the read name from the previous BAM record
-//------------------------------------------------------------------------------
-bool  C_pairedfiles::nextBamAlignmentPairSort( BamReader & ar1, Mosaik::AlignedRead & mr1) 
-{
-    // pair end
-    int pe1;
-
-    // alignment counter
-		int alignmentCount = 0;
-    int pairCount=0;
-
-    // previous read name - 
-    BamAlignment ba1;
-    ba1=ba0;
-    string name0=ba1.Name;
-    size_t Lname=name0.size();
-
-    // Mosaik structures
-    Mosaik::Alignment ma1,ma2;
-
-    // clear Mosaik structures
-    ma1.ReferenceBegin=0;
-    ma1.ReferenceEnd=0;
-    ma1.ReferenceIndex=0;
-    ma1.QueryBegin=0;
-    ma1.QueryEnd=0;
-    ma1.Quality=0;
-    ma2.ReferenceBegin=0;
-    ma2.ReferenceEnd=0;
-    ma2.ReferenceIndex=0;
-    ma2.QueryBegin=0;
-    ma2.QueryEnd=0;
-    ma2.Quality=0;
-  	mr1.Mate1Alignments.clear();
-		mr1.Mate2Alignments.clear();
-
-    // if prev read exists (with a name) parse for pe0 and ID0
-    if (Lname>0) {
-       //if (parseBamReadName(name0, pe1, id0) ) {      
-  
-       // fill first mr1 alignment record
-       mr1.Name=name0;
-
-        // stash alignment info into one end (ma1) and/or the other end (ma2)
-       pe1 =Bam2Mosaik(ba1, ma1,ma2,0);
-       if (pe1>0) {
-          mr1.Mate1Alignments.push_back(ma1);
-          pairCount++;
-          alignmentCount = 1;
-       }      
-    }
-        
-    // loop over reads    
-    while ( ar1.GetNextAlignment(ba1) ) {
-
-        ba0=ba1;
-
-        //if (parseBamReadName(ba1.Name, pe1, id1) ){      
-  
-        if ((ba1.Name!=mr1.Name)&&(Lname>0)) {
-           return true;
-        }  
-        // fill first mr1 alignment record
-        mr1.Name=ba1.Name;
-        Lname=mr1.Name.size();
-        // stash alignment info into one end or the other
-        pe1 = Bam2Mosaik(ba1, ma1,ma2,0);
-        if (pe1>0) {
-          pairCount++;
-          
-          switch (pairCount) {
-            case 1:
-              mr1.Mate1Alignments.push_back(ma1);
-              mr1.Name=ba1.Name;
-              mr1.ReadGroupCode=ma1.ReadGroupCode;
-              break;
-            case 2:
-              mr1.Mate2Alignments.push_back(ma1);
-              mr1.Name=ba1.Name;
-              mr1.ReadGroupCode=ma1.ReadGroupCode;
-              mr1.IsPairedEnd=true;
-              break;
-            default:
-              cerr << "not paired-end data" << endl;
-              exit(1);
-          }
-
-        }   
-
-				++alignmentCount;
-
-		/ *
-			  cout << "----------------------------" << endl;
-				cout << "Alignment " << alignmentCount << endl;
-				cout << ba1.Name << endl;
-				cout << ba1.AlignedBases << endl;
-     		cout << "Aligned to " <<  set[0].anchors.names[ba1.RefID] << ":" << ba1.Position << endl;
-        * /
-
-    } 
-    // no more alignments - reset ba0     
-    this->ba0.Name.clear();
-    return (alignmentCount>0);		
-}
-*/
-
-
+//--------------------------------------------------------------------------------
 // function to check for existing Set element of vector
+//--------------------------------------------------------------------------------
 char C_pairedfiles::checkSetName(string & setname1)
 {
   // loop over existing contigsets
@@ -9871,11 +7045,15 @@ bool C_pairedfiles::checkBamFile(string & filename1) {
 	  return false;
   }
 
-  BamReader file1;
+  BamMultiReader file1;
 	// file1.SetFilename(bamFilename1);
 
+	vector<string> bamfiles;
+	bamfiles.clear();
+	bamfiles.push_back(filename1); 
+	
   //file1.Open(bamFilename1,"",true);
-	file1.Open(bamFilename1);
+	file1.Open(bamfiles);
 	
   if (file1.GetReferenceCount()>0) { 
    	//cerr << endl;
@@ -9892,7 +7070,9 @@ bool C_pairedfiles::checkSpannerFiles(string & fs1) {
   vector<string> ff;
   //C_libraries libs;
   int nf = selectfiles(ff,fs1);
-  if (nf<7) return false;
+	
+	// at least three files (multi+library+anchor)
+  if (nf<3) return false;
   //----------------------------------------------------------------------------
   // load anchor info  
   //----------------------------------------------------------------------------
@@ -9900,41 +7080,58 @@ bool C_pairedfiles::checkSpannerFiles(string & fs1) {
   for (int i=0; i<nf; i++) {
      string f1=ff[i];
      size_t found = f1.find(".anchors.txt");
-     if (found!=string::npos) {
-        C_anchorinfo a(f1);
-        if (anchors.L.size()>0)  {
-          if (!(anchors == a)) {
-            cerr << "\t mismatched anchors :\t"<< f1 << endl;
-            exit(1);
-          }
-        }
-        anchors = a;
-     }
-     found = f1.find(".library.span");
-     if (found!=string::npos) {
-        C_libraries libs1(f1);
-        if (libraries.libmap.size()==0) {
-          libraries=libs1;
-        }  else {
-          // merge this set of libraries 
-          C_librarymap::iterator imap;
-          for(imap=libs1.libmap.begin(); imap != libs1.libmap.end(); ++imap) {
-            unsigned int ReadGroupCode = imap->first;
-            C_libraryinfo lib1=imap->second;
-            if (libraries.libmap.count(ReadGroupCode)>0) {
-              // problem with merging ReadGroupCodes for this set of libraries 
-               cerr << "\t redundant ReadGroupCode:\t"<< ReadGroupCode << endl;
-               cerr << "\t from:\t"<< f1 << endl;
-               exit(1);
-            }
-            libraries.libmap[ReadGroupCode]=lib1;
-          }
-        }
-     }
+		if (found!=string::npos) {
+			C_anchorinfo a(f1);
+			// check against other anchor file 
+			// keep 'special' anchor file after check 						
+			if (anchors.L.size()>0)  {
+				if (!(anchors == a)) {
+					// choose the longer (could be special) 
+					if (anchors.L.size()<a.L.size()) {
+						anchors = a;
+					}
+					//cerr << "\t mismatched anchors :\t"<< f1 << endl;
+					//exit(1);
+				}
+			} else {
+				anchors = a;
+			}
+		}
+		found = f1.find(".library.span");
+		if (found!=string::npos) {
+			C_libraries libs1(f1);
+			if (libraries.libmap.size()==0) {
+				libraries=libs1;
+			}  else {
+				// merge this set of libraries 
+				C_librarymap::iterator imap;
+				for(imap=libs1.libmap.begin(); imap != libs1.libmap.end(); ++imap) {
+					unsigned int ReadGroupCode = imap->first;
+					C_libraryinfo lib1=imap->second;
+					if (libraries.libmap.count(ReadGroupCode)>0) {
+						// is this a "*.special.bam" library? 
+						if (libraries.libmap[ReadGroupCode].isSpecial() ^ (lib1.isSpecial()) ) {
+							if  (lib1.isSpecial()) {
+								libraries.anchorinfo = libs1.anchorinfo;
+							}
+							break;
+						}							
+						// problem with merging ReadGroupCodes for this set of libraries 
+						cerr << "\t redundant ReadGroupCode:\t"<< ReadGroupCode << endl;
+						cerr << "\t from:\t"<< f1 << endl;
+						exit(131);
+					}
+					libraries.libmap[ReadGroupCode]=lib1;
+				}
+			}
+		}
   }
   if (anchors.L.size()<1) return false;
   if (libraries.libmap.size()<1) return false;
-   
+  
+	// fix 
+	libraries.anchorinfo=anchors;
+	
   C_headerSpan h1;
   vector<string> x;
   split(x, fs1,"/");
@@ -9953,9 +7150,12 @@ bool C_pairedfiles::checkSpannerFiles(string & fs1) {
      string f1 = fs1+h1.spanext[i];
      fstream input(f1.c_str(), ios::in|ios::binary);
      if (!input) {
+			  /*
         cerr << "Unable to open input file: " << f1 << endl;
         headers.clear();
         return false;
+				*/
+			 continue;
      }
      C_headerSpan hf(input);
      // set type here
@@ -9971,6 +7171,7 @@ bool C_pairedfiles::checkSpannerDirectory(string & fs1) {
   // check all files in directory for *.pair.span
   // ---------------------------------------------------------------------------
   string patternReadSpan("(.+)\\.pair\\.span$");
+  string patternMultiSpan("(.+)\\.multi\\.span$");
   string match;
   string f;
   DIR  *d;
@@ -9983,9 +7184,18 @@ bool C_pairedfiles::checkSpannerDirectory(string & fs1) {
     {
       string filename = dir->d_name;
       if (RE2::FullMatch(filename.c_str(),patternReadSpan.c_str(),&match)) {      
-         f = match;
-         printf("%s\n", f.c_str());
-         SpannerFileNames.push_back(f);
+				f = match;
+				printf("%s\n", f.c_str());
+				SpannerFileNames.push_back(f);
+      }
+      if (RE2::FullMatch(filename.c_str(),patternMultiSpan.c_str(),&match)) {      
+				f = match;
+				size_t found;
+				found=f.find("special");
+				if (found!=string::npos) {
+					printf("%s\n", f.c_str());
+					SpannerFileNames.push_back(f);
+				}
       }
     }
     closedir(d);
@@ -9999,12 +7209,16 @@ bool C_pairedfiles::checkBamDirectory(string & fs1) {
 	// check all files in directory for *.pair.span
 	// ---------------------------------------------------------------------------
 	string patternReadBam("(.+)\\.bam$");
+	string patternSpecialBam("(.+)special\\.bam$");
+	string patternStat("(.+)\\.stat$");
 	string match;
 	string fd,ff;
 	DIR  *d;
 	struct dirent *dir;
 	BamFileNames.clear();
 	d = opendir(fs1.c_str());
+	bool special=false;
+	bool regular=false;
 	if (d)
 	{
 		// trim trailing "/" from directory name
@@ -10016,15 +7230,36 @@ bool C_pairedfiles::checkBamDirectory(string & fs1) {
 		while ((dir = readdir(d)) != NULL)
 		{
 			string filename = dir->d_name;
-			if (RE2::FullMatch(filename.c_str(),patternReadBam.c_str(),&match)) {      
+			if (RE2::FullMatch(filename.c_str(),patternSpecialBam.c_str(),&match)) {      
 				ff = fd+"/"+filename;				
 				if (checkBamFile(ff)) {
 					printf("%s\n", ff.c_str());
+					if (regular) {
+						cerr << " process special bam separately " << BamFileNames[BamFileNames.size()-1] << endl;
+						exit(96);
+					}		
 					BamFileNames.push_back(ff);
+					special=true;
+				}
+			} else if (RE2::FullMatch(filename.c_str(),patternReadBam.c_str(),&match)) {      
+				ff = fd+"/"+filename;				
+				if (checkBamFile(ff)) {
+					printf("%s\n", ff.c_str());
+					if (special) {
+						cerr << " process special bam separately " << BamFileNames[BamFileNames.size()-1] << endl;
+						exit(96);
+					}		
+					BamFileNames.push_back(ff);
+					regular = true;
 				}
 			}
 		}
 		closedir(d);
+		
+		if (BamFileNames.size()>1) {
+			sort (BamFileNames.begin(),BamFileNames.end());
+		}
+		
 	}
 	return (BamFileNames.size()>0);  
 }

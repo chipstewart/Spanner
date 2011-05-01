@@ -39,7 +39,8 @@ C_readmap::C_readmap()   // Constructor
    mm=0;
 	 q2=0;
 	 nmap=0;
-	 mob="";
+	 string mob1(" ");
+	 mob=mob1;
 }
 
 C_readmap::C_readmap(const C_readmap &copyin)   // Copy constructor to handle pass by value.

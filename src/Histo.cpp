@@ -19,9 +19,9 @@ using std::setprecision;
 #include "Function-Generic.h"
 #include "Histo.h"
 
-//========================================================================
+//==========================================================
 // Histogram class constructor 
-//========================================================================
+//==========================================================
 
 HistObj::HistObj() {
     Nbin = 0;
@@ -32,17 +32,17 @@ HistObj::HistObj() {
 	collapsed=false;
 }
 
-//========================================================================
+//==========================================================
 // constructor with arg list
-//========================================================================
+//==========================================================
 
 HistObj::HistObj(const vector<double> & x, const int Nb, const double Xlow, const double Xhigh) {
     this->Fill(x, Nb, Xlow, Xhigh);
 }
 
-//========================================================================
+//============================================================
 // Histogram class constructor from stored file 
-//========================================================================
+//============================================================
 
 HistObj::HistObj(string & filename) {
     ifstream file1;
@@ -149,8 +149,21 @@ void HistObj::Initialize(const int Nb, const double Xlow, const double Xhigh) {
     this->Nin = 0;
     this->sumx = 0;
     this->sumxx = 0;
+    this->mode=0;
+    this->median=0;
+    this->mean=0;
+    this->std=0;
+    this->normalize=false;
+    this->mode1=0;
+    this->collapsed=false;
+	this->expanded=false;
+    this->title="";
+    this->xlabel="";    
     // bin width
     this->dx = (Xhigh - Xlow) / Nb;
+    this->n.clear();
+    this->c.clear();
+    this->xc.clear();
     // allocate space in n, c, and xc vectors
     for (int i = 0; i<this->Nbin; i++) {
         this->n.push_back(0);
@@ -212,6 +225,38 @@ void HistObj::Fill1(int x1) {
 
 void HistObj::Fill1(short x1) {
     this->Fill1(double(x1));
+}
+
+//========================================================================
+// Fill single entry into histogram method
+//========================================================================
+
+void HistObj::FillW(double x1, double w1) {
+    // initialize
+    if (this->Nbin < 1) {
+        cerr << "Histogram not initialized for Fill1" << endl;
+    }
+    this->Ntot += w1;
+    // fill n, and accumulate sumx, and sumxx
+    int bin = int(floor((x1 - this->xlow) / this->dx));
+    if (bin < 0) {
+        this->Nunder += w1;
+    } else if (bin >= this->Nbin) {
+        this->Nover += w1;
+    } else {
+        this->Nin += w1;
+        this->n[bin] += w1;
+        this->sumx += x1*w1;
+        this->sumxx += w1*pow(x1, 2);
+    }
+};
+
+void HistObj::FillW(int x1, double w1) {
+    this->FillW(double(x1),w1);
+}
+
+void HistObj::FillW(short x1, double w1) {
+    this->FillW(double(x1),w1);
 }
 
 void HistObj::Finalize() {
@@ -421,8 +466,8 @@ ostream & operator<<(ostream &output, const HistObj & H1) {
     output << H1.title << endl;
     output << setw(10) << "TOT" << setw(15) << "MEAN" << setw(15) << "STD"
             << setw(15) << "IN" << setw(15) << "OVER" << setw(15) << "UNDER" << endl;
-    output << setw(10) << H1.Ntot << setw(15) << setprecision(5) << H1.mean
-            << setw(15) << setprecision(5) << H1.std
+    output << setw(10) << H1.Ntot << setw(15) << setprecision(8) << H1.mean
+            << setw(15) << setprecision(8) << H1.std
             << setw(15) << H1.Nin << setw(15) << H1.Nover << setw(15) << H1.Nunder << endl;
 	if (!H1.collapsed) {
 		output << setw(10) << "bin" << setw(10) << H1.xlabel << setw(12) << "n" << setw(12) << "cum";
@@ -439,11 +484,11 @@ ostream & operator<<(ostream &output, const HistObj & H1) {
     for (int i = 0; i < H1.Nbin; i++) {
         if (H1.n[i] > 0) {
 			if (!H1.collapsed) {
-				output << setw(10) << i << setw(10) << H1.xc[i] << setw(12) << setprecision(6)
-                    << H1.n[i] << setw(12) << setprecision(6) << H1.c[i];
+				output << setw(10) << i << setw(10) << H1.xc[i] << setw(12) << setprecision(8)
+                    << H1.n[i] << setw(12) << setprecision(8) << H1.c[i];
 			} else {
-				output << setw(10) << "-" << setw(10) << H1.xc[i] << setw(12) << setprecision(6)
-				<< H1.n[i] << setw(12) << setprecision(6) << H1.c[i];
+				output << setw(10) << "-" << setw(10) << H1.xc[i] << setw(12) << setprecision(8)
+				<< H1.n[i] << setw(12) << setprecision(8) << H1.c[i];
 			}
 
             if (int(H1.binlabels.size()) >i) {
@@ -531,7 +576,7 @@ C_HistoGroups::C_HistoGroups(string & filename) {
 					str1.erase( str1.find_last_not_of( " " ) + 1 );
 					str1.erase( 0, str1.find_first_not_of( " " ) );
 				}
-				this->ReadGroupIndex[str1]=this->Groups.size()-1;
+				this->ReadGroupIndex[str1]=int(this->Groups.size()-1);
 			}
 		} else {
 			more = false;
@@ -539,8 +584,12 @@ C_HistoGroups::C_HistoGroups(string & filename) {
 	}
 }
 //========================================================================
-// multiple histogram  group class constructor from stored file 
+// multiple histogram  class defaults constructor 
 //========================================================================
+C_Histos::C_Histos() {
+    ReadGroupTag.clear();
+    h.clear();
+};
 
 
 //========================================================================
@@ -825,7 +874,15 @@ C_Histos::C_Histos(ifstream & file1) {
 	}
 };
 
-
+/*
+ ostream & operator<<(ostream &output, const C_Histos & Hs) {
+    map<string, HistObj,less<string> >::iterator ih; // = Hs.h.begin();   
+    for ( ih=Hs.h.begin() ; ih != Hs.h.end(); ih++ ) {
+           output << (*ih).second << endl;
+    }
+}
+*/
+    
 //========================================================================
 // 1D descriptive statistics class constructor
 //========================================================================
@@ -886,7 +943,7 @@ void StatObj::Finalize() {
 
 void StatObj::Fill(const vector<double> & x, const int Nb, const double Xlow, const double Xhigh) {
     this->Initialize(Nb, Xlow, Xhigh);
-    this->N = x.size();
+    this->N = int(x.size());
     for (int i = 0; i<this->N; i++) {
         this->sumx += x[i];
         this->sumxx += pow(x[i], 2);
@@ -897,7 +954,7 @@ void StatObj::Fill(const vector<double> & x, const int Nb, const double Xlow, co
 
 void StatObj::Fill(const vector<int> & x, const int Nb, const double Xlow, const double Xhigh) {
     this->Initialize(Nb, Xlow, Xhigh);
-    this->N = x.size();
+    this->N = int(x.size());
     for (int i = 0; i<this->N; i++) {
         this->sumx += x[i];
         this->sumxx += pow(x[i], 2);
@@ -908,7 +965,7 @@ void StatObj::Fill(const vector<int> & x, const int Nb, const double Xlow, const
 
 void StatObj::Fill(const vector<short> & x, const int Nb, const double Xlow, const double Xhigh) {
     this->Initialize(Nb, Xlow, Xhigh);
-    this->N = x.size();
+    this->N = int(x.size());
     for (int i = 0; i<this->N; i++) {
         this->sumx += x[i];
         this->sumxx += pow(x[i], 2);

@@ -13,6 +13,7 @@
 #include <ostream>
 #include <fstream>
 #include <string>
+#include <map>
 #include <vector>
 #include <iterator>
 
@@ -35,6 +36,9 @@ class HistObj {
     void Fill1(const double);  
     void Fill1(const int);  
     void Fill1(const short);  
+    void FillW(const double,const double );  
+    void FillW(const int,const double);  
+    void FillW(const short,const double);  
     void setTitle(const string &);
     void setXlabel(const string &);
     void setBinLabels(vector<string> &);
@@ -44,7 +48,7 @@ class HistObj {
     double p2xTrim(double); 
     double x2pTrim(double); 
   	HistObj collapse( int);
-	  HistObj expand();
+    HistObj expand();
     int Nbin;
     double xlow;
     double xhigh;
@@ -67,13 +71,14 @@ class HistObj {
     vector<string> binlabels;    
     bool normalize;
     double mode1;
-		bool collapsed;
-		bool expanded;
+    bool collapsed;
+	bool expanded;
 };
 
 class C_Histos {
-	friend ostream &operator<<(ostream &, const C_Histos &);
+	//friend ostream &operator<<(ostream &, const C_Histos &);
 public:
+    C_Histos();
     C_Histos(string &); // constructor 
     C_Histos(ifstream &); // constructor 
     map<string, HistObj, less<string> > h;

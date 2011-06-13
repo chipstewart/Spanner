@@ -36,19 +36,20 @@ typedef std::map<string, string, std::less<string> > FastaMap;
 class FastaObj
 {
 public:
-   FastaObj( const string &, const string &); // constructor with specific header string
-   string getSeq(const string &);
-   string getSubSeq(const string &, size_t p, size_t n);
-   size_t getSeqLength(const string &);
-   int getNumberSeq();                                 //  number of sequences
-   string getFastaFile();
-   vector<string> seqNames;
-   void addSeq(const string &,const string &);
-   vector<size_t> getLocationsWithChar(char);
-//private:
-   FastaMap seq;                                  //  sequence maps
-   int numberSeq;                                 //  number of sequences
-   string FastaFile;
+    FastaObj();
+    FastaObj( const string &, const string &); // constructor with specific header string
+    string getSeq(const string &);
+    string getSubSeq(const string &, size_t p, size_t n);
+    size_t getSeqLength(const string &);
+    int getNumberSeq();                                 //  number of sequences
+    string getFastaFile();
+    vector<string> seqNames;
+    void addSeq(const string &,const string &);
+    vector<size_t> getLocationsWithChar(char);
+    //private:
+    FastaMap seq;                                  //  sequence maps
+    int numberSeq;                                 //  number of sequences
+    string FastaFile;
 }; // end class 
 
 #endif

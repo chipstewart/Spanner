@@ -1,11 +1,8 @@
-/*
- *  PairedReads.h
- *  cnv
- *
- *  Created by Chip Stewart on 10/28/07.
- *  Copyright 2007 Boston College. All rights reserved.
- *
- */
+//-------------------------------------------------------
+// *  PairedData.h
+// *  Created by Chip Stewart on 10/28/07.
+// *  Copyright 2007 Boston College. All rights reserved.
+//-------------------------------------------------------
 #ifndef PAIREDREADS_H
 #define PAIREDREADS_H
 
@@ -57,8 +54,8 @@ class C_readmap {
     char sense;                 // forward ('F') or reverse complement ('R')
 		char q;                     // mapping quality
   	char q2;                    // mapping quality of next best alignment
-	  unsigned short nmap;        // number of mappings for this read 
-	  unsigned short mm;          // number of mismatches     
+    unsigned short nmap;        // number of mappings for this read 
+	unsigned short mm;          // number of mismatches     
   	string mob;                 // two char flag for special contig hit
 	  C_readmap();  
     C_readmap(const C_readmap &);  

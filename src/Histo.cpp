@@ -270,8 +270,9 @@ void HistObj::Finalize() {
     for (int i = 1; i<this->Nbin; i++) {
         this->c[i] = this->c[i - 1] + this->n[i];
         // check for highest xc bin that contains something
-        if ((binHi == 0)&(this->c[i] == this->Ntot)) {
-            binHi = i;
+        //if ((binHi == 0)&(this->c[i] == this->Ntot)) {
+        if (this->n[i] != 0) {
+                binHi = i;
         }
         if (this->n[i] > nmax) {
             this->mode = this->xc[i];
@@ -286,13 +287,33 @@ void HistObj::Finalize() {
             donemedian = true;
         }
     }
+    /*
     // trim bins beyond last non-zero
     if (binHi > 0) {
+        binHi++;
         Nbin = binHi + 1;
+        this->xhigh = this->xc[binHi]+this->dx;
         this->n.resize(Nbin);
         this->c.resize(Nbin);
         this->xc.resize(Nbin);
     }
+    int binLo = 0;
+    for (int i = 0; i<this->Nbin; i++) {
+        // check for first  bin that contains something
+        if (this->n[i] != 0 ) {
+            binLo = i;
+            break;
+        }
+    }
+    binLo--;
+    if (binLo > 0) {
+        Nbin = Nbin - binLo;
+        this->xlow = this->xc[binLo]-this->dx;
+        this->n.erase (this->n.begin(),this->n.begin()+binLo-1);
+        this->c.erase (this->c.begin(),this->c.begin()+binLo-1);
+        this->xc.erase (this->xc.begin(),this->xc.begin()+binLo-1);
+    }
+    */
     // mean and stdev
     this->mean = this->sumx / this->Nin;
     this->std = sqrt(this->sumxx / this->Nin - pow(this->mean, 2));
@@ -464,15 +485,17 @@ HistObj HistObj::expand() {
 
 ostream & operator<<(ostream &output, const HistObj & H1) {
     output << H1.title << endl;
-    output << setw(10) << "TOT" << setw(15) << "MEAN" << setw(15) << "STD"
-            << setw(15) << "IN" << setw(15) << "OVER" << setw(15) << "UNDER" << endl;
-    output << setw(10) << H1.Ntot << setw(15) << setprecision(8) << H1.mean
-            << setw(15) << setprecision(8) << H1.std
-            << setw(15) << H1.Nin << setw(15) << H1.Nover << setw(15) << H1.Nunder << endl;
+    output << setw(10) << "TOT\t" << setw(15) << "MEAN\t" << setw(15) << "STD\t"
+            << setw(15) << "IN\t" << setw(15) << "OVER\t" << setw(15) << "UNDER\t" 
+           << setw(15) << "LOW\t" << setw(15) << "HIGH\t" << setw(15) << "BINS\t"<< endl;
+    output << setw(10) << H1.Ntot << "\t" << setw(15) << setprecision(8) << H1.mean << "\t"
+            << setw(15) << setprecision(8) << H1.std << "\t"
+            << setw(15) << H1.Nin << "\t" << setw(15) << H1.Nover << "\t" << setw(15) << H1.Nunder 
+            << "\t" << setw(15) << H1.xlow << "\t" << setw(15) << H1.xhigh << "\t" << setw(15) << H1.Nbin << endl;
 	if (!H1.collapsed) {
-		output << setw(10) << "bin" << setw(10) << H1.xlabel << setw(12) << "n" << setw(12) << "cum";
+		output << setw(10) << "bin\t" << setw(10) << H1.xlabel << "\t"<< setw(12) << "n\t" << setw(12) << "cum\t";
 	} else {
-		output << setw(10) << "-" << setw(10) << H1.xlabel << setw(12) << "n" << setw(12) << "cum";
+		output << setw(10) << "-\t" << setw(10) << H1.xlabel << "\t" << setw(12) << "n\t" << setw(12) << "cum\t";
 
 	}
 
@@ -484,11 +507,11 @@ ostream & operator<<(ostream &output, const HistObj & H1) {
     for (int i = 0; i < H1.Nbin; i++) {
         if (H1.n[i] > 0) {
 			if (!H1.collapsed) {
-				output << setw(10) << i << setw(10) << H1.xc[i] << setw(12) << setprecision(8)
-                    << H1.n[i] << setw(12) << setprecision(8) << H1.c[i];
+				output << setw(10) << i << "\t" << setw(10) << H1.xc[i] << "\t" << setw(12) << setprecision(8)
+                    << H1.n[i] << "\t" << setw(12) << setprecision(8) << H1.c[i] << "\t";
 			} else {
-				output << setw(10) << "-" << setw(10) << H1.xc[i] << setw(12) << setprecision(8)
-				<< H1.n[i] << setw(12) << setprecision(8) << H1.c[i];
+				output << setw(10) << "-\t" << setw(10) << H1.xc[i]<< "\t" << setw(12) << setprecision(8)
+				<< H1.n[i] << "\t" << setw(12) << setprecision(8) << H1.c[i] << "\t";
 			}
 
             if (int(H1.binlabels.size()) >i) {

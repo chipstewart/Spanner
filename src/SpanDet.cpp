@@ -1,11 +1,10 @@
-/*
- *  SpanDet.cpp
- *  SpanDet
- *
- *  Created by Chip Stewart on 8/17/08.
- *  Copyright 2008 Boston College. All rights reserved.
- *
- */
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+// SpanDet.cpp
+// Chip Stewart
+// Copyright 2008 Boston College. All rights reserved.
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 #include "SpanDet.h"
 
@@ -3630,7 +3629,7 @@ ostream &operator<<(ostream &output, C_SV1 & e1)
 	if (s.compare("TDUP")==0) {
 		s="DUP:TANDEM";
 	}
-  sprintf(b,"%d\t%d\t%d\t.\t<%s>\t%d\t0\t", e1.anchor, e1.pos+1,e1.id, s.c_str(),e1.q);
+  sprintf(b,"%d\t%d\t%d\t.\t<%s>\t%d\tPASS\t", e1.anchor, e1.pos+1,e1.id, s.c_str(),e1.q);
   s = b;
   output << s;
   //int u=e1.posU; 

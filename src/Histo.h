@@ -91,9 +91,9 @@ class C_HistoGroups {
 public:
 	C_HistoGroups(); // constructor 
 	C_HistoGroups(string &);
-  C_Histos getHistos(string &);
+    C_Histos getHistos(string &);
  	vector<C_Histos> Groups;	
-  map<string,int,less<string> > ReadGroupIndex; 
+    map<string,int,less<string> > ReadGroupIndex; 
 };
 
 

@@ -231,7 +231,7 @@ int  split(vector<string>& v, const string& str,
         // Find next "non-delimiter"
         pos = str.find_first_of(delimiters, lastPos);
     }
-    return v.size();
+    return int(v.size());
 }
 //=========================================================================
 // looks at a path/file stub for a list of files with a given pattern
@@ -265,7 +265,7 @@ int selectfiles(vector<string>& s, const string & fstub)  {
     exit(1);
   }
   closedir(pdir);
-  return s.size();
+  return int(s.size());
 }
 
 //=========================================================================

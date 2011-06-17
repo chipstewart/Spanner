@@ -3579,7 +3579,7 @@ C_set::C_set(string & setName1, RunControlParameters & pars1) {
   this->Npair_1N = 0;
   this->Npair_NN = 0;
  
-	// Initialize stats 
+  // Initialize stats 
   // labels: 0=no map; 1=one-map; N=multi-map;
   string pairCountLab1[] = {"0-0","0-1","0-N","X","1-1","1-N","X","X","N-N"};
   vector<string> pairCountLab(pairCountLab1, pairCountLab1 + 9);
@@ -4663,7 +4663,7 @@ void C_pairedfiles::printScanResults() {
   string filename = set[0].getFileName();
 	
   string outfilename=set[0].pars.getOutputDir()+"/"+set[0].pars.getPrefix()
-	+filename+".stats";
+	+filename+".stat";
   ofstream outfile(outfilename.c_str(), ios::out);
   if (!outfile) {
 		cerr << "unable to open output stats file: " << outfilename << endl;
@@ -4760,7 +4760,8 @@ void C_pairedfiles::inputcheck( string & in1, RunControlParameters & pars)
 	
 	if (checkSpannerFiles(in1)) {
 		//if (headers.size()!=6) return; 
-		if (headers.size()!=4) return; 
+		//if (headers.size()!=4) return; 
+		if (headers.size()!=3) return; 
 		bool ok = true;
 		C_headers::iterator i;
 		for(i=headers.begin(); i != headers.end(); ++i) {
@@ -5792,7 +5793,7 @@ int  C_pairedfiles::BamZA2PairedRead(BamAlignment & ba1, C_pairedread & pr1)
 	// all libraries stored in every set for this map to work 
 	pr1.ReadGroupCode=ReadGroupID2Code[ReadGroupID1];
 	
-	if (NZA>1) { 
+	if ((NZA>1)&(rr2.align.size()>0)) { 
 		// 454 & SOLiD pair orientation gymnastics
 		if (MateMode==MATEMODE_454) { // 454
 			if (ba1.IsFirstMate()) {

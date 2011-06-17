@@ -1,1 +1,1 @@
-#define SpannerSvnVersion "6.20"
+#define SpannerSvnVersion "6.30"

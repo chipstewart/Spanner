@@ -246,6 +246,7 @@ namespace Mosaik {
 #define ST_PACIFIC_BIOSCIENCES   8
 #define ST_SOLID                16
 #define ST_SANGER               32
+#define ST_ILLUMINA_LONG        64
 
 	// =====
 	// CSHA1

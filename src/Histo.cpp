@@ -272,7 +272,7 @@ void HistObj::Finalize() {
         // check for highest xc bin that contains something
         //if ((binHi == 0)&(this->c[i] == this->Ntot)) {
         if (this->n[i] != 0) {
-                binHi = i;
+            binHi = i;
         }
         if (this->n[i] > nmax) {
             this->mode = this->xc[i];
@@ -288,32 +288,32 @@ void HistObj::Finalize() {
         }
     }
     /*
-    // trim bins beyond last non-zero
-    if (binHi > 0) {
-        binHi++;
-        Nbin = binHi + 1;
-        this->xhigh = this->xc[binHi]+this->dx;
-        this->n.resize(Nbin);
-        this->c.resize(Nbin);
-        this->xc.resize(Nbin);
-    }
-    int binLo = 0;
-    for (int i = 0; i<this->Nbin; i++) {
-        // check for first  bin that contains something
-        if (this->n[i] != 0 ) {
-            binLo = i;
-            break;
-        }
-    }
-    binLo--;
-    if (binLo > 0) {
-        Nbin = Nbin - binLo;
-        this->xlow = this->xc[binLo]-this->dx;
-        this->n.erase (this->n.begin(),this->n.begin()+binLo-1);
-        this->c.erase (this->c.begin(),this->c.begin()+binLo-1);
-        this->xc.erase (this->xc.begin(),this->xc.begin()+binLo-1);
-    }
-    */
+     // trim bins beyond last non-zero
+     if (binHi > 0) {
+     binHi++;
+     Nbin = binHi + 1;
+     this->xhigh = this->xc[binHi]+this->dx;
+     this->n.resize(Nbin);
+     this->c.resize(Nbin);
+     this->xc.resize(Nbin);
+     }
+     int binLo = 0;
+     for (int i = 0; i<this->Nbin; i++) {
+     // check for first  bin that contains something
+     if (this->n[i] != 0 ) {
+     binLo = i;
+     break;
+     }
+     }
+     binLo--;
+     if (binLo > 0) {
+     Nbin = Nbin - binLo;
+     this->xlow = this->xc[binLo]-this->dx;
+     this->n.erase (this->n.begin(),this->n.begin()+binLo-1);
+     this->c.erase (this->c.begin(),this->c.begin()+binLo-1);
+     this->xc.erase (this->xc.begin(),this->xc.begin()+binLo-1);
+     }
+     */
     // mean and stdev
     this->mean = this->sumx / this->Nin;
     this->std = sqrt(this->sumxx / this->Nin - pow(this->mean, 2));
@@ -433,13 +433,17 @@ HistObj HistObj::collapse(int N) {
 HistObj HistObj::expand() {
 	// expand bins - fill zero bins
 	
+    if (this->Nbin<1)  {
+        HistObj H = (*this);
+        return H;
+    }
 	double xmin = 1e10;
 	double xmax = -1e10;
 	double dx1 = 1e10;
 	for (int i = 0; i<this->Nbin; i++) {
 		if (i>0) {
 			if (dx1>(xc[i]-xc[i-1])) {
-				 dx1=xc[i]-xc[i-1];
+                dx1=xc[i]-xc[i-1];
 			}
 		}
 		if (this->n[i] > 0) {
@@ -451,7 +455,7 @@ HistObj HistObj::expand() {
 			}
 		}
 	}
-  int N1 = 1+round((xmax - xmin) / dx1);
+    int N1 = 1+round((xmax - xmin) / dx1);
 	// don't collapse this guy any more than 1 bin
 	if (dx == 0) {
 		return *this;
@@ -486,19 +490,19 @@ HistObj HistObj::expand() {
 ostream & operator<<(ostream &output, const HistObj & H1) {
     output << H1.title << endl;
     output << setw(10) << "TOT\t" << setw(15) << "MEAN\t" << setw(15) << "STD\t"
-            << setw(15) << "IN\t" << setw(15) << "OVER\t" << setw(15) << "UNDER\t" 
-           << setw(15) << "LOW\t" << setw(15) << "HIGH\t" << setw(15) << "BINS\t"<< endl;
+    << setw(15) << "IN\t" << setw(15) << "OVER\t" << setw(15) << "UNDER\t" 
+    << setw(15) << "LOW\t" << setw(15) << "HIGH\t" << setw(15) << "BINS\t"<< endl;
     output << setw(10) << H1.Ntot << "\t" << setw(15) << setprecision(8) << H1.mean << "\t"
-            << setw(15) << setprecision(8) << H1.std << "\t"
-            << setw(15) << H1.Nin << "\t" << setw(15) << H1.Nover << "\t" << setw(15) << H1.Nunder 
-            << "\t" << setw(15) << H1.xlow << "\t" << setw(15) << H1.xhigh << "\t" << setw(15) << H1.Nbin << endl;
+    << setw(15) << setprecision(8) << H1.std << "\t"
+    << setw(15) << H1.Nin << "\t" << setw(15) << H1.Nover << "\t" << setw(15) << H1.Nunder 
+    << "\t" << setw(15) << H1.xlow << "\t" << setw(15) << H1.xhigh << "\t" << setw(15) << H1.Nbin << endl;
 	if (!H1.collapsed) {
 		output << setw(10) << "bin\t" << setw(10) << H1.xlabel << "\t"<< setw(12) << "n\t" << setw(12) << "cum\t";
 	} else {
 		output << setw(10) << "-\t" << setw(10) << H1.xlabel << "\t" << setw(12) << "n\t" << setw(12) << "cum\t";
-
+        
 	}
-
+    
     if (int(H1.binlabels.size()) == H1.Nbin) {
         output << setw(12) << "label" << endl;
     } else {
@@ -508,12 +512,12 @@ ostream & operator<<(ostream &output, const HistObj & H1) {
         if (H1.n[i] > 0) {
 			if (!H1.collapsed) {
 				output << setw(10) << i << "\t" << setw(10) << H1.xc[i] << "\t" << setw(12) << setprecision(8)
-                    << H1.n[i] << "\t" << setw(12) << setprecision(8) << H1.c[i] << "\t";
+                << H1.n[i] << "\t" << setw(12) << setprecision(8) << H1.c[i] << "\t";
 			} else {
 				output << setw(10) << "-\t" << setw(10) << H1.xc[i]<< "\t" << setw(12) << setprecision(8)
 				<< H1.n[i] << "\t" << setw(12) << setprecision(8) << H1.c[i] << "\t";
 			}
-
+            
             if (int(H1.binlabels.size()) >i) {
                 output << setw(12) << H1.binlabels[i] << endl;
             } else {
@@ -570,9 +574,9 @@ HistObj& HistObj::operator=(const HistObj &rhs) {
 //========================================================================
 
 C_HistoGroups::C_HistoGroups() {
- Groups.clear();
+    Groups.clear();
 }
-	
+
 //========================================================================
 // multiple histogram  group class constructor from stored file 
 //========================================================================
@@ -630,121 +634,121 @@ C_Histos::C_Histos(string & filename) {
 	this->h = h1.h;
 	this->ReadGroupTag = h1.ReadGroupTag;	
 	/*
-    string line;
-    vector<string> s;
-    int i, n;
-    // title
-    // output <<setw(10)<<"TOT"<< setw(10)<<"MEAN"<< setw(10) <<"STD"
-    // <<setw(10)<<"IN"<< setw(10)<<"OVER"<< setw(10) <<"UNDER" << endl;
-    bool more = true;
-    while (more) {
-        more = getline(file1, line);
-        if (!more) break;
-        n++;
-        HistObj h1;
-		
-		
-		// scan file until "@RG" tags are found in the line...
-        while ((line.find("@RG") == string::npos) & (line.find("ID") == string::npos)) {
-            getline(file1, line);
-        }
-		// scan file until "@RG" tags are not found in the line...
-        while ((line.find("@RG") != string::npos) & (line.find("ID") != string::npos)) {
-			ReadGroupTag.push_back(line);
-            getline(file1, line);
-        }
-		break;
-	}		
-	n = 0;
-	char L = '1';
-	while (more) {
-		more = getline(file1, line);
-		if (!more) break;
-		n++;
-		HistObj h1;
-			
-		// scan until title line
-		while (line.size()<1) {
-            getline(file1, line);
-        }
-		
-        i = split(s, line, " \t");
-        if (i > 0) h1.title = s[0];
-        if (h1.title.size() == 0) {
-            h1.title = L;
-            L++;
-        }
-        // scan file until "TOT" and "STD" are found in the line...
-        while ((line.find("TOT") == string::npos) & (line.find("STD") == string::npos)) {
-            getline(file1, line);
-        }
-        //numbers
-        getline(file1, line);
-        //output <<setw(10)<<H1.Ntot<< setw(10)<<H1.mean<< setw(10) <<H1.std
-        //  <<setw(10)<<H1.Nin<< setw(10)<<H1.Nover<< setw(10) <<H1.Nunder<< endl;
-        i = split(s, line, " \t");
-        if (i < 6) {
-            cerr << "HistObj unable to parse file header: " << filename << endl;
-            exit(1);
-        }
-        h1.Ntot = string2Double(s[0]);
-        h1.mean = string2Double(s[1]);
-        h1.std = string2Double(s[2]);
-        h1.Nin = string2Double(s[3]);
-        h1.Nover = string2Double(s[4]);
-        h1.Nunder = string2Double(s[5]);
-        //
-        getline(file1, line);
-        //output <<setw(10)<<"bin"<< setw(10)<<"x"<< setw(10)
-        //       <<"n" << setw(10) <<"cum" << endl;
-        i = split(s, line, " \t");
-        if (i == 4) {
-            h1.xlabel = s[1];
-        }
-        h1.Nbin = 0;
-        //vector<double> xc1;
-        //vector<int> n1;
-        //vector<int> cn1;
-        h1.mode = 0;
-        h1.mode1 = 0;
-        h1.median = -1e20;
-        bool donemedian = false;
-        double nmax = -1;
-        double nmax1 = -1;
-        while (getline(file1, line)) {
-            if (line.size() == 0) {
-                break;
-            }
-            i = split(s, line, " \t");
-            if (i < 4) {
-                cerr << "C_Histo unable to parse file : " << filename << endl;
-                cerr << "line  : " << line << endl;
-                exit(1);
-            }
-            h1.Nbin++;
-            //int i1 = string2Int(s[2]);
-            h1.xc.push_back(string2Double(s[1]));
-            h1.n.push_back(string2Double(s[2]));
-            h1.c.push_back(string2Double(s[3]));
-            if (i > 4) {
-                h1.binlabels.push_back(s[4]);
-            }
-            if (h1.n.back() > nmax) {
-                h1.mode = h1.xc.back();
-                nmax = h1.n.back();
-            }
-            if ((h1.Nbin > 1) && (h1.n.back() > nmax1)) {
-                h1.mode1 = h1.xc.back();
-                nmax1 = h1.n.back();
-            }
-            if ((h1.c.back() >= (h1.Ntot / 2.0)) && (!donemedian)) {
-                h1.median = h1.xc.back();
-                donemedian = true;
-            }
-        }
-        h[h1.title] = h1;
-    }
-	*/
+     string line;
+     vector<string> s;
+     int i, n;
+     // title
+     // output <<setw(10)<<"TOT"<< setw(10)<<"MEAN"<< setw(10) <<"STD"
+     // <<setw(10)<<"IN"<< setw(10)<<"OVER"<< setw(10) <<"UNDER" << endl;
+     bool more = true;
+     while (more) {
+     more = getline(file1, line);
+     if (!more) break;
+     n++;
+     HistObj h1;
+     
+     
+     // scan file until "@RG" tags are found in the line...
+     while ((line.find("@RG") == string::npos) & (line.find("ID") == string::npos)) {
+     getline(file1, line);
+     }
+     // scan file until "@RG" tags are not found in the line...
+     while ((line.find("@RG") != string::npos) & (line.find("ID") != string::npos)) {
+     ReadGroupTag.push_back(line);
+     getline(file1, line);
+     }
+     break;
+     }		
+     n = 0;
+     char L = '1';
+     while (more) {
+     more = getline(file1, line);
+     if (!more) break;
+     n++;
+     HistObj h1;
+     
+     // scan until title line
+     while (line.size()<1) {
+     getline(file1, line);
+     }
+     
+     i = split(s, line, " \t");
+     if (i > 0) h1.title = s[0];
+     if (h1.title.size() == 0) {
+     h1.title = L;
+     L++;
+     }
+     // scan file until "TOT" and "STD" are found in the line...
+     while ((line.find("TOT") == string::npos) & (line.find("STD") == string::npos)) {
+     getline(file1, line);
+     }
+     //numbers
+     getline(file1, line);
+     //output <<setw(10)<<H1.Ntot<< setw(10)<<H1.mean<< setw(10) <<H1.std
+     //  <<setw(10)<<H1.Nin<< setw(10)<<H1.Nover<< setw(10) <<H1.Nunder<< endl;
+     i = split(s, line, " \t");
+     if (i < 6) {
+     cerr << "HistObj unable to parse file header: " << filename << endl;
+     exit(1);
+     }
+     h1.Ntot = string2Double(s[0]);
+     h1.mean = string2Double(s[1]);
+     h1.std = string2Double(s[2]);
+     h1.Nin = string2Double(s[3]);
+     h1.Nover = string2Double(s[4]);
+     h1.Nunder = string2Double(s[5]);
+     //
+     getline(file1, line);
+     //output <<setw(10)<<"bin"<< setw(10)<<"x"<< setw(10)
+     //       <<"n" << setw(10) <<"cum" << endl;
+     i = split(s, line, " \t");
+     if (i == 4) {
+     h1.xlabel = s[1];
+     }
+     h1.Nbin = 0;
+     //vector<double> xc1;
+     //vector<int> n1;
+     //vector<int> cn1;
+     h1.mode = 0;
+     h1.mode1 = 0;
+     h1.median = -1e20;
+     bool donemedian = false;
+     double nmax = -1;
+     double nmax1 = -1;
+     while (getline(file1, line)) {
+     if (line.size() == 0) {
+     break;
+     }
+     i = split(s, line, " \t");
+     if (i < 4) {
+     cerr << "C_Histo unable to parse file : " << filename << endl;
+     cerr << "line  : " << line << endl;
+     exit(1);
+     }
+     h1.Nbin++;
+     //int i1 = string2Int(s[2]);
+     h1.xc.push_back(string2Double(s[1]));
+     h1.n.push_back(string2Double(s[2]));
+     h1.c.push_back(string2Double(s[3]));
+     if (i > 4) {
+     h1.binlabels.push_back(s[4]);
+     }
+     if (h1.n.back() > nmax) {
+     h1.mode = h1.xc.back();
+     nmax = h1.n.back();
+     }
+     if ((h1.Nbin > 1) && (h1.n.back() > nmax1)) {
+     h1.mode1 = h1.xc.back();
+     nmax1 = h1.n.back();
+     }
+     if ((h1.c.back() >= (h1.Ntot / 2.0)) && (!donemedian)) {
+     h1.median = h1.xc.back();
+     donemedian = true;
+     }
+     }
+     h[h1.title] = h1;
+     }
+     */
     file1.close();
 };
 
@@ -769,7 +773,7 @@ C_Histos::C_Histos(ifstream & file1) {
 		while (line.find("RG") == string::npos)  {
 			more=getline(file1, line);
 			if (!more) exit(126);
-				
+            
 		}
 		// scan file until "@RG" tags are not found in the line...
 		//while ((line.find("RG") != string::npos) & (line.find("ID") != string::npos)) {
@@ -899,13 +903,13 @@ C_Histos::C_Histos(ifstream & file1) {
 
 /*
  ostream & operator<<(ostream &output, const C_Histos & Hs) {
-    map<string, HistObj,less<string> >::iterator ih; // = Hs.h.begin();   
-    for ( ih=Hs.h.begin() ; ih != Hs.h.end(); ih++ ) {
-           output << (*ih).second << endl;
-    }
-}
-*/
-    
+ map<string, HistObj,less<string> >::iterator ih; // = Hs.h.begin();   
+ for ( ih=Hs.h.begin() ; ih != Hs.h.end(); ih++ ) {
+ output << (*ih).second << endl;
+ }
+ }
+ */
+
 //========================================================================
 // 1D descriptive statistics class constructor
 //========================================================================

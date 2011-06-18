@@ -12,113 +12,113 @@
 // function to enforce p0 and p1 to be bound within pos0 and pos1 
 //------------------------------------------------------------------------------
 bool boundlimit(int p0, int p1, int pos0, int pos1) {
-  bool within= ((p0>=pos0)&&(p1<=pos1));
-  return within;
-  /*
-  if ((p1<pos0)|(p0>pos1)) {
+    bool within= ((p0>=pos0)&&(p1<=pos1));
+    return within;
+    /*
+     if ((p1<pos0)|(p0>pos1)) {
      return false;
-  }
-  // shift to region pos0 to pos1
-  p0=p0-pos0;
-  p1=p1-pos0;
-  if (p0<0) { p0=0;}
-  if (p1>(pos1-pos0)) {p1=pos1-pos0;}
-  return true;
-  */
+     }
+     // shift to region pos0 to pos1
+     p0=p0-pos0;
+     p1=p1-pos0;
+     if (p0<0) { p0=0;}
+     if (p1>(pos1-pos0)) {p1=pos1-pos0;}
+     return true;
+     */
 }
 //------------------------------------------------------------------------------
 // readmap (basic info for one read alignment)
 //------------------------------------------------------------------------------
 C_readmap::C_readmap()   // Constructor
 {
-   pos = 0;
-   anchor = 0;
-   len = 0;
-   sense = 0;
-   q=0;
-   mm=0;
-	 q2=0;
-	 nmap=0;
-	 string mob1(" ");
-	 mob=mob1;
+    pos = 0;
+    anchor = 0;
+    len = 0;
+    sense = 0;
+    q=0;
+    mm=0;
+    q2=0;
+    nmap=0;
+    string mob1(" ");
+    mob=mob1;
 }
 
 C_readmap::C_readmap(const C_readmap &copyin)   // Copy constructor to handle pass by value.
 {                             
-   pos = copyin.pos;
-   anchor= copyin.anchor;
-   len = copyin.len;
-   sense = copyin.sense;
-   q = copyin.q;
-   mm = copyin.mm;
-	 q2=copyin.q2;
-	 nmap=copyin.nmap;
-	 mob=copyin.mob;
+    pos = copyin.pos;
+    anchor= copyin.anchor;
+    len = copyin.len;
+    sense = copyin.sense;
+    q = copyin.q;
+    mm = copyin.mm;
+    q2=copyin.q2;
+    nmap=copyin.nmap;
+    mob=copyin.mob;
 }
 
 /*
  C_readmap::C_readmap(unsigned int pos1, unsigned short anchor1,unsigned short len1, char sense1, char q1, char mm1) {
-   pos = pos1;
-   anchor = anchor1;
-   len = len1;
-   sense = sense1;
-   q = q1;
-   mm = mm1;
-	q2=0;
-	nmap=0;
-	mob=" ";
-}
-*/
+ pos = pos1;
+ anchor = anchor1;
+ len = len1;
+ sense = sense1;
+ q = q1;
+ mm = mm1;
+ q2=0;
+ nmap=0;
+ mob=" ";
+ }
+ */
 
 ostream &operator<<(ostream &output, const C_readmap & x)
 {
-   output << x.anchor << "\t" << x.pos << "\t" << x.len 
-          << "\t" << x.sense <<"\t" << int(x.q) <<"\t" << int(x.mm) ;
-   return output;
+    output << x.anchor << "\t" << x.pos << "\t" << x.len 
+    << "\t" << x.sense <<"\t" << int(x.q) <<"\t" << int(x.mm) ;
+    return output;
 }
 
 C_readmap& C_readmap::operator=(const C_readmap &rhs)
 {
-   this->pos = rhs.pos;
-   this->anchor = rhs.anchor;
-   this->len = rhs.len;
-   this->sense = rhs.sense;
-   this->q = rhs.q;
-	 this->mm = rhs.mm;
-	 this->nmap = rhs.nmap;
-	 this->mob = rhs.mob;
-   return *this;
+    this->pos = rhs.pos;
+    this->anchor = rhs.anchor;
+    this->len = rhs.len;
+    this->sense = rhs.sense;
+    this->q = rhs.q;
+    this->mm = rhs.mm;
+    this->nmap = rhs.nmap;
+    this->mob = rhs.mob;
+    return *this;
 }
 
 int C_readmap::operator==(const C_readmap &rhs) const
 {
-   if( this->pos != rhs.pos) return 0;
-   if( this->anchor != rhs.anchor) return 0;
-   if( this->len != rhs.len) return 0;
-   if( this->sense != rhs.sense) return 0;
-   if( this->q != rhs.q) return 0;
-   if( this->mm != rhs.mm) return 0;
- 	 if( this->q2 != rhs.q2) return 0;
-	 if( this->nmap != rhs.nmap) return 0;
-  return 1;
+    if( this->pos != rhs.pos) return 0;
+    if( this->anchor != rhs.anchor) return 0;
+    if( this->len != rhs.len) return 0;
+    if( this->sense != rhs.sense) return 0;
+    if( this->q != rhs.q) return 0;
+    if( this->mm != rhs.mm) return 0;
+    if( this->q2 != rhs.q2) return 0;
+    if( this->nmap != rhs.nmap) return 0;
+    return 1;
 }
 
 // This function is required for built-in STL list functions like sort
 int C_readmap::operator<(const C_readmap &rhs) const
 {
-   if( this->anchor < rhs.anchor ) return 1;
-   if( this->anchor == rhs.anchor && this->pos < rhs.pos ) return 1;
-   if( this->anchor == rhs.anchor && this->pos == rhs.pos 
+    if( this->anchor < rhs.anchor ) return 1;
+    if( this->anchor == rhs.anchor && this->pos < rhs.pos ) return 1;
+    if( this->anchor == rhs.anchor && this->pos == rhs.pos 
        && this->len < rhs.len) return 1;
-   if( this->anchor == rhs.anchor && this->pos == rhs.pos 
+    if( this->anchor == rhs.anchor && this->pos == rhs.pos 
        && this->len == rhs.len && this->sense < rhs.sense) return 1;
-   if( this->anchor == rhs.anchor && this->pos == rhs.pos && this->len == rhs.len 
-      && this->sense == rhs.sense && this->q < rhs.q) return 1;
+    if( this->anchor == rhs.anchor && this->pos == rhs.pos && this->len == rhs.len 
+       && this->sense == rhs.sense && this->q < rhs.q) return 1;
 	if( this->anchor == rhs.anchor && this->pos == rhs.pos && this->len == rhs.len 
-		 && this->sense == rhs.sense && this->q == rhs.q &&  this->mm < rhs.mm) return 1;
+       && this->sense == rhs.sense && this->q == rhs.q &&  this->mm < rhs.mm) return 1;
 	if( this->anchor == rhs.anchor && this->pos == rhs.pos && this->len == rhs.len 
-		 && this->sense == rhs.sense && this->q == rhs.q &&  this->mm == rhs.mm &&  this->nmap < rhs.nmap) return 1;
-   return 0;
+       && this->sense == rhs.sense && this->q == rhs.q &&  this->mm == rhs.mm &&  this->nmap < rhs.nmap) return 1;
+    return 0;
 }
 
 //------------------------------------------------------------------------------
@@ -138,38 +138,38 @@ ostream &operator<<(ostream &output, const C_readmaps & rhs)
     }    
     return output;
 }
-    
+
 C_readmaps::C_readmaps(const C_readmaps &copyin)   
 {
-  align = copyin.align;                             
-  Nalign = copyin.Nalign;                             
-  element = copyin.element;
+    align = copyin.align;                             
+    Nalign = copyin.Nalign;                             
+    element = copyin.element;
 }
 
 C_readmaps& C_readmaps::operator=(const C_readmaps &rhs)
 {
-   this->align = rhs.align;
-   this->Nalign = rhs.Nalign;
-   this->element = rhs.element;
-   return *this;
+    this->align = rhs.align;
+    this->Nalign = rhs.Nalign;
+    this->element = rhs.element;
+    return *this;
 }
 
 //------------------------------------------------------------------------------
 // pairedread (array of two readmaps)
 //------------------------------------------------------------------------------
 C_pairedread::C_pairedread() {              // constructor
-  Nend=0;
-  ReadGroupCode=0;
+    Nend=0;
+    ReadGroupCode=0;
 	Qproperpair=0;
 	Name="";
 }
- 
+
 ostream &operator<<(ostream &output, const C_pairedread & rhs)
 {
     output << rhs.read[0] << endl;
     output << rhs.read[1] << endl;
-		output << rhs.Qproperpair << endl;
-		output << rhs.ReadGroupCode << endl;	
+    output << rhs.Qproperpair << endl;
+    output << rhs.ReadGroupCode << endl;	
     return output;
 }
 
@@ -180,67 +180,67 @@ ostream &operator<<(ostream &output, const C_pairedread & rhs)
 C_anchorinfo::C_anchorinfo() {               // constructor
 	source = "";
 	special = "";
-  use.clear();
+    use.clear();
 }
 
 //------------------------------------------------------------------------------
 // anchorinfo copy constructor
 //------------------------------------------------------------------------------
 C_anchorinfo::C_anchorinfo(const C_anchorinfo & rhs) {               // constructor
-  source = rhs.source;  
+    source = rhs.source;  
 	special = rhs.special;
-  L=rhs.L;
-  use=rhs.use;
-  element=rhs.element;
-  names=rhs.names;
+    L=rhs.L;
+    use=rhs.use;
+    element=rhs.element;
+    names=rhs.names;
 }
 
 
 C_anchorinfo::C_anchorinfo(string & anchorfile) {              // constructor
-  // anchor file patterns
-  string patternHead("number.+\\s+(\\d+)$");
-  //string patternLine("(\\d+)\\.\\s+(\\S+)\\s+(\\d+)\\s*$");
+    // anchor file patterns
+    string patternHead("number.+\\s+(\\d+)$");
+    //string patternLine("(\\d+)\\.\\s+(\\S+)\\s+(\\d+)\\s*$");
 	string patternLine("^\\s*(\\d+)\\.\\s+(\\S+)\\s+(\\d+)\\s*$");
-  source=anchorfile;
+    source=anchorfile;
 	special="";
 	size_t found=anchorfile.find("special");
-  if (found!=string::npos)	{
+    if (found!=string::npos)	{
 		special="moblist_";
 	}
 	fstream file1;
-  file1.open(anchorfile.c_str(), ios::in);	
-  if (!file1) {
-    cerr << "Unable to open anchor file: " << anchorfile << endl;
-    exit(1);
-  }
-  string line;
-  string match,match2,match3;
-  int N=0;
-  while (getline(file1, line)) {		
-		//================
-    if (RE2::FullMatch(line.c_str(),patternHead.c_str(),&match) ) {
-        N = string2Int(match);
-    } else if ( RE2::FullMatch(line.c_str(),patternLine.c_str(),&match,&match2,&match3)  ) {
-        string cn1 = match2;
-        int L1 = string2Int(match3);
-        L[cn1]=L1;
-        names.push_back(cn1);
+    file1.open(anchorfile.c_str(), ios::in);	
+    if (!file1) {
+        cerr << "Unable to open anchor file: " << anchorfile << endl;
+        exit(1);
     }
-  }
-  use.resize(N,true);
+    string line;
+    string match,match2,match3;
+    int N=0;
+    while (getline(file1, line)) {		
+		//================
+        if (RE2::FullMatch(line.c_str(),patternHead.c_str(),&match) ) {
+            N = string2Int(match);
+        } else if ( RE2::FullMatch(line.c_str(),patternLine.c_str(),&match,&match2,&match3)  ) {
+            string cn1 = match2;
+            int L1 = string2Int(match3);
+            L[cn1]=L1;
+            names.push_back(cn1);
+        }
+    }
+    use.resize(N,true);
 }
 
 C_anchorinfo::C_anchorinfo(char t) {               // constructor for build 36.1
-  source = "";
-  if (t==0) {
-    source = "AB";
-    for (int i = 0; i<25; i++) {
-        names.push_back(ABCHROMOSOMENAME[i]); 
-        L[ABCHROMOSOMENAME[i]]=ABCHROMOSOMELENGTH[i];
+    source = "";
+    if (t==0) {
+        source = "AB";
+        for (int i = 0; i<25; i++) {
+            names.push_back(ABCHROMOSOMENAME[i]); 
+            L[ABCHROMOSOMENAME[i]]=ABCHROMOSOMELENGTH[i];
+        }
+        cout << "\t ... using default ncbi build 36.1 anchor info" << endl;
+        use.resize(25,true);
     }
-    cout << "\t ... using default ncbi build 36.1 anchor info" << endl;
-    use.resize(25,true);
-  }
 }
 
 
@@ -248,15 +248,15 @@ C_anchorinfo::C_anchorinfo(char t) {               // constructor for build 36.1
 
 int C_anchorinfo::operator==(const C_anchorinfo &rhs) const
 {
-   if (this->L.size()!=rhs.L.size() ) return 0;
+    if (this->L.size()!=rhs.L.size() ) return 0;
     
-   /* another day
-   for(size_t i=0; i<names.size(); ++i) {
-      unsigned int L1 =  L[names[i]];
-      if (rhs.L.count(names[i])>0) return 0;
-      if (rhs.L[names[i]] != L1) return 0;
-    }
-    */
+    /* another day
+     for(size_t i=0; i<names.size(); ++i) {
+     unsigned int L1 =  L[names[i]];
+     if (rhs.L.count(names[i])>0) return 0;
+     if (rhs.L[names[i]] != L1) return 0;
+     }
+     */
     
     return 1;
 }
@@ -284,7 +284,7 @@ C_anchorinfo::C_anchorinfo(BamMultiReader & ar1) {
 	
 	
 	for (RefVector::const_iterator ri = refSeq1.begin();
-			 ri != refSeq1.end(); ri++) {
+         ri != refSeq1.end(); ri++) {
 		
 		// retrieve reference info
 		RefData rd = *ri;
@@ -316,24 +316,24 @@ C_anchorinfo::C_anchorinfo(BamMultiReader & ar1) {
 }
 
 void C_anchorinfo::anchorlimit(string & allow) {         
-  string patternAllowContigsRegex(allow);  
-  // regex match
-  string name=" ";
-  for (size_t i = 0; i<names.size(); i++) {
-      name= names[i];
-      // skip this ContigName if not present in AllowContigs
-      if (!  RE2::PartialMatch(name.c_str(),patternAllowContigsRegex.c_str())) {
-        use[i]=false;
-      }
-  }
+    string patternAllowContigsRegex(allow);  
+    // regex match
+    string name=" ";
+    for (size_t i = 0; i<names.size(); i++) {
+        name= names[i];
+        // skip this ContigName if not present in AllowContigs
+        if (!  RE2::PartialMatch(name.c_str(),patternAllowContigsRegex.c_str())) {
+            use[i]=false;
+        }
+    }
 }
 
 bool C_anchorinfo::anchorElements() {         
 	
-  string match;
+    string match;
 	string patternElement("^(moblist_\\S+)\\.\\S+");  
 	vector<string> elements1;
-  for (size_t i = 0; i<names.size(); i++) {
+    for (size_t i = 0; i<names.size(); i++) {
 		// skip this ContigName if not present in AllowContigs
 		if ( RE2::FullMatch(names[i].c_str(),patternElement.c_str(),&match) ) {
 			if (elements1.size()>0) {
@@ -343,16 +343,16 @@ bool C_anchorinfo::anchorElements() {
 			}
 			elements1.push_back(match);
 		}
-  }
-
+    }
+    
 	vector<string>::iterator it;
 	it = unique (elements1.begin(), elements1.end()); 
 	
-  elements1.resize( it - elements1.begin() ); 
+    elements1.resize( it - elements1.begin() ); 
 	
 	
-  //string e0[] = {"moblist_ALU","moblist_L1","moblist_SVA","moblist_ERV"};
-  //vector<string> elements1(e0, e0 + 4);
+    //string e0[] = {"moblist_ALU","moblist_L1","moblist_SVA","moblist_ERV"};
+    //vector<string> elements1(e0, e0 + 4);
 	
 	return(anchorElements(elements1));
 }
@@ -362,14 +362,14 @@ bool C_anchorinfo::anchorElements() {
 // add list of reference elements to anchorinfo  
 //------------------------------------------------------------------------------
 bool C_anchorinfo::anchorElements(vector<string> & elements0) {         
-
+    
 	vector<string> elements1;
-
+    
 	if(elements0.size()==1) {
 		// build elements from pattern elements0
 		string match;
 		string patternElement("^("+elements0[0]+"\\S+)\\.\\S+");  
-
+        
 		for (size_t i = 0; i<names.size(); i++) {
 			if ( RE2::FullMatch(names[i].c_str(),patternElement.c_str(),&match) ) {			
 				elements1.push_back(match);
@@ -383,51 +383,51 @@ bool C_anchorinfo::anchorElements(vector<string> & elements0) {
 		//  elements are already listed in elements0
 		elements1=elements0;
 	}
-
-  // init
-  bool done=false;
-  string name=" ";
-  string elem=" ";
-  element.clear();
-  element.resize(names.size(),-1);
-  
-  // loop over anchors
-  for (size_t i = 0; i<names.size(); i++) {
-      
-      // loop over elements
-      for (size_t e = 0; e<elements1.size(); e++) {
-				
-        elem= elements1[e];
-				name= names[i].substr(0,elem.size());
-				
-        // set element index 
-        if (name==elem) {
-           element[i]=e;
-
-           // do not analyze coverage within these elements
-           use[i]=false;
-           done=true;
-           break;
+    
+    // init
+    bool done=false;
+    string name=" ";
+    string elem=" ";
+    element.clear();
+    element.resize(names.size(),-1);
+    
+    // loop over anchors
+    for (size_t i = 0; i<names.size(); i++) {
+        
+        // loop over elements
+        for (size_t e = 0; e<elements1.size(); e++) {
+            
+            elem= elements1[e];
+            name= names[i].substr(0,elem.size());
+            
+            // set element index 
+            if (name==elem) {
+                element[i]=e;
+                
+                // do not analyze coverage within these elements
+                use[i]=false;
+                done=true;
+                break;
+            }
+            
         }
-
-      }
-
-   }
-   return done;
+        
+    }
+    return done;
 }  
 
 //------------------------------------------------------------------------------
 // get minimum element anchor index - return 999 if no elements
 //------------------------------------------------------------------------------
 unsigned int C_anchorinfo::anchorMinElement() {
-  unsigned int a1;
-  for(a1=0; a1<element.size(); a1++) {
-    if (element[a1]>=0) {
-      return a1;
+    unsigned int a1;
+    for(a1=0; a1<element.size(); a1++) {
+        if (element[a1]>=0) {
+            return a1;
+        }
     }
-  }
-  a1=999;
-  return a1;
+    a1=999;
+    return a1;
 }
 
 
@@ -459,24 +459,24 @@ ostream &operator<<(ostream &output,  C_anchorinfo & a)
 }
 
 void C_anchorinfo::push_anchor (string & name1, unsigned int L1) {
-  names.push_back(name1);
-  L[name1]=L1;
+    names.push_back(name1);
+    L[name1]=L1;
 }
 
 void C_anchorinfo::printAnchorInfo(string & name) {
-// format: optimized to loadFragments.m matlab script  
-  // open output binary file. bomb if unable to open
-  fstream output(name.c_str(), ios::out);
-  if (!output) {
-      cerr << "Unable to open anchor info output file: " << name << endl;
-      return;
-  }
-  int V = 207;
-  output << "Anchor Information, version " << V << endl;
-  output << "\t #.\t Anchor\t Length\t use" << endl;
-  output << *this;
-  output << endl ;
-  output.close();
+    // format: optimized to loadFragments.m matlab script  
+    // open output binary file. bomb if unable to open
+    fstream output(name.c_str(), ios::out);
+    if (!output) {
+        cerr << "Unable to open anchor info output file: " << name << endl;
+        return;
+    }
+    int V = 207;
+    output << "Anchor Information, version " << V << endl;
+    output << "\t #.\t Anchor\t Length\t use" << endl;
+    output << *this;
+    output << endl ;
+    output.close();
 }
 
 //------------------------------------------------------------------------------
@@ -495,7 +495,7 @@ C_libraryinfo::C_libraryinfo()                          // constructor default
     NSingle=0;
     NPairRedundant=0;
     NSingleRedundant=0;
-	  source = "";
+    source = "";
 }
 
 C_libraryinfo::C_libraryinfo(const C_libraryinfo & rhs)     // copy constructor
@@ -553,7 +553,7 @@ ostream &operator<<(ostream &output,  C_libraryinfo & lib)
     output << "\t Redundnat:\t"<< lib.NPairRedundant << endl;
     output << "\t NSE:\t"<< lib.NSingle;
   	output << "\t Redundant: \t"<< lib.NSingleRedundant << endl;
-	  output << "\t source: \t"<< lib.source  << endl;
+    output << "\t source: \t"<< lib.source  << endl;
     return output;
 }
 
@@ -569,164 +569,164 @@ C_libraries::C_libraries()              // constructor
 //------------------------------------------------------------------------------
 C_libraries::C_libraries(string & infilename)      // load lib info 
 {
-  fstream input(infilename.c_str(), ios::in  | ios::binary);
-  if (!input) {
-      cerr << "Unable to open library.span file: " << infilename << endl;
-  }
-  C_headerSpan h(input);
-  C_librarymap::iterator it;
-  C_libraryinfo lib1;    
+    fstream input(infilename.c_str(), ios::in  | ios::binary);
+    if (!input) {
+        cerr << "Unable to open library.span file: " << infilename << endl;
+    }
+    C_headerSpan h(input);
+    C_librarymap::iterator it;
+    C_libraryinfo lib1;    
 	
 	lib1.source = infilename;
-
-  int N= h.N;
-  //----------------------------------------------------------------------------
-  // fixed length part of lib record
-  //----------------------------------------------------------------------------  
-  for(int i=0; i<N; i++)  {
-    input.read(reinterpret_cast< char *>(&lib1.Info.ReadGroupCode), sizeof(unsigned int));
-    input.read(reinterpret_cast< char *>(&lib1.Info.MedianFragmentLength), sizeof(unsigned int));
-    input.read(reinterpret_cast< char *>(&lib1.Info.SequencingTechnology), sizeof(unsigned short));
-    input.read(reinterpret_cast< char *>(&lib1.LM), sizeof(int));
-    input.read(reinterpret_cast< char *>(&lib1.LMlow), sizeof(int));
-    input.read(reinterpret_cast< char *>(&lib1.LMhigh), sizeof(int));
-    input.read(reinterpret_cast< char *>(&lib1.tailcut), sizeof(double));
-    input.read(reinterpret_cast< char *>(&lib1.LR), sizeof(double));
-    input.read(reinterpret_cast< char *>(&lib1.LRmin), sizeof(int));
-    input.read(reinterpret_cast< char *>(&lib1.LRmax), sizeof(int));
-    input.read(reinterpret_cast< char *>(&lib1.NPair), sizeof(int));
-    input.read(reinterpret_cast< char *>(&lib1.NSingle), sizeof(int));
-    input.read(reinterpret_cast< char *>(&lib1.NPairRedundant), sizeof(int));
-    input.read(reinterpret_cast< char *>(&lib1.NSingleRedundant), sizeof(int));
-    this->libmap[lib1.Info.ReadGroupCode]=lib1;
-  }
-  //----------------------------------------------------------------------------
-  // variable length part of lib record
-  //----------------------------------------------------------------------------  
-  int nchar = 0;
-  // buffer for loading strings
-  char buff[512];
-  for ( it=this->libmap.begin() ; it != this->libmap.end(); it++ )
-  {  
-    lib1 = (*it).second; 
-    input.read(reinterpret_cast< char *>(&lib1.Info.ReadGroupCode), sizeof(unsigned int));
-    input.read(reinterpret_cast< char *>(&lib1.Info.MedianFragmentLength), sizeof(unsigned int));
-    // ReadGroupID
-    input.read(reinterpret_cast < char * > (&nchar), sizeof(int));
-    input.read(buff, nchar);
-    // convert c-style string buff to string contigName 
-    buff[nchar]=0;
-    lib1.Info.ReadGroupID=buff;
-    // CenterName
-    input.read(reinterpret_cast < char * > (&nchar), sizeof(int));
-    input.read(buff, nchar);
-    buff[nchar]=0;
-    lib1.Info.CenterName=buff;
-    // Description
-    input.read(reinterpret_cast < char * > (&nchar), sizeof(int));
-    input.read(buff, nchar);
-    buff[nchar]=0;
-    lib1.Info.Description=buff;
-    // LibraryName
-    input.read(reinterpret_cast < char * > (&nchar), sizeof(int));
-    input.read(buff, nchar);
-    buff[nchar]=0;
-    lib1.Info.LibraryName=buff;
-    // PlatformUnit
-    input.read(reinterpret_cast < char * > (&nchar), sizeof(int));
-    input.read(buff, nchar);
-    buff[nchar]=0;
-    lib1.Info.PlatformUnit=buff;
-    // SampleName
-    input.read(reinterpret_cast < char * > (&nchar), sizeof(int));
-    input.read(buff, nchar);
-    buff[nchar]=0;
-    lib1.Info.SampleName=buff;
-    // LF distribution
-    input.read(reinterpret_cast < char * > (&nchar), sizeof(int));
-    input.read(buff, nchar);
-    buff[nchar]=0;
-    lib1.fragHist.title=buff;
-    input.read(reinterpret_cast< char *>(&lib1.fragHist.Ntot), sizeof(double));
-    input.read(reinterpret_cast< char *>(&lib1.fragHist.mean), sizeof(double));
-    input.read(reinterpret_cast< char *>(&lib1.fragHist.std), sizeof(double));
-    input.read(reinterpret_cast< char *>(&lib1.fragHist.median), sizeof(double));
-    input.read(reinterpret_cast< char *>(&lib1.fragHist.Nin), sizeof(double));
-    input.read(reinterpret_cast< char *>(&lib1.fragHist.Nunder), sizeof(double));
-    input.read(reinterpret_cast< char *>(&lib1.fragHist.Nover), sizeof(double));
-    input.read(reinterpret_cast< char *>(&lib1.fragHist.Nbin), sizeof(int));
-    lib1.fragHist.xc.resize(lib1.fragHist.Nbin);
-    lib1.fragHist.n.resize(lib1.fragHist.Nbin);
-    lib1.fragHist.c.resize(lib1.fragHist.Nbin);
-    for (int i=0; i<lib1.fragHist.Nbin; i++) {
-      input.read(reinterpret_cast< char *>(&lib1.fragHist.xc[i]), sizeof(double));
-      input.read(reinterpret_cast< char *>(&lib1.fragHist.n[i]), sizeof(double));
-      input.read(reinterpret_cast< char *>(&lib1.fragHist.c[i]), sizeof(double));
+    
+    int N= h.N;
+    //----------------------------------------------------------------------------
+    // fixed length part of lib record
+    //----------------------------------------------------------------------------  
+    for(int i=0; i<N; i++)  {
+        input.read(reinterpret_cast< char *>(&lib1.Info.ReadGroupCode), sizeof(unsigned int));
+        input.read(reinterpret_cast< char *>(&lib1.Info.MedianFragmentLength), sizeof(unsigned int));
+        input.read(reinterpret_cast< char *>(&lib1.Info.SequencingTechnology), sizeof(unsigned short));
+        input.read(reinterpret_cast< char *>(&lib1.LM), sizeof(int));
+        input.read(reinterpret_cast< char *>(&lib1.LMlow), sizeof(int));
+        input.read(reinterpret_cast< char *>(&lib1.LMhigh), sizeof(int));
+        input.read(reinterpret_cast< char *>(&lib1.tailcut), sizeof(double));
+        input.read(reinterpret_cast< char *>(&lib1.LR), sizeof(double));
+        input.read(reinterpret_cast< char *>(&lib1.LRmin), sizeof(int));
+        input.read(reinterpret_cast< char *>(&lib1.LRmax), sizeof(int));
+        input.read(reinterpret_cast< char *>(&lib1.NPair), sizeof(int));
+        input.read(reinterpret_cast< char *>(&lib1.NSingle), sizeof(int));
+        input.read(reinterpret_cast< char *>(&lib1.NPairRedundant), sizeof(int));
+        input.read(reinterpret_cast< char *>(&lib1.NSingleRedundant), sizeof(int));
+        this->libmap[lib1.Info.ReadGroupCode]=lib1;
     }
-    lib1.fragHist.dx=lib1.fragHist.xc[1]-lib1.fragHist.xc[0];      
-    lib1.fragHist.xlow=lib1.fragHist.xc[0]-lib1.fragHist.dx/2.0;      
-    lib1.fragHist.xhigh=lib1.fragHist.xc[lib1.fragHist.Nbin-1]+lib1.fragHist.dx/2.0;      
-    lib1.fragHist.Finalize();         
- 
-    // LR distribution
-    input.read(reinterpret_cast < char * > (&nchar), sizeof(int));
-    input.read(buff, nchar);
-    buff[nchar]=0;
-    lib1.readLengthHist.title=buff;
-    input.read(reinterpret_cast<  char *>(&lib1.readLengthHist.Ntot), sizeof(double));
-    input.read(reinterpret_cast<  char *>(&lib1.readLengthHist.mean), sizeof(double));
-    input.read(reinterpret_cast<  char *>(&lib1.readLengthHist.std), sizeof(double));
-    input.read(reinterpret_cast<  char *>(&lib1.readLengthHist.median), sizeof(double));
-    input.read(reinterpret_cast<  char *>(&lib1.readLengthHist.Nin), sizeof(double));
-    input.read(reinterpret_cast<  char *>(&lib1.readLengthHist.Nunder), sizeof(double));
-    input.read(reinterpret_cast<  char *>(&lib1.readLengthHist.Nover), sizeof(double));
-    input.read(reinterpret_cast<  char *>(&lib1.readLengthHist.Nbin), sizeof(int));
-    lib1.readLengthHist.xc.resize(lib1.readLengthHist.Nbin);
-    lib1.readLengthHist.n.resize(lib1.readLengthHist.Nbin);
-    lib1.readLengthHist.c.resize(lib1.readLengthHist.Nbin);
-    for (int i=0; i<lib1.readLengthHist.Nbin; i++) {
-        input.read(reinterpret_cast<  char *>(&lib1.readLengthHist.xc[i]), sizeof(double));
-        input.read(reinterpret_cast<  char *>(&lib1.readLengthHist.n[i]), sizeof(double));
-        input.read(reinterpret_cast<  char *>(&lib1.readLengthHist.c[i]), sizeof(double));
-    }
-    lib1.readLengthHist.dx=lib1.readLengthHist.xc[1]-lib1.readLengthHist.xc[0];      
-    lib1.readLengthHist.xlow=lib1.readLengthHist.xc[0]-lib1.readLengthHist.dx/2.0;      
-    lib1.readLengthHist.xhigh=lib1.readLengthHist.xc[lib1.readLengthHist.Nbin-1]+lib1.readLengthHist.dx/2.0;      
-    lib1.readLengthHist.Finalize();         
-         
-    this->libmap[lib1.Info.ReadGroupCode]=lib1;
+    //----------------------------------------------------------------------------
+    // variable length part of lib record
+    //----------------------------------------------------------------------------  
+    int nchar = 0;
+    // buffer for loading strings
+    char buff[512];
+    for ( it=this->libmap.begin() ; it != this->libmap.end(); it++ )
+    {  
+        lib1 = (*it).second; 
+        input.read(reinterpret_cast< char *>(&lib1.Info.ReadGroupCode), sizeof(unsigned int));
+        input.read(reinterpret_cast< char *>(&lib1.Info.MedianFragmentLength), sizeof(unsigned int));
+        // ReadGroupID
+        input.read(reinterpret_cast < char * > (&nchar), sizeof(int));
+        input.read(buff, nchar);
+        // convert c-style string buff to string contigName 
+        buff[nchar]=0;
+        lib1.Info.ReadGroupID=buff;
+        // CenterName
+        input.read(reinterpret_cast < char * > (&nchar), sizeof(int));
+        input.read(buff, nchar);
+        buff[nchar]=0;
+        lib1.Info.CenterName=buff;
+        // Description
+        input.read(reinterpret_cast < char * > (&nchar), sizeof(int));
+        input.read(buff, nchar);
+        buff[nchar]=0;
+        lib1.Info.Description=buff;
+        // LibraryName
+        input.read(reinterpret_cast < char * > (&nchar), sizeof(int));
+        input.read(buff, nchar);
+        buff[nchar]=0;
+        lib1.Info.LibraryName=buff;
+        // PlatformUnit
+        input.read(reinterpret_cast < char * > (&nchar), sizeof(int));
+        input.read(buff, nchar);
+        buff[nchar]=0;
+        lib1.Info.PlatformUnit=buff;
+        // SampleName
+        input.read(reinterpret_cast < char * > (&nchar), sizeof(int));
+        input.read(buff, nchar);
+        buff[nchar]=0;
+        lib1.Info.SampleName=buff;
+        // LF distribution
+        input.read(reinterpret_cast < char * > (&nchar), sizeof(int));
+        input.read(buff, nchar);
+        buff[nchar]=0;
+        lib1.fragHist.title=buff;
+        input.read(reinterpret_cast< char *>(&lib1.fragHist.Ntot), sizeof(double));
+        input.read(reinterpret_cast< char *>(&lib1.fragHist.mean), sizeof(double));
+        input.read(reinterpret_cast< char *>(&lib1.fragHist.std), sizeof(double));
+        input.read(reinterpret_cast< char *>(&lib1.fragHist.median), sizeof(double));
+        input.read(reinterpret_cast< char *>(&lib1.fragHist.Nin), sizeof(double));
+        input.read(reinterpret_cast< char *>(&lib1.fragHist.Nunder), sizeof(double));
+        input.read(reinterpret_cast< char *>(&lib1.fragHist.Nover), sizeof(double));
+        input.read(reinterpret_cast< char *>(&lib1.fragHist.Nbin), sizeof(int));
+        lib1.fragHist.xc.resize(lib1.fragHist.Nbin);
+        lib1.fragHist.n.resize(lib1.fragHist.Nbin);
+        lib1.fragHist.c.resize(lib1.fragHist.Nbin);
+        for (int i=0; i<lib1.fragHist.Nbin; i++) {
+            input.read(reinterpret_cast< char *>(&lib1.fragHist.xc[i]), sizeof(double));
+            input.read(reinterpret_cast< char *>(&lib1.fragHist.n[i]), sizeof(double));
+            input.read(reinterpret_cast< char *>(&lib1.fragHist.c[i]), sizeof(double));
+        }
+        lib1.fragHist.dx=lib1.fragHist.xc[1]-lib1.fragHist.xc[0];      
+        lib1.fragHist.xlow=lib1.fragHist.xc[0]-lib1.fragHist.dx/2.0;      
+        lib1.fragHist.xhigh=lib1.fragHist.xc[lib1.fragHist.Nbin-1]+lib1.fragHist.dx/2.0;      
+        lib1.fragHist.Finalize();         
+        
+        // LR distribution
+        input.read(reinterpret_cast < char * > (&nchar), sizeof(int));
+        input.read(buff, nchar);
+        buff[nchar]=0;
+        lib1.readLengthHist.title=buff;
+        input.read(reinterpret_cast<  char *>(&lib1.readLengthHist.Ntot), sizeof(double));
+        input.read(reinterpret_cast<  char *>(&lib1.readLengthHist.mean), sizeof(double));
+        input.read(reinterpret_cast<  char *>(&lib1.readLengthHist.std), sizeof(double));
+        input.read(reinterpret_cast<  char *>(&lib1.readLengthHist.median), sizeof(double));
+        input.read(reinterpret_cast<  char *>(&lib1.readLengthHist.Nin), sizeof(double));
+        input.read(reinterpret_cast<  char *>(&lib1.readLengthHist.Nunder), sizeof(double));
+        input.read(reinterpret_cast<  char *>(&lib1.readLengthHist.Nover), sizeof(double));
+        input.read(reinterpret_cast<  char *>(&lib1.readLengthHist.Nbin), sizeof(int));
+        lib1.readLengthHist.xc.resize(lib1.readLengthHist.Nbin);
+        lib1.readLengthHist.n.resize(lib1.readLengthHist.Nbin);
+        lib1.readLengthHist.c.resize(lib1.readLengthHist.Nbin);
+        for (int i=0; i<lib1.readLengthHist.Nbin; i++) {
+            input.read(reinterpret_cast<  char *>(&lib1.readLengthHist.xc[i]), sizeof(double));
+            input.read(reinterpret_cast<  char *>(&lib1.readLengthHist.n[i]), sizeof(double));
+            input.read(reinterpret_cast<  char *>(&lib1.readLengthHist.c[i]), sizeof(double));
+        }
+        lib1.readLengthHist.dx=lib1.readLengthHist.xc[1]-lib1.readLengthHist.xc[0];      
+        lib1.readLengthHist.xlow=lib1.readLengthHist.xc[0]-lib1.readLengthHist.dx/2.0;      
+        lib1.readLengthHist.xhigh=lib1.readLengthHist.xc[lib1.readLengthHist.Nbin-1]+lib1.readLengthHist.dx/2.0;      
+        lib1.readLengthHist.Finalize();         
+        
+        this->libmap[lib1.Info.ReadGroupCode]=lib1;
 		ReadGroupID2Code[lib1.Info.ReadGroupID]=lib1.Info.ReadGroupCode;
-
-  }
-  //----------------------------------------------------------------------------
-  // anchor info
-  //----------------------------------------------------------------------------
-  int Na;
-  input.read(reinterpret_cast<  char *>(&Na), sizeof(int));
+        
+    }
+    //----------------------------------------------------------------------------
+    // anchor info
+    //----------------------------------------------------------------------------
+    int Na;
+    input.read(reinterpret_cast<  char *>(&Na), sizeof(int));
 	anchorinfo.source=infilename;
-  anchorinfo.names.resize(Na);
-  anchorinfo.use.resize(Na);
-  for(size_t i=0; int(i)<Na; ++i) {
-    input.read(reinterpret_cast < char * > (&nchar), sizeof(int));
-    input.read(buff, nchar);
-    buff[nchar]=0;
-    anchorinfo.names[i]=buff;
-    unsigned int L;
-    input.read(reinterpret_cast<char *>(&L), sizeof(unsigned int));
-    anchorinfo.L[anchorinfo.names[i]]=L;
-    bool use;
-    input.read(reinterpret_cast< char *>(&use), sizeof(bool));
-    anchorinfo.use[i]=use;
-  }
+    anchorinfo.names.resize(Na);
+    anchorinfo.use.resize(Na);
+    for(size_t i=0; int(i)<Na; ++i) {
+        input.read(reinterpret_cast < char * > (&nchar), sizeof(int));
+        input.read(buff, nchar);
+        buff[nchar]=0;
+        anchorinfo.names[i]=buff;
+        unsigned int L;
+        input.read(reinterpret_cast<char *>(&L), sizeof(unsigned int));
+        anchorinfo.L[anchorinfo.names[i]]=L;
+        bool use;
+        input.read(reinterpret_cast< char *>(&use), sizeof(bool));
+        anchorinfo.use[i]=use;
+    }
 	
-   input.close();
-
+    input.close();
+    
 }
 
 C_libraries::C_libraries( const C_libraries & rhs)              // constructor 
 {
-  libmap=rhs.libmap;
-  anchorinfo=rhs.anchorinfo;
+    libmap=rhs.libmap;
+    anchorinfo=rhs.anchorinfo;
 	ReadGroupID2Code=rhs.ReadGroupID2Code;
 }    
 
@@ -736,20 +736,20 @@ C_libraries::C_libraries( const C_libraries & rhs)              // constructor
 //------------------------------------------------------------------------------
 C_libraries::C_libraries(BamMultiReader  & br1)              // constructor - load from BAM file    
 {
-  string ht=br1.GetHeaderText();
-  vector<Mosaik::ReadGroup> readGroups=GetReadGroups(ht);
-  int N = readGroups.size();
-  if (N<1) {
-     cerr << "Need read group info in BAM file header" << endl;
-     exit(-1);
-  }
-  
-  // C_libraryinfo lib1;
-  for (int i=0; i<N; i++) {
-    unsigned int ReadGroupCode=readGroups[i].ReadGroupCode;
+    string ht=br1.GetHeaderText();
+    vector<Mosaik::ReadGroup> readGroups=GetReadGroups(ht);
+    int N = readGroups.size();
+    if (N<1) {
+        cerr << "Need read group info in BAM file header" << endl;
+        exit(-1);
+    }
+    
+    // C_libraryinfo lib1;
+    for (int i=0; i<N; i++) {
+        unsigned int ReadGroupCode=readGroups[i].ReadGroupCode;
 		libmap[ReadGroupCode].Info=readGroups[i];
 		ReadGroupID2Code[readGroups[i].ReadGroupID]=ReadGroupCode;
-  }
+    }
 }    
 
 //------------------------------------------------------------------------------
@@ -757,64 +757,67 @@ C_libraries::C_libraries(BamMultiReader  & br1)              // constructor - lo
 //------------------------------------------------------------------------------
 vector<Mosaik::ReadGroup> C_libraries::GetReadGroups(string & ht) 
 {
-// @RG	ID:ERR001607	PL:ILLUMINA	PU:1000G-mpimg-081010-2_3	LB:NA 19210.11	PI:200	SM:NA19210	CN:MPIMG
-  vector<Mosaik::ReadGroup> readGroups;
-  string line,thing;
-  stringstream stream1(ht); //stringstream::out | stringstream::in);
-  //stream1 << ht;
-  while( getline(stream1, line) ) {
-      if (line.find("@RG")!=string::npos) {      
-        cout << line << "\n";
-        Mosaik::ReadGroup RG1;
-        stringstream stream2(line); //stringstream::out | stringstream::in);
-        //string tab1="\t";
-        while( getline(stream2,thing,'\t') ) {
-          string token="ID:";
-          size_t f1=thing.find(token);
-          if (f1!=string::npos) {      
-            RG1.ReadGroupID=thing.substr(f1+token.length());
-          }
-          token="PL:";
-          f1=thing.find(token);
-          if (f1!=string::npos) {   
-            string technology=upperCase(thing.substr(f1+token.length()));
-            if (technology.find("ILLUMINA")!=string::npos) { RG1.SequencingTechnology=ST_ILLUMINA; }
-            if (technology.find("454")!=string::npos) { RG1.SequencingTechnology=ST_454; }
-            if (technology.find("HELICOS")!=string::npos) { RG1.SequencingTechnology=ST_HELICOS; } 
-            if (technology.find("SOLID")!=string::npos) { RG1.SequencingTechnology=ST_SOLID; }
-          }
-          token="LB:";
-          f1=thing.find(token);
-          if (f1!=string::npos) {      
-            RG1.LibraryName=thing.substr(f1+token.length());
-          }
-          token="PU:";
-          f1=thing.find(token);
-          if (f1!=string::npos) {      
-            RG1.PlatformUnit=thing.substr(f1+token.length());
-          }
-          token="CN:";
-          f1=thing.find(token);
-          if (f1!=string::npos) {      
-            RG1.CenterName=thing.substr(f1+token.length());
-          }
-          token="SM:";
-          f1=thing.find(token);
-          if (f1!=string::npos) {      
-            RG1.SampleName=thing.substr(f1+token.length());
-          }
-          token="PI:";
-          f1=thing.find(token);
-          if (f1!=string::npos) {      
-            string fraglen=thing.substr(f1+token.length());
-            RG1.MedianFragmentLength=string2Int(fraglen);          
-          }
+    // @RG	ID:ERR001607	PL:ILLUMINA	PU:1000G-mpimg-081010-2_3	LB:NA 19210.11	PI:200	SM:NA19210	CN:MPIMG
+    vector<Mosaik::ReadGroup> readGroups;
+    string line,thing;
+    stringstream stream1(ht); //stringstream::out | stringstream::in);
+    //stream1 << ht;
+    while( getline(stream1, line) ) {
+        if (line.find("@RG")!=string::npos) {      
+            cout << line << "\n";
+            Mosaik::ReadGroup RG1;
+            stringstream stream2(line); //stringstream::out | stringstream::in);
+            //string tab1="\t";
+            while( getline(stream2,thing,'\t') ) {
+                string token="ID:";
+                size_t f1=thing.find(token);
+                if (f1!=string::npos) {      
+                    RG1.ReadGroupID=thing.substr(f1+token.length());
+                }
+                token="PL:";
+                f1=thing.find(token);
+                if (f1!=string::npos) {   
+                    string technology=upperCase(thing.substr(f1+token.length()));
+                    if (technology.find("ILLUMINA")!=string::npos) 
+                    { RG1.SequencingTechnology=ST_ILLUMINA; 
+                        if (technology.find("LONG")!=string::npos) { RG1.SequencingTechnology=ST_ILLUMINA_LONG; }
+                    }
+                    if (technology.find("454")!=string::npos) { RG1.SequencingTechnology=ST_454; }
+                    if (technology.find("HELICOS")!=string::npos) { RG1.SequencingTechnology=ST_HELICOS; } 
+                    if (technology.find("SOLID")!=string::npos) { RG1.SequencingTechnology=ST_SOLID; }
+                }
+                token="LB:";
+                f1=thing.find(token);
+                if (f1!=string::npos) {      
+                    RG1.LibraryName=thing.substr(f1+token.length());
+                }
+                token="PU:";
+                f1=thing.find(token);
+                if (f1!=string::npos) {      
+                    RG1.PlatformUnit=thing.substr(f1+token.length());
+                }
+                token="CN:";
+                f1=thing.find(token);
+                if (f1!=string::npos) {      
+                    RG1.CenterName=thing.substr(f1+token.length());
+                }
+                token="SM:";
+                f1=thing.find(token);
+                if (f1!=string::npos) {      
+                    RG1.SampleName=thing.substr(f1+token.length());
+                }
+                token="PI:";
+                f1=thing.find(token);
+                if (f1!=string::npos) {      
+                    string fraglen=thing.substr(f1+token.length());
+                    RG1.MedianFragmentLength=string2Int(fraglen);          
+                }
+            }
+            RG1.ReadGroupCode=CSHA1::GenerateReadGroupCode(RG1.ReadGroupID, RG1.SampleName);
+            readGroups.push_back(RG1);
         }
-        RG1.ReadGroupCode=CSHA1::GenerateReadGroupCode(RG1.ReadGroupID, RG1.SampleName);
-        readGroups.push_back(RG1);
-      }
-  }
-  return readGroups;
+    }
+    return readGroups;
 }
 
 //------------------------------------------------------------------------------
@@ -843,16 +846,16 @@ vector<char> C_libraries::getSequencingTechnology()
 //------------------------------------------------------------------------------
 ostream &operator<<(ostream &output,  C_libraries & libs)
 {
-  C_librarymap::iterator it;
-  int N = libs.libmap.size();
-
-  output << " Number of Libraries:\t " <<  N<< endl;
-  for ( it=libs.libmap.begin() ; it != libs.libmap.end(); it++ )
-  {
-    //unsigned int ReadGroupCode=(*it).first;
-    C_libraryinfo lib1 = (*it).second; 
-    output << lib1 << endl;
-   }
+    C_librarymap::iterator it;
+    int N = libs.libmap.size();
+    
+    output << " Number of Libraries:\t " <<  N<< endl;
+    for ( it=libs.libmap.begin() ; it != libs.libmap.end(); it++ )
+    {
+        //unsigned int ReadGroupCode=(*it).first;
+        C_libraryinfo lib1 = (*it).second; 
+        output << lib1 << endl;
+    }
     return output;
 }
 
@@ -861,13 +864,13 @@ ostream &operator<<(ostream &output,  C_libraries & libs)
 //------------------------------------------------------------------------------
 void C_libraries::printLibraryInfo(string & file1)      // print lib info 
 {
-  fstream output(file1.c_str(), ios::out);
-  if (!output) {
-      cerr << "Unable to open library info output file: " << file1 << endl;
-      return;
-  }
-  output << *this << endl;
-  output.close();
+    fstream output(file1.c_str(), ios::out);
+    if (!output) {
+        cerr << "Unable to open library info output file: " << file1 << endl;
+        return;
+    }
+    output << *this << endl;
+    output.close();
 }
 
 //------------------------------------------------------------------------------
@@ -875,146 +878,146 @@ void C_libraries::printLibraryInfo(string & file1)      // print lib info
 //------------------------------------------------------------------------------
 void C_libraries::writeLibraryInfo(string & outfilename, string & setName)      // write lib info 
 {
-  C_librarymap::iterator it;
-  //int N = libmap.size();
-  // open output binary file. bomb if unable to open
-  fstream output(outfilename.c_str(), ios::out | ios::binary);
-  if (!output) {
+    C_librarymap::iterator it;
+    //int N = libmap.size();
+    // open output binary file. bomb if unable to open
+    fstream output(outfilename.c_str(), ios::out | ios::binary);
+    if (!output) {
 		cerr << "Unable to open file: " << outfilename << endl;
 		return;
-  }
-  C_headerSpan h;
-  h.setName = setName;
-  h.contigName = " ";
-  string typeName="library.span";
-  if  (outfilename.find(typeName)==string::npos)  {
-    cerr << "bad file name:\t" << outfilename << endl;
-    exit(-1);
-  }
-  h.typeName = typeName;
-  h.reclen =   2*sizeof(unsigned int)+9*sizeof(int)+2*sizeof(double)+sizeof(short);
-  h.N = this->libmap.size();
-  h.write(output);
+    }
+    C_headerSpan h;
+    h.setName = setName;
+    h.contigName = " ";
+    string typeName="library.span";
+    if  (outfilename.find(typeName)==string::npos)  {
+        cerr << "bad file name:\t" << outfilename << endl;
+        exit(-1);
+    }
+    h.typeName = typeName;
+    h.reclen =   2*sizeof(unsigned int)+9*sizeof(int)+2*sizeof(double)+sizeof(short);
+    h.N = this->libmap.size();
+    h.write(output);
 	
-  //----------------------------------------------------------------------------
-  // fixed length part of lib record
-  //----------------------------------------------------------------------------  
-  for ( it=libmap.begin() ; it != libmap.end(); it++ )
-  {
-    unsigned int ReadGroupCode=(*it).first;
-    C_libraryinfo lib1 = (*it).second; 
-    output.write(reinterpret_cast<const char *>(&ReadGroupCode), sizeof(unsigned int));
-    output.write(reinterpret_cast<const char *>(&lib1.Info.MedianFragmentLength), sizeof(unsigned int));
-    output.write(reinterpret_cast<const char *>(&lib1.Info.SequencingTechnology), sizeof(unsigned short));
-    output.write(reinterpret_cast<const char *>(&lib1.LM), sizeof(int));
-    output.write(reinterpret_cast<const char *>(&lib1.LMlow), sizeof(int));
-    output.write(reinterpret_cast<const char *>(&lib1.LMhigh), sizeof(int));
-    output.write(reinterpret_cast<const char *>(&lib1.tailcut), sizeof(double));
-    output.write(reinterpret_cast<const char *>(&lib1.LR), sizeof(double));
-    output.write(reinterpret_cast<const char *>(&lib1.LRmin), sizeof(int));
-    output.write(reinterpret_cast<const char *>(&lib1.LRmax), sizeof(int));
-    output.write(reinterpret_cast<const char *>(&lib1.NPair), sizeof(int));
-    output.write(reinterpret_cast<const char *>(&lib1.NSingle), sizeof(int));
-    output.write(reinterpret_cast<const char *>(&lib1.NPairRedundant), sizeof(int));
-    output.write(reinterpret_cast<const char *>(&lib1.NSingleRedundant), sizeof(int));
-  }
-  //----------------------------------------------------------------------------
-  // variable length part of lib record
-  //----------------------------------------------------------------------------  
-  for ( it=libmap.begin() ; it != libmap.end(); it++ )
-  {  
-    //unsigned int ReadGroupCode=(*it).first;
-    C_libraryinfo lib1 = (*it).second; 
-    output.write(reinterpret_cast<const char *>(&lib1.Info.ReadGroupCode), sizeof(unsigned int));
-    output.write(reinterpret_cast<const char *>(&lib1.Info.MedianFragmentLength), sizeof(unsigned int));
-    // ReadGroupID
-    const char * cC = lib1.Info.ReadGroupID.c_str();    
-    int cL = strlen(cC)+1;
-    output.write(reinterpret_cast<const char *>(&cL), sizeof(int));
-    output.write((const char *)(cC), cL * sizeof(char));
-    // CenterName
-    cC = lib1.Info.CenterName.c_str();    
-    cL = strlen(cC)+1;
-    output.write(reinterpret_cast<const char *>(&cL), sizeof(int));
-    output.write((const char *)(cC), cL * sizeof(char));
-    // Description
-    cC = lib1.Info.Description.c_str();    
-    cL = strlen(cC)+1;
-    output.write(reinterpret_cast<const char *>(&cL), sizeof(int));
-    output.write((const char *)(cC), cL * sizeof(char));
-    // LibraryName
-    cC = lib1.Info.LibraryName.c_str();    
-    cL = strlen(cC)+1;
-    output.write(reinterpret_cast<const char *>(&cL), sizeof(int));
-    output.write((const char *)(cC), cL * sizeof(char));
-    // PlatformUnit
-    cC = lib1.Info.PlatformUnit.c_str();    
-    cL = strlen(cC)+1;
-    output.write(reinterpret_cast<const char *>(&cL), sizeof(int));
-    output.write((const char *)(cC), cL * sizeof(char));
-    // SampleName
-    cC = lib1.Info.SampleName.c_str();    
-    cL = strlen(cC)+1;
-    output.write(reinterpret_cast<const char *>(&cL), sizeof(int));
-    output.write((const char *)(cC), cL * sizeof(char));
-    // LF distribution
-    cC = lib1.fragHist.title.c_str();    
-    cL = strlen(cC)+1;
-    output.write(reinterpret_cast<const char *>(&cL), sizeof(int));
-    output.write((const char *)(cC), cL * sizeof(char));
-    output.write(reinterpret_cast<const char *>(&lib1.fragHist.Ntot), sizeof(double));
-    output.write(reinterpret_cast<const char *>(&lib1.fragHist.mean), sizeof(double));
-    output.write(reinterpret_cast<const char *>(&lib1.fragHist.std), sizeof(double));
-    output.write(reinterpret_cast<const char *>(&lib1.fragHist.median), sizeof(double));
-    output.write(reinterpret_cast<const char *>(&lib1.fragHist.Nin), sizeof(double));
-    output.write(reinterpret_cast<const char *>(&lib1.fragHist.Nunder), sizeof(double));
-    output.write(reinterpret_cast<const char *>(&lib1.fragHist.Nover), sizeof(double));
-    output.write(reinterpret_cast<const char *>(&lib1.fragHist.Nbin), sizeof(int));
-    for (int i=0; i<lib1.fragHist.Nbin; i++) {
+    //----------------------------------------------------------------------------
+    // fixed length part of lib record
+    //----------------------------------------------------------------------------  
+    for ( it=libmap.begin() ; it != libmap.end(); it++ )
+    {
+        unsigned int ReadGroupCode=(*it).first;
+        C_libraryinfo lib1 = (*it).second; 
+        output.write(reinterpret_cast<const char *>(&ReadGroupCode), sizeof(unsigned int));
+        output.write(reinterpret_cast<const char *>(&lib1.Info.MedianFragmentLength), sizeof(unsigned int));
+        output.write(reinterpret_cast<const char *>(&lib1.Info.SequencingTechnology), sizeof(unsigned short));
+        output.write(reinterpret_cast<const char *>(&lib1.LM), sizeof(int));
+        output.write(reinterpret_cast<const char *>(&lib1.LMlow), sizeof(int));
+        output.write(reinterpret_cast<const char *>(&lib1.LMhigh), sizeof(int));
+        output.write(reinterpret_cast<const char *>(&lib1.tailcut), sizeof(double));
+        output.write(reinterpret_cast<const char *>(&lib1.LR), sizeof(double));
+        output.write(reinterpret_cast<const char *>(&lib1.LRmin), sizeof(int));
+        output.write(reinterpret_cast<const char *>(&lib1.LRmax), sizeof(int));
+        output.write(reinterpret_cast<const char *>(&lib1.NPair), sizeof(int));
+        output.write(reinterpret_cast<const char *>(&lib1.NSingle), sizeof(int));
+        output.write(reinterpret_cast<const char *>(&lib1.NPairRedundant), sizeof(int));
+        output.write(reinterpret_cast<const char *>(&lib1.NSingleRedundant), sizeof(int));
+    }
+    //----------------------------------------------------------------------------
+    // variable length part of lib record
+    //----------------------------------------------------------------------------  
+    for ( it=libmap.begin() ; it != libmap.end(); it++ )
+    {  
+        //unsigned int ReadGroupCode=(*it).first;
+        C_libraryinfo lib1 = (*it).second; 
+        output.write(reinterpret_cast<const char *>(&lib1.Info.ReadGroupCode), sizeof(unsigned int));
+        output.write(reinterpret_cast<const char *>(&lib1.Info.MedianFragmentLength), sizeof(unsigned int));
+        // ReadGroupID
+        const char * cC = lib1.Info.ReadGroupID.c_str();    
+        int cL = strlen(cC)+1;
+        output.write(reinterpret_cast<const char *>(&cL), sizeof(int));
+        output.write((const char *)(cC), cL * sizeof(char));
+        // CenterName
+        cC = lib1.Info.CenterName.c_str();    
+        cL = strlen(cC)+1;
+        output.write(reinterpret_cast<const char *>(&cL), sizeof(int));
+        output.write((const char *)(cC), cL * sizeof(char));
+        // Description
+        cC = lib1.Info.Description.c_str();    
+        cL = strlen(cC)+1;
+        output.write(reinterpret_cast<const char *>(&cL), sizeof(int));
+        output.write((const char *)(cC), cL * sizeof(char));
+        // LibraryName
+        cC = lib1.Info.LibraryName.c_str();    
+        cL = strlen(cC)+1;
+        output.write(reinterpret_cast<const char *>(&cL), sizeof(int));
+        output.write((const char *)(cC), cL * sizeof(char));
+        // PlatformUnit
+        cC = lib1.Info.PlatformUnit.c_str();    
+        cL = strlen(cC)+1;
+        output.write(reinterpret_cast<const char *>(&cL), sizeof(int));
+        output.write((const char *)(cC), cL * sizeof(char));
+        // SampleName
+        cC = lib1.Info.SampleName.c_str();    
+        cL = strlen(cC)+1;
+        output.write(reinterpret_cast<const char *>(&cL), sizeof(int));
+        output.write((const char *)(cC), cL * sizeof(char));
+        // LF distribution
+        cC = lib1.fragHist.title.c_str();    
+        cL = strlen(cC)+1;
+        output.write(reinterpret_cast<const char *>(&cL), sizeof(int));
+        output.write((const char *)(cC), cL * sizeof(char));
+        output.write(reinterpret_cast<const char *>(&lib1.fragHist.Ntot), sizeof(double));
+        output.write(reinterpret_cast<const char *>(&lib1.fragHist.mean), sizeof(double));
+        output.write(reinterpret_cast<const char *>(&lib1.fragHist.std), sizeof(double));
+        output.write(reinterpret_cast<const char *>(&lib1.fragHist.median), sizeof(double));
+        output.write(reinterpret_cast<const char *>(&lib1.fragHist.Nin), sizeof(double));
+        output.write(reinterpret_cast<const char *>(&lib1.fragHist.Nunder), sizeof(double));
+        output.write(reinterpret_cast<const char *>(&lib1.fragHist.Nover), sizeof(double));
+        output.write(reinterpret_cast<const char *>(&lib1.fragHist.Nbin), sizeof(int));
+        for (int i=0; i<lib1.fragHist.Nbin; i++) {
 			//if (lib1.fragHist.n[i]>0) {
 			output.write(reinterpret_cast<const char *>(&lib1.fragHist.xc[i]), sizeof(double));
 			output.write(reinterpret_cast<const char *>(&lib1.fragHist.n[i]), sizeof(double));
 			output.write(reinterpret_cast<const char *>(&lib1.fragHist.c[i]), sizeof(double));
 			//}
-    }
-    // LR distribution
-    cC = lib1.readLengthHist.title.c_str();    
-    cL = strlen(cC)+1;
-    output.write(reinterpret_cast<const char *>(&cL), sizeof(int));
-    output.write((const char *)(cC), cL * sizeof(char));
-    output.write(reinterpret_cast<const char *>(&lib1.readLengthHist.Ntot), sizeof(double));
-    output.write(reinterpret_cast<const char *>(&lib1.readLengthHist.mean), sizeof(double));
-    output.write(reinterpret_cast<const char *>(&lib1.readLengthHist.std), sizeof(double));
-    output.write(reinterpret_cast<const char *>(&lib1.readLengthHist.median), sizeof(double));
-    output.write(reinterpret_cast<const char *>(&lib1.readLengthHist.Nin), sizeof(double));
-    output.write(reinterpret_cast<const char *>(&lib1.readLengthHist.Nunder), sizeof(double));
-    output.write(reinterpret_cast<const char *>(&lib1.readLengthHist.Nover), sizeof(double));
-    output.write(reinterpret_cast<const char *>(&lib1.readLengthHist.Nbin), sizeof(int));
-    for (int i=0; i<lib1.readLengthHist.Nbin; i++) {
+        }
+        // LR distribution
+        cC = lib1.readLengthHist.title.c_str();    
+        cL = strlen(cC)+1;
+        output.write(reinterpret_cast<const char *>(&cL), sizeof(int));
+        output.write((const char *)(cC), cL * sizeof(char));
+        output.write(reinterpret_cast<const char *>(&lib1.readLengthHist.Ntot), sizeof(double));
+        output.write(reinterpret_cast<const char *>(&lib1.readLengthHist.mean), sizeof(double));
+        output.write(reinterpret_cast<const char *>(&lib1.readLengthHist.std), sizeof(double));
+        output.write(reinterpret_cast<const char *>(&lib1.readLengthHist.median), sizeof(double));
+        output.write(reinterpret_cast<const char *>(&lib1.readLengthHist.Nin), sizeof(double));
+        output.write(reinterpret_cast<const char *>(&lib1.readLengthHist.Nunder), sizeof(double));
+        output.write(reinterpret_cast<const char *>(&lib1.readLengthHist.Nover), sizeof(double));
+        output.write(reinterpret_cast<const char *>(&lib1.readLengthHist.Nbin), sizeof(int));
+        for (int i=0; i<lib1.readLengthHist.Nbin; i++) {
 			//if (lib1.readLengthHist.n[i]>0) {
 			output.write(reinterpret_cast<const char *>(&lib1.readLengthHist.xc[i]), sizeof(double));
 			output.write(reinterpret_cast<const char *>(&lib1.readLengthHist.n[i]), sizeof(double));
 			output.write(reinterpret_cast<const char *>(&lib1.readLengthHist.c[i]), sizeof(double));
 			//}
+        }
     }
-  }
-  //----------------------------------------------------------------------------
-  // anchor info
-  //----------------------------------------------------------------------------
-  int Na=anchorinfo.names.size();
-  output.write(reinterpret_cast<const char *>(&Na), sizeof(int));
-  for(size_t i=0; int(i)<Na; ++i) {
-    string s = anchorinfo.names[i];
-    unsigned int L = anchorinfo.L[s];
-    bool use = anchorinfo.use[i];
-    const char * cC = s.c_str();    
-    int cL = strlen(cC)+1;
-    output.write(reinterpret_cast<const char *>(&cL), sizeof(int));
-    output.write((const char *)(cC), cL * sizeof(char));
-    output.write(reinterpret_cast<const char *>(&L), sizeof(unsigned int));
-    output.write(reinterpret_cast<const char *>(&use), sizeof(bool));
-  }
-  output.close();
+    //----------------------------------------------------------------------------
+    // anchor info
+    //----------------------------------------------------------------------------
+    int Na=anchorinfo.names.size();
+    output.write(reinterpret_cast<const char *>(&Na), sizeof(int));
+    for(size_t i=0; int(i)<Na; ++i) {
+        string s = anchorinfo.names[i];
+        unsigned int L = anchorinfo.L[s];
+        bool use = anchorinfo.use[i];
+        const char * cC = s.c_str();    
+        int cL = strlen(cC)+1;
+        output.write(reinterpret_cast<const char *>(&cL), sizeof(int));
+        output.write((const char *)(cC), cL * sizeof(char));
+        output.write(reinterpret_cast<const char *>(&L), sizeof(unsigned int));
+        output.write(reinterpret_cast<const char *>(&use), sizeof(bool));
+    }
+    output.close();
 }
 
 //------------------------------------------------------------------------------
@@ -1022,32 +1025,32 @@ void C_libraries::writeLibraryInfo(string & outfilename, string & setName)      
 //------------------------------------------------------------------------------
 int C_libraries::maxLF()              
 {
-  C_librarymap::iterator it;
-  int LMmax=0;
-  for ( it=libmap.begin() ; it != libmap.end(); it++ )
-  {
-    //unsigned int ReadGroupCode=(*it).first;
-    C_libraryinfo lib1 = (*it).second; 
-    int LMmax1=lib1.LMhigh;
-    if (LMmax1 > LMmax) LMmax=LMmax1;
-  }
-  return LMmax;
+    C_librarymap::iterator it;
+    int LMmax=0;
+    for ( it=libmap.begin() ; it != libmap.end(); it++ )
+    {
+        //unsigned int ReadGroupCode=(*it).first;
+        C_libraryinfo lib1 = (*it).second; 
+        int LMmax1=lib1.LMhigh;
+        if (LMmax1 > LMmax) LMmax=LMmax1;
+    }
+    return LMmax;
 }    
-    
+
 //------------------------------------------------------------------------------
 // return tailcut from first library    
 //------------------------------------------------------------------------------
 double C_libraries::getTailcut()
 {
-  C_librarymap::iterator it;
-  double t=0;
-  for ( it=libmap.begin() ; it != libmap.end(); it++ )
-  {
-    C_libraryinfo lib1 = (*it).second; 
-    t =lib1.tailcut;
-    if (t>0) break;
-  }
-  return t;
+    C_librarymap::iterator it;
+    double t=0;
+    for ( it=libmap.begin() ; it != libmap.end(); it++ )
+    {
+        C_libraryinfo lib1 = (*it).second; 
+        t =lib1.tailcut;
+        if (t>0) break;
+    }
+    return t;
 }
 
 //------------------------------------------------------------------------------
@@ -1055,14 +1058,14 @@ double C_libraries::getTailcut()
 //------------------------------------------------------------------------------
 void C_libraries::resetFragLimits(double tailcut)
 {
-  C_librarymap::iterator it;
-  double lowf = (1.0-tailcut/100.0)/2.0;  // half tail on low side
-  double highf = (1.0-lowf); // half tail on high side     
-  for ( it=libmap.begin() ; it != libmap.end(); it++ )
-  {
-    unsigned int ReadGroupCode=(*it).first;
-    int LMlow  = libmap[ReadGroupCode].fragHist.p2xTrim(lowf);
-    int LMhigh = libmap[ReadGroupCode].fragHist.p2xTrim(highf);
+    C_librarymap::iterator it;
+    double lowf = (1.0-tailcut/100.0)/2.0;  // half tail on low side
+    double highf = (1.0-lowf); // half tail on high side     
+    for ( it=libmap.begin() ; it != libmap.end(); it++ )
+    {
+        unsigned int ReadGroupCode=(*it).first;
+        int LMlow  = libmap[ReadGroupCode].fragHist.p2xTrim(lowf);
+        int LMhigh = libmap[ReadGroupCode].fragHist.p2xTrim(highf);
 		if (tailcut<0) { 
 			LMlow=100000;
 			LMhigh=-100000;
@@ -1073,12 +1076,12 @@ void C_libraries::resetFragLimits(double tailcut)
 			libmap[ReadGroupCode].LM = libmap[ReadGroupCode].fragHist.mode1;
 		}
 		
-    libmap[ReadGroupCode].LMlow=LMlow;
-    libmap[ReadGroupCode].LMhigh=LMhigh;
-    libmap[ReadGroupCode].tailcut=tailcut;
+        libmap[ReadGroupCode].LMlow=LMlow;
+        libmap[ReadGroupCode].LMhigh=LMhigh;
+        libmap[ReadGroupCode].tailcut=tailcut;
 		
 		
-  }
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -1086,131 +1089,109 @@ void C_libraries::resetFragLimits(double tailcut)
 //------------------------------------------------------------------------------
 map<string, double, less<string> > C_libraries::readFractionSamples() 
 {
-  map<string, double, less<string> >  rX;
-  C_librarymap::iterator it;
-  double N=0;
-  for ( it=libmap.begin() ; it != libmap.end(); it++ )
-  {
-    unsigned int ReadGroupCode=(*it).first;
-    double NR1  = double(libmap[ReadGroupCode].NPair);
-    string SAM  = libmap[ReadGroupCode].Info.SampleName;
-    rX[SAM]+=NR1;
-    N+=NR1;
-  }
-  map<string, double, less<string> >::iterator ir;
-  for ( ir=rX.begin() ; ir != rX.end(); ir++ )
-  {
-    string SAM=(*ir).first;
-    rX[SAM]=rX[SAM]/N;
-  }
-  return rX;
+    map<string, double, less<string> >  rX;
+    C_librarymap::iterator it;
+    double N=0;
+    for ( it=libmap.begin() ; it != libmap.end(); it++ )
+    {
+        unsigned int ReadGroupCode=(*it).first;
+        double NR1  = double(libmap[ReadGroupCode].NPair);
+        string SAM  = libmap[ReadGroupCode].Info.SampleName;
+        rX[SAM]+=NR1;
+        N+=NR1;
+    }
+    map<string, double, less<string> >::iterator ir;
+    for ( ir=rX.begin() ; ir != rX.end(); ir++ )
+    {
+        string SAM=(*ir).first;
+        rX[SAM]=rX[SAM]/N;
+    }
+    return rX;
 }
-    
+
 
 //------------------------------------------------------------------------------
 // localpair  (paired-read on 1 anchor)
 //------------------------------------------------------------------------------
 C_localpair::C_localpair() {
-   pos=0; 
-   lm=0;
-   anchor=0;
-   len1=0;
-   len2=0;
-   orient='-';
-   q1=0;
-   q2=0;
-   mm1=0;
-   mm2=0;
-   constrain = 0;
-   ReadGroupCode=0;
+    pos=0; 
+    lm=0;
+    anchor=0;
+    len1=0;
+    len2=0;
+    orient='-';
+    q1=0;
+    q2=0;
+    mm1=0;
+    mm2=0;
+    constrain = 0;
+    ReadGroupCode=0;
 }
 
 C_localpair::C_localpair(const C_localpair &copyin)   // Copy constructor to handle pass by value.
 {                             
-   pos = copyin.pos;
-   anchor= copyin.anchor;
-   lm = copyin.lm;
-   len1 = copyin.len1;
-   len2 = copyin.len2;
-   orient = copyin.orient;
-   q1 = copyin.q1;
-   q2 = copyin.q2;
-   mm1 = copyin.mm1;
-   mm2 = copyin.mm2;
-   constrain = copyin.constrain;
-   ReadGroupCode=copyin.ReadGroupCode;
+    pos = copyin.pos;
+    anchor= copyin.anchor;
+    lm = copyin.lm;
+    len1 = copyin.len1;
+    len2 = copyin.len2;
+    orient = copyin.orient;
+    q1 = copyin.q1;
+    q2 = copyin.q2;
+    mm1 = copyin.mm1;
+    mm2 = copyin.mm2;
+    constrain = copyin.constrain;
+    ReadGroupCode=copyin.ReadGroupCode;
 }
 
 C_localpair::C_localpair(unsigned int pos1, int lm1,unsigned short anchor1, 
-   unsigned short len11,unsigned short len21, char orient1, char q11,char q21, 
-   char mm11,char mm21,char constrain1,
-   unsigned int ReadGroupCode1) {
-   pos = pos1;
-   anchor = anchor1;
-   lm = lm1;
-   len1 = len11;
-   len2 = len21;
-   orient = orient1;
-   q1 = q11;
-   q2 = q21;
-   mm1 = mm11;
-   mm2 = mm21;
-   constrain = constrain1;
-   ReadGroupCode=ReadGroupCode1;
+                         unsigned short len11,unsigned short len21, char orient1, char q11,char q21, 
+                         char mm11,char mm21,char constrain1,
+                         unsigned int ReadGroupCode1) {
+    pos = pos1;
+    anchor = anchor1;
+    lm = lm1;
+    len1 = len11;
+    len2 = len21;
+    orient = orient1;
+    q1 = q11;
+    q2 = q21;
+    mm1 = mm11;
+    mm2 = mm21;
+    constrain = constrain1;
+    ReadGroupCode=ReadGroupCode1;
 }
 
 C_localpair::C_localpair(C_pairedread & pair1, char constrain1) {
-  unsigned char a0 = pair1.read[0].align[0].anchor;
-  unsigned char a1 = pair1.read[1].align[0].anchor;
-  lm=0;
-  anchor=0;
-  len1=0;
-  len2=0;
-  orient='-';
-  q1=0;
-  q2=0;
-  mm1=0;
-  mm2=0;
-  constrain = 0;
-  if (a0!=a1) { return; }
-  unsigned int p0 = pair1.read[0].align[0].pos;
-  unsigned int p1 = pair1.read[1].align[0].pos;
-  unsigned short l0 = pair1.read[0].align[0].len;
-  unsigned short l1 = pair1.read[1].align[0].len;
-  unsigned char o0 = pair1.read[0].align[0].sense;
-  unsigned char o1 = pair1.read[1].align[0].sense;
-  unsigned char Q0 = pair1.read[0].align[0].q;
-  unsigned char Q1 = pair1.read[1].align[0].q;
-  unsigned char MM0 = pair1.read[0].align[0].mm;
-  unsigned char MM1 = pair1.read[1].align[0].mm;
-  ReadGroupCode    = pair1.ReadGroupCode;
-  anchor=a0;
-  // harmonic mean q = (q0*q1)/(q0+q1);  ???
-  // geometric mean seems to behave ok ???
-  constrain = constrain1;
-  if ((o0=='F')&&(o1=='R')) {
-      lm = p1+l1-p0;
-      pos=p0;
-      len1=l0;
-      len2=l1;
-      q1=Q0;
-      q2=Q1;
-      mm1=MM0;
-      mm2=MM1;
-    } else if ((o0=='R')&&(o1=='F')) {
-      lm = p0+l0-p1;
-      pos=p1;
-      len1=l1;
-      len2=l0;
-      q1=Q1;
-      q2=Q0;
-      mm1=MM1;
-      mm2=MM0;
-      if (constrain1==1) { constrain=2;}
-      if (constrain1==2) { constrain=1;}
-    } else {
-      orient=(o0=='F'? '>' : '<');
-      if (p0<p1) {
+    unsigned char a0 = pair1.read[0].align[0].anchor;
+    unsigned char a1 = pair1.read[1].align[0].anchor;
+    lm=0;
+    anchor=0;
+    len1=0;
+    len2=0;
+    orient='-';
+    q1=0;
+    q2=0;
+    mm1=0;
+    mm2=0;
+    constrain = 0;
+    if (a0!=a1) { return; }
+    unsigned int p0 = pair1.read[0].align[0].pos;
+    unsigned int p1 = pair1.read[1].align[0].pos;
+    unsigned short l0 = pair1.read[0].align[0].len;
+    unsigned short l1 = pair1.read[1].align[0].len;
+    unsigned char o0 = pair1.read[0].align[0].sense;
+    unsigned char o1 = pair1.read[1].align[0].sense;
+    unsigned char Q0 = pair1.read[0].align[0].q;
+    unsigned char Q1 = pair1.read[1].align[0].q;
+    unsigned char MM0 = pair1.read[0].align[0].mm;
+    unsigned char MM1 = pair1.read[1].align[0].mm;
+    ReadGroupCode    = pair1.ReadGroupCode;
+    anchor=a0;
+    // harmonic mean q = (q0*q1)/(q0+q1);  ???
+    // geometric mean seems to behave ok ???
+    constrain = constrain1;
+    if ((o0=='F')&&(o1=='R')) {
         lm = p1+l1-p0;
         pos=p0;
         len1=l0;
@@ -1219,7 +1200,7 @@ C_localpair::C_localpair(C_pairedread & pair1, char constrain1) {
         q2=Q1;
         mm1=MM0;
         mm2=MM1;
-      } else {
+    } else if ((o0=='R')&&(o1=='F')) {
         lm = p0+l0-p1;
         pos=p1;
         len1=l1;
@@ -1227,75 +1208,97 @@ C_localpair::C_localpair(C_pairedread & pair1, char constrain1) {
         q1=Q1;
         q2=Q0;
         mm1=MM1;
-        mm2=MM0;        
+        mm2=MM0;
         if (constrain1==1) { constrain=2;}
         if (constrain1==2) { constrain=1;}
-      };
-  }
+    } else {
+        orient=(o0=='F'? '>' : '<');
+        if (p0<p1) {
+            lm = p1+l1-p0;
+            pos=p0;
+            len1=l0;
+            len2=l1;
+            q1=Q0;
+            q2=Q1;
+            mm1=MM0;
+            mm2=MM1;
+        } else {
+            lm = p0+l0-p1;
+            pos=p1;
+            len1=l1;
+            len2=l0;
+            q1=Q1;
+            q2=Q0;
+            mm1=MM1;
+            mm2=MM0;        
+            if (constrain1==1) { constrain=2;}
+            if (constrain1==2) { constrain=1;}
+        };
+    }
 }
 
 
 ostream &operator<<(ostream &output, const C_localpair & x)
 {
-   output << x.anchor << "\t" << x.pos << "\t"  << x.lm 
-          << "\t"  << x.orient << "\t"  << int(x.q1) << "\t " << int(x.q2) 
-          << "\t "<< int(x.constrain) << "\t " << x.ReadGroupCode;
-   return output;
+    output << x.anchor << "\t" << x.pos << "\t"  << x.lm 
+    << "\t"  << x.orient << "\t"  << int(x.q1) << "\t " << int(x.q2) 
+    << "\t "<< int(x.constrain) << "\t " << x.ReadGroupCode;
+    return output;
 }
 
 C_localpair& C_localpair::operator=(const C_localpair &rhs)
 {
-   this->pos = rhs.pos;
-   this->anchor = rhs.anchor;
-   this->lm = rhs.lm;
-   this->len1 = rhs.len1;
-   this->len2 = rhs.len2;
-   this->orient = rhs.orient;
-   this->q1 = rhs.q1;
-   this->q2 = rhs.q2;
-   this->mm1 = rhs.mm1;
-   this->mm2 = rhs.mm2;
-   this->constrain=rhs.constrain;
-   this->ReadGroupCode=rhs.ReadGroupCode;
-   return *this;
+    this->pos = rhs.pos;
+    this->anchor = rhs.anchor;
+    this->lm = rhs.lm;
+    this->len1 = rhs.len1;
+    this->len2 = rhs.len2;
+    this->orient = rhs.orient;
+    this->q1 = rhs.q1;
+    this->q2 = rhs.q2;
+    this->mm1 = rhs.mm1;
+    this->mm2 = rhs.mm2;
+    this->constrain=rhs.constrain;
+    this->ReadGroupCode=rhs.ReadGroupCode;
+    return *this;
 }
 
 int C_localpair::operator==(const C_localpair &rhs) const
 {
-   if( this->pos != rhs.pos) return 0;
-   if( this->anchor != rhs.anchor) return 0;
-   if( this->lm != rhs.lm) return 0;
-   if( this->orient != rhs.orient) return 0;
-   if( this->len1 != rhs.len1) return 0;
-   if( this->len2 != rhs.len2) return 0;
-   if( this->q1 != rhs.q1) return 0;
-   if( this->q2 != rhs.q2) return 0;
-   if( this->mm1 != rhs.mm1) return 0;
-   if( this->mm2 != rhs.mm2) return 0;
-   if( this->constrain != rhs.constrain) return 0;
-   if( this->ReadGroupCode != rhs.ReadGroupCode) return 0;
-   return 1;
+    if( this->pos != rhs.pos) return 0;
+    if( this->anchor != rhs.anchor) return 0;
+    if( this->lm != rhs.lm) return 0;
+    if( this->orient != rhs.orient) return 0;
+    if( this->len1 != rhs.len1) return 0;
+    if( this->len2 != rhs.len2) return 0;
+    if( this->q1 != rhs.q1) return 0;
+    if( this->q2 != rhs.q2) return 0;
+    if( this->mm1 != rhs.mm1) return 0;
+    if( this->mm2 != rhs.mm2) return 0;
+    if( this->constrain != rhs.constrain) return 0;
+    if( this->ReadGroupCode != rhs.ReadGroupCode) return 0;
+    return 1;
 }
 
 int C_localpair::operator<(const C_localpair &rhs) const
 {
-   if( this->anchor < rhs.anchor ) return 1;
-   //if( this->ReadGroupCode < rhs.ReadGroupCode ) return 1;
-   if( this->anchor == rhs.anchor && this->pos < rhs.pos ) return 1;
-   if( this->anchor == rhs.anchor && this->pos == rhs.pos 
+    if( this->anchor < rhs.anchor ) return 1;
+    //if( this->ReadGroupCode < rhs.ReadGroupCode ) return 1;
+    if( this->anchor == rhs.anchor && this->pos < rhs.pos ) return 1;
+    if( this->anchor == rhs.anchor && this->pos == rhs.pos 
        && this->orient < rhs.orient ) return 1;
-   if( this->anchor == rhs.anchor && this->pos == rhs.pos 
+    if( this->anchor == rhs.anchor && this->pos == rhs.pos 
        && this->orient == rhs.orient  && this->lm < rhs.lm) return 1;
-   if( this->anchor == rhs.anchor && this->pos == rhs.pos 
+    if( this->anchor == rhs.anchor && this->pos == rhs.pos 
        && this->orient == rhs.orient  && this->lm == rhs.lm
        && this->len1 < rhs.len1 ) return 1;
-   if( this->anchor == rhs.anchor && this->pos == rhs.pos 
+    if( this->anchor == rhs.anchor && this->pos == rhs.pos 
        && this->orient == rhs.orient  && this->lm == rhs.lm
        && this->len1 == rhs.len1 && this->len2 < rhs.len2 ) return 1;
-   if( this->anchor == rhs.anchor && this->pos == rhs.pos 
+    if( this->anchor == rhs.anchor && this->pos == rhs.pos 
        && this->orient == rhs.orient  && this->lm == rhs.lm
        && this->len1 == rhs.len1 && this->len2 == rhs.len2 && this->q1 < rhs.q1) return 1;
-   return 0;
+    return 0;
 }
 
 
@@ -1304,56 +1307,56 @@ int C_localpair::operator<(const C_localpair &rhs) const
 //-----------------------------------------------------------------------------
 C_crosspair::C_crosspair() {
     for (int i=0; i<2; i++) {
-      read[i].pos=0; 
-      read[i].len=0;
-      read[i].anchor=0;
-      read[i].sense=0;
-      read[i].q=0;
-      read[i].mm=0;
+        read[i].pos=0; 
+        read[i].len=0;
+        read[i].anchor=0;
+        read[i].sense=0;
+        read[i].q=0;
+        read[i].mm=0;
     }
     ReadGroupCode=0;
 }
 
 C_crosspair::C_crosspair(const C_crosspair &copyin)   // Copy constructor to handle pass by value.
 {                             
-   read[0] = copyin.read[0];
-   read[1] = copyin.read[1];
-   ReadGroupCode = copyin.ReadGroupCode;
+    read[0] = copyin.read[0];
+    read[1] = copyin.read[1];
+    ReadGroupCode = copyin.ReadGroupCode;
 }
 
 C_crosspair::C_crosspair(const C_readmap  & read0, const C_readmap  & read1, const unsigned int ReadGroupCode1) {
-   read[0] = read0;
-   read[1] = read1;
-   ReadGroupCode = ReadGroupCode1;
+    read[0] = read0;
+    read[1] = read1;
+    ReadGroupCode = ReadGroupCode1;
 }
 
 ostream &operator<<(ostream &output, const C_crosspair & x)
 {
-   output << x.read[0] << "\t" << x.read[1] <<  "\t "<< x.ReadGroupCode << endl;
-   return output;
+    output << x.read[0] << "\t" << x.read[1] <<  "\t "<< x.ReadGroupCode << endl;
+    return output;
 }
 
 C_crosspair& C_crosspair::operator=(const C_crosspair &rhs)
 {
-   read[0] = rhs.read[0];
-   read[1] = rhs.read[1];
-   ReadGroupCode=rhs.ReadGroupCode;
-   return *this;
+    read[0] = rhs.read[0];
+    read[1] = rhs.read[1];
+    ReadGroupCode=rhs.ReadGroupCode;
+    return *this;
 }
 
 int C_crosspair::operator==(const C_crosspair &rhs) //const
 {
-   if( !(this->read[0] == rhs.read[0])) return 0;
-   if( !(this->read[1] == rhs.read[1])) return 0;
-   if( !(this->ReadGroupCode== rhs.ReadGroupCode)) return 0;
-   return 1;
+    if( !(this->read[0] == rhs.read[0])) return 0;
+    if( !(this->read[1] == rhs.read[1])) return 0;
+    if( !(this->ReadGroupCode== rhs.ReadGroupCode)) return 0;
+    return 1;
 }
 
 int C_crosspair::operator<(const C_crosspair &rhs) const
 {
-   if( this->read[0] < rhs.read[0] ) return 1;
-   if( this->read[0] == rhs.read[0] && this->read[1] < rhs.read[1] ) return 1;
-   return 0;
+    if( this->read[0] < rhs.read[0] ) return 1;
+    if( this->read[0] == rhs.read[0] && this->read[1] < rhs.read[1] ) return 1;
+    return 0;
 }
 
 
@@ -1362,149 +1365,149 @@ int C_crosspair::operator<(const C_crosspair &rhs) const
 //-----------------------------------------------------------------------------
 C_umpair::C_umpair() {
     for (int i=0; i<2; i++) {
-      read[i].pos=0; 
-      read[i].len=0;
-      read[i].anchor=0;
-      read[i].sense=0;
-      read[i].q=0;
-      read[i].mm=0;
+        read[i].pos=0; 
+        read[i].len=0;
+        read[i].anchor=0;
+        read[i].sense=0;
+        read[i].q=0;
+        read[i].mm=0;
     }
     nmap=0;
     nmapA=0;
     elements=0;
-		Qproperpair=0;
+    Qproperpair=0;
     ReadGroupCode = 0;
 }
 
 C_umpair::C_umpair(const C_umpair &copyin)   // Copy constructor to handle pass by value.
 {                             
-   read[0] = copyin.read[0];
-   read[1] = copyin.read[1];
-   nmap=copyin.nmap;
-   nmapA=copyin.nmapA;
-   elements=copyin.elements;
-	 Qproperpair=copyin.Qproperpair;
-   ReadGroupCode=copyin.ReadGroupCode;
+    read[0] = copyin.read[0];
+    read[1] = copyin.read[1];
+    nmap=copyin.nmap;
+    nmapA=copyin.nmapA;
+    elements=copyin.elements;
+    Qproperpair=copyin.Qproperpair;
+    ReadGroupCode=copyin.ReadGroupCode;
 }
 
 C_umpair::C_umpair(const C_readmap  & read0, const C_readmap  & read1, 
-   int nmap1, int elements1, unsigned int ReadGroupCode1) {
-   read[0] = read0;
-   read[1] = read1;
-	 nmap = nmap1;
-	 nmapA = 0;
-   elements=elements1;
- 	 Qproperpair=0;
-   ReadGroupCode=ReadGroupCode1;
+                   int nmap1, int elements1, unsigned int ReadGroupCode1) {
+    read[0] = read0;
+    read[1] = read1;
+    nmap = nmap1;
+    nmapA = 0;
+    elements=elements1;
+    Qproperpair=0;
+    ReadGroupCode=ReadGroupCode1;
 }
 
 //------------------------------------------------------------------------------
 // create UM pair record
 //------------------------------------------------------------------------------
 C_umpair::C_umpair(const C_pairedread  & pair1, const C_anchorinfo & anchor1) {
-
-  //----------------------------------------------------------------------------
-  ReadGroupCode=pair1.ReadGroupCode;
-  int N0 = pair1.read[0].align[0].nmap;     
-  int N1 = pair1.read[1].align[0].nmap;     
-  // check that both ends have maps and that at least one end is unique hit
-  bool ok=  ( (N0*N1)>0 ) && ( (N0==1)||(N1==1) );
-  if (!ok) {
-     cerr << "bad UM fragment " << N0 << " " << N1 << endl;
-     exit(-1);
-  }
-  
-  // unique end, multiple-mapped end
-  int eu=(N0==1? 0:1);
-  // number of multiple maps
-  int NM=(N0<N1? N1 : N0);  
-  // markers for elements
-  bool M0=(pair1.read[0].element)>0;
-  bool M1=(pair1.read[1].element)>0;
-  // override eu/em to force em to have element
-  if (M0||M1) {
-    eu=(M0? 1: 0);
-  }
-  int em=(eu==0? 1:0);
-  //----------------------------------------------------------------------------
-  // UU UM's are something of an oddity - but can happen from pair constraint 
-  //----------------------------------------------------------------------------
-  if (NM==1) {
-    if (M0 && M1) {
-      // UU UM with both ends in an element should not happen 
-      cerr << "double element UU UM pair\n " << pair1.read[0].align[0] << endl;
-      cerr <<  pair1.read[1].align[0] << endl;
-    } else if ((!M0) && (!M1) ) {
-      // UU UM with neither end in an element should not happen 
-      cerr << "zero element UU UM pair\n " << pair1.read[0].align[0] << endl;
-      cerr <<  pair1.read[1].align[0] << endl;
+    
+    //----------------------------------------------------------------------------
+    ReadGroupCode=pair1.ReadGroupCode;
+    int N0 = pair1.read[0].align[0].nmap;     
+    int N1 = pair1.read[1].align[0].nmap;     
+    // check that both ends have maps and that at least one end is unique hit
+    bool ok=  ( (N0*N1)>0 ) && ( (N0==1)||(N1==1) );
+    if (!ok) {
+        cerr << "bad UM fragment " << N0 << " " << N1 << endl;
+        exit(-1);
     }
-  }
-  // unique end
-  read[0] = pair1.read[eu].align[0];
-  // multiple map end
-  read[1] = pair1.read[em].align[0];  
-  // Total mumber of mappings at M end
-  nmapA = NM;
+    
+    // unique end, multiple-mapped end
+    int eu=(N0==1? 0:1);
+    // number of multiple maps
+    int NM=(N0<N1? N1 : N0);  
+    // markers for elements
+    bool M0=(pair1.read[0].element)>0;
+    bool M1=(pair1.read[1].element)>0;
+    // override eu/em to force em to have element
+    if (M0||M1) {
+        eu=(M0? 1: 0);
+    }
+    int em=(eu==0? 1:0);
+    //----------------------------------------------------------------------------
+    // UU UM's are something of an oddity - but can happen from pair constraint 
+    //----------------------------------------------------------------------------
+    if (NM==1) {
+        if (M0 && M1) {
+            // UU UM with both ends in an element should not happen 
+            cerr << "double element UU UM pair\n " << pair1.read[0].align[0] << endl;
+            cerr <<  pair1.read[1].align[0] << endl;
+        } else if ((!M0) && (!M1) ) {
+            // UU UM with neither end in an element should not happen 
+            cerr << "zero element UU UM pair\n " << pair1.read[0].align[0] << endl;
+            cerr <<  pair1.read[1].align[0] << endl;
+        }
+    }
+    // unique end
+    read[0] = pair1.read[eu].align[0];
+    // multiple map end
+    read[1] = pair1.read[em].align[0];  
+    // Total mumber of mappings at M end
+    nmapA = NM;
 	
-  //consistency with fragment length dist (high Q ~ aberrant pair)
+    //consistency with fragment length dist (high Q ~ aberrant pair)
 	Qproperpair=pair1.Qproperpair;
 	
 	// overwrite original useless multiple mapping quality with Qproperpair 	
-  read[1].q=pair1.Qproperpair;  
+    read[1].q=pair1.Qproperpair;  
 	
 	// loop over alignments to count *only* element hits for nmap
-  nmap=nmapA;
-  /*
-  for (int i=0; i<N0 ; i++) { 
-       if (anchor1.element[pair1.read[0].align[i].anchor]>0) { nmap++; } 
-  }
-  for (int i=0; i<N1 ; i++) { 
-       if (anchor1.element[pair1.read[1].align[i].anchor]>0) { nmap++; } 
-  }
-  */
+    nmap=nmapA;
+    /*
+     for (int i=0; i<N0 ; i++) { 
+     if (anchor1.element[pair1.read[0].align[i].anchor]>0) { nmap++; } 
+     }
+     for (int i=0; i<N1 ; i++) { 
+     if (anchor1.element[pair1.read[1].align[i].anchor]>0) { nmap++; } 
+     }
+     */
 	
-  // element bits at M end  - upper bits should be zero....
-  elements = pair1.read[em].element;
-  if (pair1.read[eu].element>0) {
-    int elem1=pair1.read[eu].element;
-    elements=elements|(elem1<<8);  // if U end has elements put them above 256
-  }
+    // element bits at M end  - upper bits should be zero....
+    elements = pair1.read[em].element;
+    if (pair1.read[eu].element>0) {
+        int elem1=pair1.read[eu].element;
+        elements=elements|(elem1<<8);  // if U end has elements put them above 256
+    }
 }
 
 ostream &operator<<(ostream &output, const C_umpair & x)
 {
-   output << x.read[0] << "\t" << x.read[1] << "\t "<< x.ReadGroupCode;
-   output << "\t" << x.nmap << "\t" << int2binary(x.elements) << "\t" << x.Qproperpair << endl;
-   return output;
+    output << x.read[0] << "\t" << x.read[1] << "\t "<< x.ReadGroupCode;
+    output << "\t" << x.nmap << "\t" << int2binary(x.elements) << "\t" << x.Qproperpair << endl;
+    return output;
 }
 
 C_umpair& C_umpair::operator=(const C_umpair &rhs)
 {
-   read[0] = rhs.read[0];
-   read[1] = rhs.read[1];
-   nmap = rhs.nmap;
-   elements=rhs.elements;
-	 Qproperpair=rhs.Qproperpair;
-   ReadGroupCode=rhs.ReadGroupCode;
-   return *this;
+    read[0] = rhs.read[0];
+    read[1] = rhs.read[1];
+    nmap = rhs.nmap;
+    elements=rhs.elements;
+    Qproperpair=rhs.Qproperpair;
+    ReadGroupCode=rhs.ReadGroupCode;
+    return *this;
 }
 
 int C_umpair::operator==(const C_umpair &rhs) //const
 {
-   if( !(this->read[0] == rhs.read[0])) return 0;
-   if( !(this->read[1] == rhs.read[1])) return 0;
-   // if( !(this->nmap == rhs.nmap)) return 0;
-   //if( !(this->elements == rhs.elements)) return 0;
-   return 1;
+    if( !(this->read[0] == rhs.read[0])) return 0;
+    if( !(this->read[1] == rhs.read[1])) return 0;
+    // if( !(this->nmap == rhs.nmap)) return 0;
+    //if( !(this->elements == rhs.elements)) return 0;
+    return 1;
 }
 
 int C_umpair::operator<(const C_umpair &rhs) const
 {
-   if( this->read[0] < rhs.read[0] ) return 1;
-   if( this->read[0] == rhs.read[0] && this->read[1] < rhs.read[1] ) return 1;
-   if( this->read[0] == rhs.read[0] && this->read[1] == rhs.read[1] && this->nmap < rhs.nmap) return 1;
-   return 0;
+    if( this->read[0] < rhs.read[0] ) return 1;
+    if( this->read[0] == rhs.read[0] && this->read[1] < rhs.read[1] ) return 1;
+    if( this->read[0] == rhs.read[0] && this->read[1] == rhs.read[1] && this->nmap < rhs.nmap) return 1;
+    return 0;
 }
 
 //------------------------------------------------------------------------------
@@ -1512,57 +1515,57 @@ int C_umpair::operator<(const C_umpair &rhs) const
 //------------------------------------------------------------------------------
 C_singleEnd::C_singleEnd()   // Constructor
 {
-   /*
-   Read.pos = 0;
-   Read.anchor = 0;
-   Read.len = 0;
-   Read.sense = 0;
-   Read.q=0;
-   Read.mm=0;
-   */
-   ReadGroupCode=0; 
+    /*
+     Read.pos = 0;
+     Read.anchor = 0;
+     Read.len = 0;
+     Read.sense = 0;
+     Read.q=0;
+     Read.mm=0;
+     */
+    ReadGroupCode=0; 
 }
 
 C_singleEnd::C_singleEnd(const C_singleEnd &copyin)   // Copy constructor to handle pass by value.
 {                             
-   pos = copyin.pos;
-   anchor= copyin.anchor;
-   len = copyin.len;
-   sense = copyin.sense;
-   q = copyin.q;
-   mm=copyin.mm;
-   ReadGroupCode = copyin.ReadGroupCode;
+    pos = copyin.pos;
+    anchor= copyin.anchor;
+    len = copyin.len;
+    sense = copyin.sense;
+    q = copyin.q;
+    mm=copyin.mm;
+    ReadGroupCode = copyin.ReadGroupCode;
 }
 
 C_singleEnd::C_singleEnd(unsigned int pos1, unsigned short anchor1,unsigned short len1, 
-   char sense1, char q1, char mm1, unsigned int ReadGroupCode1) {
-   pos = pos1;
-   anchor = anchor1;
-   len = len1;
-   sense = sense1;
-   q = q1;
-   mm = mm1;
-   ReadGroupCode = ReadGroupCode1;
+                         char sense1, char q1, char mm1, unsigned int ReadGroupCode1) {
+    pos = pos1;
+    anchor = anchor1;
+    len = len1;
+    sense = sense1;
+    q = q1;
+    mm = mm1;
+    ReadGroupCode = ReadGroupCode1;
 }
 
 C_singleEnd&  C_singleEnd::operator=(const C_singleEnd &rhs) 
 {
-   pos = rhs.pos;
-   anchor= rhs.anchor;
-   len = rhs.len;
-   sense = rhs.sense;
-   q = rhs.q;
-   mm = rhs.mm;
-   ReadGroupCode = rhs.ReadGroupCode;
-   return *this;
+    pos = rhs.pos;
+    anchor= rhs.anchor;
+    len = rhs.len;
+    sense = rhs.sense;
+    q = rhs.q;
+    mm = rhs.mm;
+    ReadGroupCode = rhs.ReadGroupCode;
+    return *this;
 }
 
 ostream &operator<<(ostream &output, const C_singleEnd & x)
 {
-   output << x.anchor << "\t" << x.pos << "\t" << x.len 
-          << "\t" << x.sense <<"\t" << int(x.q) 
-          <<"\t" << int(x.mm) << "\t "<< x.ReadGroupCode ;
-   return output;
+    output << x.anchor << "\t" << x.pos << "\t" << x.len 
+    << "\t" << x.sense <<"\t" << int(x.q) 
+    <<"\t" << int(x.mm) << "\t "<< x.ReadGroupCode ;
+    return output;
 }
 
 //------------------------------------------------------------------------------
@@ -1579,74 +1582,74 @@ bool  C_umpair::constrain(int LMlow, int LMhigh) {
     unsigned char o0 = read[0].sense;
     unsigned char o1 = read[1].sense;
     if ((o0=='F')&&(o1=='R')) {
-      lm = p1+l1-p0;
+        lm = p1+l1-p0;
     } else if ((o0=='R')&&(o1=='F')) {
-      lm = p0+l0-p1;
+        lm = p0+l0-p1;
     }
     if (lm>LMhigh) return false;
     if (lm<LMlow) return false;
     return true;
 }
- 
- 
+
+
 //-----------------------------------------------------------------------------
 // depth of coverage class
 //-----------------------------------------------------------------------------
 C_depth::C_depth() {                            // constructor
-  C_depth d1(0);
-  *this = d1;
+    C_depth d1(0);
+    *this = d1;
 }
 
 //-----------------------------------------------------------------------------
 // depth of coverage class
 //-----------------------------------------------------------------------------
 C_depth::C_depth(int L1) {                            // constructor
-  n.resize(L1,0); //=d1;
-  pos0=0;
-  pos1=L1-1;
-  light=1;
-  nzbins=0;
-  nzMedian=0.0;   
+    n.resize(L1,0); //=d1;
+    pos0=0;
+    pos1=L1-1;
+    light=1;
+    nzbins=0;
+    nzMedian=0.0;   
 }
 void C_depth::calcStats() {
-  calcStats(5001,-0.5,5000.5);
+    calcStats(5001,-0.5,5000.5);
 }
 
 void C_depth::calcStats(int Nbin, float x1, float x2) {
-  this->Stats.Initialize(Nbin,x1,x2);  
-  this->Stats.h.setTitle("RD count of reads/base ");
-  this->Stats.h.setXlabel("bases");
-  int L = n.size();
-  for (int p=0; p<L; p++) {
-    this->Stats.Fill1(this->n[p]);  
-  }
-  this->Stats.Finalize();     
-  L = this->Stats.h.Nbin;
-  nzMedian=0;
-  double cumu=0.0;
-  nzbins=int(Stats.h.Ntot-Stats.h.Nunder-Stats.h.n[0]);
-  for (int b=1; b<this->Stats.h.Nbin; b++) {
-    cumu += int(Stats.h.n[b]);
-    if (cumu> (nzbins/2) ) {
-       nzMedian=Stats.h.xc[b];
-       break;
+    this->Stats.Initialize(Nbin,x1,x2);  
+    this->Stats.h.setTitle("RD count of reads/base ");
+    this->Stats.h.setXlabel("bases");
+    int L = n.size();
+    for (int p=0; p<L; p++) {
+        this->Stats.Fill1(this->n[p]);  
     }
-  }
+    this->Stats.Finalize();     
+    L = this->Stats.h.Nbin;
+    nzMedian=0;
+    double cumu=0.0;
+    nzbins=int(Stats.h.Ntot-Stats.h.Nunder-Stats.h.n[0]);
+    for (int b=1; b<this->Stats.h.Nbin; b++) {
+        cumu += int(Stats.h.n[b]);
+        if (cumu> (nzbins/2) ) {
+            nzMedian=Stats.h.xc[b];
+            break;
+        }
+    }
 }
 
 
 ostream &operator<<(ostream &output, C_depth & d1)
 {
-   output << d1.name  << endl;
-   output << d1.Stats  << endl;
-   return output;
+    output << d1.name  << endl;
+    output << d1.Stats  << endl;
+    return output;
 }
 
 //-----------------------------------------------------------------------------
 // anchor marking class
 //-----------------------------------------------------------------------------
 C_marker::C_marker(int L1) {                            // constructor
-  x.resize(L1,false); //=x1;
+    x.resize(L1,false); //=x1;
 }
 
 //-----------------------------------------------------------------------------
@@ -1654,152 +1657,152 @@ C_marker::C_marker(int L1) {                            // constructor
 //-----------------------------------------------------------------------------
 int C_depth::addMarks(const string & fastafile, const string & cname1, char X)
 {
-  if (n.size()<1) {
-     return 0;
-  }
-  if (fastafile.length()==0) {
-     return 0;
-  }
-  // boost regex matches
-  string match,match1,match2;
-  // Patterns to match
-  string patternFastaHeader("^>(\\s*\\S+\\s*.*)$");
-  string patternFastaName("^\\s*(\\S+)");
-  string patternContigName(cname1);
-  // target seq flag
-  bool  thisSeq = false;
-  // base  counter
-  int baseCount = 0;
-  int Nadded = 0;
-  // sequence name
-  string seqName;
-  // sequence header
-  string seqHeader;
-  // input line
-  string line;
-  //----------------------------------------------------------------------------
-  // open input FASTA DNA file
-  //----------------------------------------------------------------------------
-  ifstream dnaIn(fastafile.c_str(), ios::in);  
-  if (!dnaIn) {
-    cerr << "Unable to open fasta file: " << fastafile << endl;
-    exit(1);
-  }  
-  while (getline(dnaIn, line)) {
-    // header line (long format): register previous sequence and start new
-    if ( RE2::FullMatch(line.c_str(),patternFastaHeader.c_str(),&match) ) {
-      // retreive info for new sequence
-      seqHeader = match;      
-      // parse out sequence name
-      seqName = seqHeader;
-      if ( RE2::FullMatch(seqHeader.c_str(),patternFastaName.c_str(),&match1) ) {     
-          seqName = match1;
-      }
-      thisSeq = RE2::FullMatch(seqName.c_str(),patternContigName.c_str(),&match2);
-      baseCount = 0;
-    }  else if (thisSeq) {
-    
-      size_t found=line.find_first_of(X);
-      while (found!=string::npos)
-      {
-        int p = found + baseCount;
-        if (p>=int(n.size()-1)) {
-          cout << " fasta file " << fastafile << " contig " <<  cname1;
-          cout << " exceeds length of contig " << n.size() << " oops " <<  endl;
-          return Nadded;
-        }
-        n[p] = float(-1e10);
-        Nadded++;
-        found=line.find_first_of(X,found+1);
-      }
-      baseCount += line.size();
+    if (n.size()<1) {
+        return 0;
     }
-  }  
-  dnaIn.close();
-  cout << " added " << Nadded << " marked postions from fasta file " << fastafile << " contig " <<  cname1;    
-  return Nadded;
+    if (fastafile.length()==0) {
+        return 0;
+    }
+    // boost regex matches
+    string match,match1,match2;
+    // Patterns to match
+    string patternFastaHeader("^>(\\s*\\S+\\s*.*)$");
+    string patternFastaName("^\\s*(\\S+)");
+    string patternContigName(cname1);
+    // target seq flag
+    bool  thisSeq = false;
+    // base  counter
+    int baseCount = 0;
+    int Nadded = 0;
+    // sequence name
+    string seqName;
+    // sequence header
+    string seqHeader;
+    // input line
+    string line;
+    //----------------------------------------------------------------------------
+    // open input FASTA DNA file
+    //----------------------------------------------------------------------------
+    ifstream dnaIn(fastafile.c_str(), ios::in);  
+    if (!dnaIn) {
+        cerr << "Unable to open fasta file: " << fastafile << endl;
+        exit(1);
+    }  
+    while (getline(dnaIn, line)) {
+        // header line (long format): register previous sequence and start new
+        if ( RE2::FullMatch(line.c_str(),patternFastaHeader.c_str(),&match) ) {
+            // retreive info for new sequence
+            seqHeader = match;      
+            // parse out sequence name
+            seqName = seqHeader;
+            if ( RE2::FullMatch(seqHeader.c_str(),patternFastaName.c_str(),&match1) ) {     
+                seqName = match1;
+            }
+            thisSeq = RE2::FullMatch(seqName.c_str(),patternContigName.c_str(),&match2);
+            baseCount = 0;
+        }  else if (thisSeq) {
+            
+            size_t found=line.find_first_of(X);
+            while (found!=string::npos)
+            {
+                int p = found + baseCount;
+                if (p>=int(n.size()-1)) {
+                    cout << " fasta file " << fastafile << " contig " <<  cname1;
+                    cout << " exceeds length of contig " << n.size() << " oops " <<  endl;
+                    return Nadded;
+                }
+                n[p] = float(-1e10);
+                Nadded++;
+                found=line.find_first_of(X,found+1);
+            }
+            baseCount += line.size();
+        }
+    }  
+    dnaIn.close();
+    cout << " added " << Nadded << " marked postions from fasta file " << fastafile << " contig " <<  cname1;    
+    return Nadded;
 }
 //-----------------------------------------------------------------------------
 // calculate GC content fraction from reference fasta file 
 //-----------------------------------------------------------------------------
 int C_depth::GCcontent(const string & fastafile, const string & cname1)
 {
-  if (n.size()<1) {
-     return 0;
-  }
-  if (fastafile.length()==0) {
-     return 0;
-  }
-  // boost regex matches
-  string match,match1,match2;
-  // Patterns to match
-  string patternFastaHeader("^>(\\s*\\S+\\s*.*)$");
-  string patternFastaName("^\\s*(\\S+)");
-  string patternContigName(cname1);
-  // target seq flag
-  bool  thisSeq = false;
-  // base  counter
-  int baseCount = 0;
-  int Ngc = 0;
-  // sequence name
-  string seqName;
-  // sequence header
-  string seqHeader;
-  // input line
-  string line;
-  light_t info;
-  info.i64=light;
-  int binsize=info.i16[0];
-  //----------------------------------------------------------------------------
-  // open input FASTA DNA file
-  //----------------------------------------------------------------------------
-  ifstream dnaIn(fastafile.c_str(), ios::in);  
-  if (!dnaIn) {
-    cerr << "Unable to open fasta file: " << fastafile << endl;
-    exit(1);
-  }  
-  while (getline(dnaIn, line)) {
-    // header line (long format): register previous sequence and start new
-    //if (boost::regex_search(line, match, patternFastaHeader)) {
-    char C1 = line[0];
-    if (C1=='>') { 
-      if (! RE2::FullMatch(line.c_str(),patternFastaHeader.c_str(),&match)) {
-        cerr << "Bad Fasta Header for GC content: " << line << endl;
-        exit(1);
-      }
-      // retreive info for new sequence
-      seqHeader = match;      
-      // parse out sequence name
-      seqName = seqHeader;
-      if (RE2::FullMatch(seqHeader.c_str(),patternFastaName.c_str(),&match1) ) {     
-          seqName = match1;
-      }
-      thisSeq = RE2::FullMatch(seqName.c_str(),patternContigName.c_str(),&match2) ;
-      baseCount = 0;
-      
-    }  else if (thisSeq) {
-       size_t Nb=line.size();
-       for (int q=0; q<int(Nb); q++) {
-         int p = (q + baseCount)/binsize;
-         if (p>=int(n.size()-1)) {
-           cout << " fasta file " << fastafile << " contig " <<  cname1;
-           cout << " bin exceeds length of contig " << n.size()  <<  endl;
-           dnaIn.close();
-           cout << " GC content: " << float(Ngc)/baseCount << endl;
-           return Ngc;
-         }
-         float isgc =0;
-         char base = toupper(line[q]);
-         if ( (base=='G') or (base=='C') ) isgc=1.0;  
-         n[p] += isgc/binsize;
-         Ngc+=int(isgc);
-       }
-       baseCount += line.size();
+    if (n.size()<1) {
+        return 0;
     }
-  }  
-  dnaIn.close();
-  cout << " GC content: " << float(Ngc)/baseCount << " fasta file " << fastafile << " contig " <<  cname1;    
-  return Ngc;
+    if (fastafile.length()==0) {
+        return 0;
+    }
+    // boost regex matches
+    string match,match1,match2;
+    // Patterns to match
+    string patternFastaHeader("^>(\\s*\\S+\\s*.*)$");
+    string patternFastaName("^\\s*(\\S+)");
+    string patternContigName(cname1);
+    // target seq flag
+    bool  thisSeq = false;
+    // base  counter
+    int baseCount = 0;
+    int Ngc = 0;
+    // sequence name
+    string seqName;
+    // sequence header
+    string seqHeader;
+    // input line
+    string line;
+    light_t info;
+    info.i64=light;
+    int binsize=info.i16[0];
+    //----------------------------------------------------------------------------
+    // open input FASTA DNA file
+    //----------------------------------------------------------------------------
+    ifstream dnaIn(fastafile.c_str(), ios::in);  
+    if (!dnaIn) {
+        cerr << "Unable to open fasta file: " << fastafile << endl;
+        exit(1);
+    }  
+    while (getline(dnaIn, line)) {
+        // header line (long format): register previous sequence and start new
+        //if (boost::regex_search(line, match, patternFastaHeader)) {
+        char C1 = line[0];
+        if (C1=='>') { 
+            if (! RE2::FullMatch(line.c_str(),patternFastaHeader.c_str(),&match)) {
+                cerr << "Bad Fasta Header for GC content: " << line << endl;
+                exit(1);
+            }
+            // retreive info for new sequence
+            seqHeader = match;      
+            // parse out sequence name
+            seqName = seqHeader;
+            if (RE2::FullMatch(seqHeader.c_str(),patternFastaName.c_str(),&match1) ) {     
+                seqName = match1;
+            }
+            thisSeq = RE2::FullMatch(seqName.c_str(),patternContigName.c_str(),&match2) ;
+            baseCount = 0;
+            
+        }  else if (thisSeq) {
+            size_t Nb=line.size();
+            for (int q=0; q<int(Nb); q++) {
+                int p = (q + baseCount)/binsize;
+                if (p>=int(n.size()-1)) {
+                    cout << " fasta file " << fastafile << " contig " <<  cname1;
+                    cout << " bin exceeds length of contig " << n.size()  <<  endl;
+                    dnaIn.close();
+                    cout << " GC content: " << float(Ngc)/baseCount << endl;
+                    return Ngc;
+                }
+                float isgc =0;
+                char base = toupper(line[q]);
+                if ( (base=='G') or (base=='C') ) isgc=1.0;  
+                n[p] += isgc/binsize;
+                Ngc+=int(isgc);
+            }
+            baseCount += line.size();
+        }
+    }  
+    dnaIn.close();
+    cout << " GC content: " << float(Ngc)/baseCount << " fasta file " << fastafile << " contig " <<  cname1;    
+    return Ngc;
 }
 
 //-----------------------------------------------------------------------------
@@ -1807,819 +1810,819 @@ int C_depth::GCcontent(const string & fastafile, const string & cname1)
 //-----------------------------------------------------------------------------
 int C_marker::addMarks(const string & fastafile, const string & cname1, char X)
 {
-  if (x.size()<1) {
-     return 0;
-  }
-  if (fastafile.length()==0) {
-     return 0;
-  }
-  // boost regex matches
-  string match,match1,match2;
-  // Patterns to match
-  string patternFastaHeader("^>(\\s*\\S+\\s*.*)$");
-  string patternFastaName("^\\s*(\\S+)");
-  string patternContigName(cname1);
-  // target seq flag
-  bool  thisSeq = false;
-  // base  counter
-  int baseCount = 0;
-  int Nadded = 0;
-  // sequence name
-  string seqName;
-  // sequence header
-  string seqHeader;
-  // input line
-  string line;
-  //----------------------------------------------------------------------------
-  // open input FASTA DNA file
-  //----------------------------------------------------------------------------
-  ifstream dnaIn(fastafile.c_str(), ios::in);  
-  if (!dnaIn) {
-    cerr << "Unable to open fasta file: " << fastafile << endl;
-    exit(1);
-  }  
-  while (getline(dnaIn, line)) {
-    // header line (long format): register previous sequence and start new
-    //if (   boost::regex_search(line, match, patternFastaHeader)) {
-	if ( RE2::FullMatch(line.c_str(),patternFastaHeader.c_str(),&match) ) {
-			// retreive info for new sequence
-      seqHeader = match;      
-      // parse out sequence name
-      seqName = seqHeader;
-      if ( RE2::FullMatch(seqHeader.c_str(),patternFastaName.c_str(),&match1) ) {     
-          seqName = match1;
-      }
-      thisSeq = RE2::FullMatch(seqName.c_str(),patternContigName.c_str(),&match2)  ;
-      baseCount = 0;
-    }  else if (thisSeq) {
-    
-      size_t found=line.find_first_of(X);
-      while (found!=string::npos)
-      {
-        int p = found + baseCount;
-        if (p>=int(x.size()-1)) {
-          cout << " fasta file " << fastafile << " contig " <<  cname1;
-          cout << " exceeds length of contig " << x.size() << " oops " <<  endl;
-          return Nadded;
-        }
-        x[p] = true;
-        Nadded++;
-        found=line.find_first_of(X,found+1);
-      }
-      baseCount += line.size();
+    if (x.size()<1) {
+        return 0;
     }
-  }  
-  dnaIn.close();
-  cout << " added " << Nadded << " marked postions from fasta file " << fastafile << " contig " <<  cname1;    
-  return Nadded;
+    if (fastafile.length()==0) {
+        return 0;
+    }
+    // boost regex matches
+    string match,match1,match2;
+    // Patterns to match
+    string patternFastaHeader("^>(\\s*\\S+\\s*.*)$");
+    string patternFastaName("^\\s*(\\S+)");
+    string patternContigName(cname1);
+    // target seq flag
+    bool  thisSeq = false;
+    // base  counter
+    int baseCount = 0;
+    int Nadded = 0;
+    // sequence name
+    string seqName;
+    // sequence header
+    string seqHeader;
+    // input line
+    string line;
+    //----------------------------------------------------------------------------
+    // open input FASTA DNA file
+    //----------------------------------------------------------------------------
+    ifstream dnaIn(fastafile.c_str(), ios::in);  
+    if (!dnaIn) {
+        cerr << "Unable to open fasta file: " << fastafile << endl;
+        exit(1);
+    }  
+    while (getline(dnaIn, line)) {
+        // header line (long format): register previous sequence and start new
+        //if (   boost::regex_search(line, match, patternFastaHeader)) {
+        if ( RE2::FullMatch(line.c_str(),patternFastaHeader.c_str(),&match) ) {
+			// retreive info for new sequence
+            seqHeader = match;      
+            // parse out sequence name
+            seqName = seqHeader;
+            if ( RE2::FullMatch(seqHeader.c_str(),patternFastaName.c_str(),&match1) ) {     
+                seqName = match1;
+            }
+            thisSeq = RE2::FullMatch(seqName.c_str(),patternContigName.c_str(),&match2)  ;
+            baseCount = 0;
+        }  else if (thisSeq) {
+            
+            size_t found=line.find_first_of(X);
+            while (found!=string::npos)
+            {
+                int p = found + baseCount;
+                if (p>=int(x.size()-1)) {
+                    cout << " fasta file " << fastafile << " contig " <<  cname1;
+                    cout << " exceeds length of contig " << x.size() << " oops " <<  endl;
+                    return Nadded;
+                }
+                x[p] = true;
+                Nadded++;
+                found=line.find_first_of(X,found+1);
+            }
+            baseCount += line.size();
+        }
+    }  
+    dnaIn.close();
+    cout << " added " << Nadded << " marked postions from fasta file " << fastafile << " contig " <<  cname1;    
+    return Nadded;
 }
 
 //=============================================
 // contig class (container for all PE mappings)
 //=============================================
 C_contig::C_contig(string & contigName1, int L1, bool doRepeatCheck) {
-  contigName = contigName1;     // contig name
-  Length = L1;                  // contig length;
-  uniquified = 0;               // reset flag
-  //depth.n.resize(L1,0);                         
-  //starts.n.resize(L1,0);
-  if ((L1>0)&&(doRepeatCheck)) {
-    float zip=0;           
-    repeat.n.resize(L1,zip);    // non-unique read mapping positions
-  }
+    contigName = contigName1;     // contig name
+    Length = L1;                  // contig length;
+    uniquified = 0;               // reset flag
+    //depth.n.resize(L1,0);                         
+    //starts.n.resize(L1,0);
+    if ((L1>0)&&(doRepeatCheck)) {
+        float zip=0;           
+        repeat.n.resize(L1,zip);    // non-unique read mapping positions
+    }
 }
 
 // fetch set name
 string C_contig::getContigName() const
 {
-  return this->contigName;
+    return this->contigName;
 }
 
 // set set name vector
 void C_contig::setContigName(string & s1)
 {
-  this->contigName = s1;
+    this->contigName = s1;
 }
 
 void C_contig::calcStats() {
-     // init total count of unique reads 
-     totalUniqueReads=0;   
-     // init total count of repeat bases
-     totalRepeatBases=0;  
-     // init total count of telomeric non-accessable bases
-     totalNoCovBases=0;     
-     //-------------------------------------------------------------------------
-     // Don't waste time making histogram of empty list...
-     //-------------------------------------------------------------------------
-     unsigned int L = repeat.n.size();  
-     if (repeat.Stats.N>0) {
-       this->repeat.Stats.Initialize(101,-0.5,1000.5);  
-       repeat.Stats.h.setTitle("NA count of bases with repeats");
-       repeat.Stats.h.setXlabel("rpt");
-       for (unsigned int i=0; i<L; i++) {
-          this->repeat.Stats.Fill1(this->repeat.n[i]);  
-          // bump repeat base count
-          totalRepeatBases+=(repeat.n[i]>0);
-          // check for first base with a repeat
-          if ((totalNoCovBases<1.0)&&(repeat.n[i]>0)) {
-             totalNoCovBases=double(i)-1.0;
-          }
-       }
-       this->repeat.Stats.Finalize();    
-     } else {
-       this->repeat.Stats.Initialize(2,-0.5,1.5);  
-       repeat.Stats.h.setTitle("NA count of bases with repeats");
-       repeat.Stats.h.setXlabel("rpt");
-       this->repeat.Stats.Finalize();    
-     }
-     // check for last base with a repeat
-     // --i should start at L-1, but it doesnt...
-     
-     if (L>0) { 
-       for (unsigned int i=(L-1); i>0; --i) {
-          totalNoCovBases++;
-          if (repeat.n[i]>0) {
-            break;
-          }
-       }
-     } 
-     
-     this->pairStats.Initialize(10001,-0.5,10000.5);       
-     pairStats.h.setTitle("LF Fragment paired-read mapping length");
-     pairStats.h.setXlabel("LM");
-     unsigned int N = localpairs.size();
-     list<C_localpair>::iterator i;
-     for(i=localpairs.begin(); i != localpairs.end(); ++i) {
+    // init total count of unique reads 
+    totalUniqueReads=0;   
+    // init total count of repeat bases
+    totalRepeatBases=0;  
+    // init total count of telomeric non-accessable bases
+    totalNoCovBases=0;     
+    //-------------------------------------------------------------------------
+    // Don't waste time making histogram of empty list...
+    //-------------------------------------------------------------------------
+    unsigned int L = repeat.n.size();  
+    if (repeat.Stats.N>0) {
+        this->repeat.Stats.Initialize(101,-0.5,1000.5);  
+        repeat.Stats.h.setTitle("NA count of bases with repeats");
+        repeat.Stats.h.setXlabel("rpt");
+        for (unsigned int i=0; i<L; i++) {
+            this->repeat.Stats.Fill1(this->repeat.n[i]);  
+            // bump repeat base count
+            totalRepeatBases+=(repeat.n[i]>0);
+            // check for first base with a repeat
+            if ((totalNoCovBases<1.0)&&(repeat.n[i]>0)) {
+                totalNoCovBases=double(i)-1.0;
+            }
+        }
+        this->repeat.Stats.Finalize();    
+    } else {
+        this->repeat.Stats.Initialize(2,-0.5,1.5);  
+        repeat.Stats.h.setTitle("NA count of bases with repeats");
+        repeat.Stats.h.setXlabel("rpt");
+        this->repeat.Stats.Finalize();    
+    }
+    // check for last base with a repeat
+    // --i should start at L-1, but it doesnt...
+    
+    if (L>0) { 
+        for (unsigned int i=(L-1); i>0; --i) {
+            totalNoCovBases++;
+            if (repeat.n[i]>0) {
+                break;
+            }
+        }
+    } 
+    
+    this->pairStats.Initialize(10001,-0.5,10000.5);       
+    pairStats.h.setTitle("LF Fragment paired-read mapping length");
+    pairStats.h.setXlabel("LM");
+    unsigned int N = localpairs.size();
+    list<C_localpair>::iterator i;
+    for(i=localpairs.begin(); i != localpairs.end(); ++i) {
         this->pairStats.Fill1((*i).lm);  
-     }
-     pairStats.Finalize();
-     //
-     totalUniqueReads+=2*localpairs.size();          
-
-     int Na = anchors.L.size();
-     //this->crossStats.Initialize(101,-0.5,100.5);       
-     this->crossStats.Initialize(Na,-0.5,double(Na)-0.5);       
-     crossStats.h.setBinLabels(anchors.names);
-     crossStats.h.setXlabel("anchor");
-     string title = "CA Cross pair "+contigName+" linked to anchors ";
-     crossStats.h.setTitle(title);
-
-     N = crosspairs.size();
-     list<C_crosspair>::iterator j;
-     for(j=crosspairs.begin(); j != crosspairs.end(); ++j) {
+    }
+    pairStats.Finalize();
+    //
+    totalUniqueReads+=2*localpairs.size();          
+    
+    int Na = anchors.L.size();
+    //this->crossStats.Initialize(101,-0.5,100.5);       
+    this->crossStats.Initialize(Na,-0.5,double(Na)-0.5);       
+    crossStats.h.setBinLabels(anchors.names);
+    crossStats.h.setXlabel("anchor");
+    string title = "CA Cross pair "+contigName+" linked to anchors ";
+    crossStats.h.setTitle(title);
+    
+    N = crosspairs.size();
+    list<C_crosspair>::iterator j;
+    for(j=crosspairs.begin(); j != crosspairs.end(); ++j) {
         //this->crossStats.Fill1((*j).read[0].anchor);  
         this->crossStats.Fill1((*j).read[1].anchor);  
-     }
-     crossStats.Finalize();
-     //
-     totalUniqueReads+=crosspairs.size();          
-     totalUniqueReads+=dangle.size();          
-     totalUniqueReads+=umpairs.size();          
-     totalUniqueReads+=singleton.size();               
+    }
+    crossStats.Finalize();
+    //
+    totalUniqueReads+=crosspairs.size();          
+    totalUniqueReads+=dangle.size();          
+    totalUniqueReads+=umpairs.size();          
+    totalUniqueReads+=singleton.size();               
 }
 
 //===========================================================
 // extract read length and contig length info from span files
 //===========================================================
 void C_contig::calcLengths() {
-   //  Length = repeat.n.size(); 
-     double LR0 = 0; 
-     double LR1 = 0; 
-     double LR2 = 0; 
-     list<C_localpair>::iterator i;
-     for(i=localpairs.begin(); i != localpairs.end(); ++i) {
+    //  Length = repeat.n.size(); 
+    double LR0 = 0; 
+    double LR1 = 0; 
+    double LR2 = 0; 
+    list<C_localpair>::iterator i;
+    for(i=localpairs.begin(); i != localpairs.end(); ++i) {
         LR0 = LR0+1.0;
         LR1 = LR1+(*i).len1;  
         LR2 = LR2+(*i).len1*(*i).len1;  
-     }
-     aLR = LR1 / LR0;
-     sLR = sqrt( ( LR2 / LR0 )-aLR*aLR) ;
+    }
+    aLR = LR1 / LR0;
+    sLR = sqrt( ( LR2 / LR0 )-aLR*aLR) ;
 }
 
 int C_contig::setLengthFromAnchor() {      // set contig Length from anchor[contigName].L
-     
-     //  Length = repeat.n.size(); 
-     
-     size_t Np = localpairs.size();
-     int La = anchors.L[contigName];
-     if (Np>0) {
+    
+    //  Length = repeat.n.size(); 
+    
+    size_t Np = localpairs.size();
+    int La = anchors.L[contigName];
+    if (Np>0) {
         Length=La;
-     } else {
+    } else {
         Length=0;
-     }
-     
-     // cout << contigName << ":\t " << Length << endl;
-     
-     return Length;
+    }
+    
+    // cout << contigName << ":\t " << Length << endl;
+    
+    return Length;
 }
 
 
 void C_contig::calcDepth(int Qmin) {
-  // initialize depth arrays (this can take a while)
-  read_depth.n.resize(Length,0);
-  read_start.n.resize(Length,0);
-  frag_depth.n.resize(Length,0);
-  //
-  // mapping quality minumum?  
-  // int Qmin=pars.getQmin();
-  //
-  int p0=0;
-  int p1=0;
-  // fill depth from local pairs
-  unsigned int N = localpairs.size();
-  list<C_localpair>::iterator i;
-  // loop over pairs
-  for(i=localpairs.begin(); i != localpairs.end(); ++i) {
-    //loop over ends for read depth
-    for (int e=0; e<2; e++) {
-      // skip ends that are constrained
-      if (((e+1)&&(*i).constrain)>0) {continue;} 
-      // 
-      if ((e==0)&&((*i).q1<Qmin)) {continue;} 
-      if ((e==1)&&((*i).q2<Qmin)) {continue;} 
-      //
-      switch (e) {
-        case 0: 
-          p0 = (*i).pos;
-          p1 = p0+(*i).len1;
-          break;
-        case 1:
-          p0 = (*i).pos+(*i).lm-(*i).len2;
-          p1 = (*i).pos+(*i).lm;
-      }
-      read_start.n[p0]+=1;
-      for (int p = p0; p<p1; p++) {
-        if ((p<0)|(p>Length)) { 
-          cerr << " bound problem in calcDepth pairs" << p << endl;
-        } else {
-          read_depth.n[p]+=1;
+    // initialize depth arrays (this can take a while)
+    read_depth.n.resize(Length,0);
+    read_start.n.resize(Length,0);
+    frag_depth.n.resize(Length,0);
+    //
+    // mapping quality minumum?  
+    // int Qmin=pars.getQmin();
+    //
+    int p0=0;
+    int p1=0;
+    // fill depth from local pairs
+    unsigned int N = localpairs.size();
+    list<C_localpair>::iterator i;
+    // loop over pairs
+    for(i=localpairs.begin(); i != localpairs.end(); ++i) {
+        //loop over ends for read depth
+        for (int e=0; e<2; e++) {
+            // skip ends that are constrained
+            if (((e+1)&&(*i).constrain)>0) {continue;} 
+            // 
+            if ((e==0)&&((*i).q1<Qmin)) {continue;} 
+            if ((e==1)&&((*i).q2<Qmin)) {continue;} 
+            //
+            switch (e) {
+                case 0: 
+                    p0 = (*i).pos;
+                    p1 = p0+(*i).len1;
+                    break;
+                case 1:
+                    p0 = (*i).pos+(*i).lm-(*i).len2;
+                    p1 = (*i).pos+(*i).lm;
+            }
+            read_start.n[p0]+=1;
+            for (int p = p0; p<p1; p++) {
+                if ((p<0)|(p>Length)) { 
+                    cerr << " bound problem in calcDepth pairs" << p << endl;
+                } else {
+                    read_depth.n[p]+=1;
+                }
+            }
         }
-      }
+        // fragment depth
+        int lm = (*i).lm;
+        if (lm>0) {
+            p0 = (*i).pos;
+            p1 = p0+(*i).lm;
+        } else {
+            p1 = (*i).pos;
+            p0 = p1+(*i).lm;
+        }
+        for (int p = p0; p<p1; p++) {
+            if ((p<0)|(p>Length)) { 
+                cerr << " bound problem in calcDepth frag depth from pairs" << p << endl;
+            } else {
+                frag_depth.n[p]+=1;
+            }
+        }    
     }
-    // fragment depth
-    int lm = (*i).lm;
-    if (lm>0) {
-      p0 = (*i).pos;
-      p1 = p0+(*i).lm;
-    } else {
-      p1 = (*i).pos;
-      p0 = p1+(*i).lm;
+    // fill depth from cross pairs (not so many...)
+    N = crosspairs.size();
+    list<C_crosspair>::iterator i1;
+    // loop over pairs
+    for(i1=crosspairs.begin(); i1 != crosspairs.end(); ++i1) {
+        //first end for read depth
+        if ((*i1).read[0].q<Qmin) {continue;} 
+        p0 = (*i1).read[0].pos;
+        p1 = p0+(*i1).read[0].len;
+        read_start.n[p0]+=1;
+        for (int p = p0; p<p1; p++) {
+            if ((p<0)|(p>Length)) { 
+                cerr << " bound problem in calcDepth cross" << p << endl;
+            } else {
+                read_depth.n[p]+=1;
+            }
+        }
     }
-    for (int p = p0; p<p1; p++) {
-      if ((p<0)|(p>Length)) { 
-        cerr << " bound problem in calcDepth frag depth from pairs" << p << endl;
-      } else {
-        frag_depth.n[p]+=1;
-      }
-    }    
-  }
-  // fill depth from cross pairs (not so many...)
-  N = crosspairs.size();
-  list<C_crosspair>::iterator i1;
-  // loop over pairs
-  for(i1=crosspairs.begin(); i1 != crosspairs.end(); ++i1) {
-    //first end for read depth
-    if ((*i1).read[0].q<Qmin) {continue;} 
-    p0 = (*i1).read[0].pos;
-    p1 = p0+(*i1).read[0].len;
-    read_start.n[p0]+=1;
-    for (int p = p0; p<p1; p++) {
-      if ((p<0)|(p>Length)) { 
-        cerr << " bound problem in calcDepth cross" << p << endl;
-      } else {
-        read_depth.n[p]+=1;
-      }
+    // fill depth from dangle starts 
+    N = dangle.size();
+    list<C_singleEnd>::iterator i2; 
+    for(i2=dangle.begin(); i2 != dangle.end(); ++i2) {
+        //first end for read depth
+        if ((*i2).q<Qmin) {continue;} 
+        p0 = (*i2).pos;
+        p1 = p0+(*i2).len;
+        read_start.n[p0]+=1;
+        for (int p = p0; p<p1; p++) {
+            if ((p<0)|(p>Length)) { 
+                cerr << " bound problem in calcDepth dangle" << p << endl;
+            } else {
+                read_depth.n[p]+=1;
+            }
+        }
     }
-  }
-  // fill depth from dangle starts 
-  N = dangle.size();
-  list<C_singleEnd>::iterator i2; 
-  for(i2=dangle.begin(); i2 != dangle.end(); ++i2) {
-    //first end for read depth
-    if ((*i2).q<Qmin) {continue;} 
-    p0 = (*i2).pos;
-    p1 = p0+(*i2).len;
-    read_start.n[p0]+=1;
-    for (int p = p0; p<p1; p++) {
-      if ((p<0)|(p>Length)) { 
-        cerr << " bound problem in calcDepth dangle" << p << endl;
-      } else {
-        read_depth.n[p]+=1;
-      }
+    // fill depth from umpairs 
+    N = umpairs.size();
+    list<C_umpair>::iterator i3;
+    for(i3=umpairs.begin(); i3 != umpairs.end(); ++i3) {
+        if ((*i3).read[0].q<Qmin) {continue;} 
+        //first end for read depth
+        p0 = (*i3).read[0].pos;
+        p1 = p0+(*i3).read[0].len;
+        read_start.n[p0]+=1;
+        for (int p = p0; p<p1; p++) {
+            if ((p<0)|(p>Length)) { 
+                cerr << " bound problem in calcDepth umpairs " << p << endl;
+            } else {
+                read_depth.n[p]+=1;
+            }
+        }
     }
-  }
-  // fill depth from umpairs 
-  N = umpairs.size();
-  list<C_umpair>::iterator i3;
-  for(i3=umpairs.begin(); i3 != umpairs.end(); ++i3) {
-    if ((*i3).read[0].q<Qmin) {continue;} 
-    //first end for read depth
-    p0 = (*i3).read[0].pos;
-    p1 = p0+(*i3).read[0].len;
-    read_start.n[p0]+=1;
-    for (int p = p0; p<p1; p++) {
-      if ((p<0)|(p>Length)) { 
-        cerr << " bound problem in calcDepth umpairs " << p << endl;
-      } else {
-        read_depth.n[p]+=1;
-      }
+    // fill depth from unique ends 
+    N = singleton.size();
+    for(i2=singleton.begin(); i2 != singleton.end(); ++i2) {
+        if ((*i2).q<Qmin) {continue;} 
+        //first end for read depth
+        p0 = (*i2).pos;
+        p1 = p0+(*i2).len;
+        read_start.n[p0]+=1;
+        for (int p = p0; p<p1; p++) {
+            if ((p<0)|(p>Length)) { 
+                cerr << " bound problem in calcDepth singleton" << p << endl;
+            } else {
+                read_depth.n[p]+=1;
+            }
+        }
     }
-  }
-  // fill depth from unique ends 
-  N = singleton.size();
-  for(i2=singleton.begin(); i2 != singleton.end(); ++i2) {
-    if ((*i2).q<Qmin) {continue;} 
-    //first end for read depth
-    p0 = (*i2).pos;
-    p1 = p0+(*i2).len;
-    read_start.n[p0]+=1;
-    for (int p = p0; p<p1; p++) {
-      if ((p<0)|(p>Length)) { 
-        cerr << " bound problem in calcDepth singleton" << p << endl;
-      } else {
-        read_depth.n[p]+=1;
-      }
-    }
-  }
-  this->read_depth.Stats.Initialize(5001,-0.5,5000.5);  
-  read_depth.Stats.h.setTitle("RD count of reads/base ");
-  read_depth.Stats.h.setXlabel("bases");
-  this->read_start.Stats.Initialize(5001,-0.5,5000.5);  
-  read_start.Stats.h.setTitle("SD count of starts/base ");
-  read_start.Stats.h.setXlabel("bases");
-  this->frag_depth.Stats.Initialize(5001,-0.5,5000.5);  
-  frag_depth.Stats.h.setTitle("FD count of fragments/base ");
-  frag_depth.Stats.h.setXlabel("bases");
-  for (int p=0; p<Length; p++) {
-  //   if (this->repeat.n[i]==0) {
+    this->read_depth.Stats.Initialize(5001,-0.5,5000.5);  
+    read_depth.Stats.h.setTitle("RD count of reads/base ");
+    read_depth.Stats.h.setXlabel("bases");
+    this->read_start.Stats.Initialize(5001,-0.5,5000.5);  
+    read_start.Stats.h.setTitle("SD count of starts/base ");
+    read_start.Stats.h.setXlabel("bases");
+    this->frag_depth.Stats.Initialize(5001,-0.5,5000.5);  
+    frag_depth.Stats.h.setTitle("FD count of fragments/base ");
+    frag_depth.Stats.h.setXlabel("bases");
+    for (int p=0; p<Length; p++) {
+        //   if (this->repeat.n[i]==0) {
         this->read_depth.Stats.Fill1(this->read_depth.n[p]);  
         this->read_start.Stats.Fill1(this->read_start.n[p]);  
         this->frag_depth.Stats.Fill1(this->frag_depth.n[p]);  
- //    }
-  }
-  this->read_depth.Stats.Finalize();     
-  this->read_start.Stats.Finalize();     
-  this->frag_depth.Stats.Finalize();     
+        //    }
+    }
+    this->read_depth.Stats.Finalize();     
+    this->read_start.Stats.Finalize();     
+    this->frag_depth.Stats.Finalize();     
 }
 
 void C_contig::calcDepth(int P0, int P1, int Qmin) {
-  // initialize depth arrays (this can take a while)
-  if (P1>=Length) P1=Length-1;
-  int L = P1-P0;
-  read_depth.pos0=P0;
-  read_depth.pos1=P1;
-  read_start.pos0=P0;
-  read_start.pos1=P1;
-  frag_depth.pos0=P0;
-  frag_depth.pos1=P1;
-  read_depth.n.resize(L,0);
-  read_start.n.resize(L,0);
-  frag_depth.n.resize(L,0);
-  int pos0=P0;
-  int pos1=P1;
-  int p0=0;
-  int p1=0;
-  // fill depth from local pairs
-  unsigned int N = localpairs.size();
-  list<C_localpair>::iterator i;
-  // loop over pairs
-  for(i=localpairs.begin(); i != localpairs.end(); ++i) {
-    //loop over ends for read depth
-    for (int e=0; e<2; e++) {
-      switch (e) {
-        case 0: 
-          if ((*i).q1<Qmin) {continue;} 
-          p0 = (*i).pos;
-          p1 = p0+(*i).len1;
-          break;
-        case 1:
-          if ((*i).q2<Qmin) {continue;} 
-          p0 = (*i).pos+(*i).lm-(*i).len2;
-          p1 = (*i).pos+(*i).lm;
-      }
-      if ((p0>=pos0)&&(p0<=pos1)) {read_start.n[p0-pos0]+=1;}
-      if (!boundlimit(p0,p1,pos0,pos1)) {continue;}
-      for (int p = p0; p<p1; p++) {
-          read_depth.n[p]+=1;
-      }
+    // initialize depth arrays (this can take a while)
+    if (P1>=Length) P1=Length-1;
+    int L = P1-P0;
+    read_depth.pos0=P0;
+    read_depth.pos1=P1;
+    read_start.pos0=P0;
+    read_start.pos1=P1;
+    frag_depth.pos0=P0;
+    frag_depth.pos1=P1;
+    read_depth.n.resize(L,0);
+    read_start.n.resize(L,0);
+    frag_depth.n.resize(L,0);
+    int pos0=P0;
+    int pos1=P1;
+    int p0=0;
+    int p1=0;
+    // fill depth from local pairs
+    unsigned int N = localpairs.size();
+    list<C_localpair>::iterator i;
+    // loop over pairs
+    for(i=localpairs.begin(); i != localpairs.end(); ++i) {
+        //loop over ends for read depth
+        for (int e=0; e<2; e++) {
+            switch (e) {
+                case 0: 
+                    if ((*i).q1<Qmin) {continue;} 
+                    p0 = (*i).pos;
+                    p1 = p0+(*i).len1;
+                    break;
+                case 1:
+                    if ((*i).q2<Qmin) {continue;} 
+                    p0 = (*i).pos+(*i).lm-(*i).len2;
+                    p1 = (*i).pos+(*i).lm;
+            }
+            if ((p0>=pos0)&&(p0<=pos1)) {read_start.n[p0-pos0]+=1;}
+            if (!boundlimit(p0,p1,pos0,pos1)) {continue;}
+            for (int p = p0; p<p1; p++) {
+                read_depth.n[p]+=1;
+            }
+        }
+        // fragment depth
+        int lm = (*i).lm;
+        if (lm>0) {
+            p0 = (*i).pos;
+            p1 = p0+(*i).lm;
+        } else {
+            p1 = (*i).pos;
+            p0 = p1+(*i).lm;
+        }
+        if (!boundlimit(p0,p1,pos0,pos1)) {continue;}
+        for (int p = p0; p<p1; p++) {
+            frag_depth.n[p]+=1;
+        }    
     }
-    // fragment depth
-    int lm = (*i).lm;
-    if (lm>0) {
-      p0 = (*i).pos;
-      p1 = p0+(*i).lm;
-    } else {
-      p1 = (*i).pos;
-      p0 = p1+(*i).lm;
+    // fill depth from cross pairs (not so many...)
+    N = crosspairs.size();
+    list<C_crosspair>::iterator i1;
+    // loop over pairs
+    for(i1=crosspairs.begin(); i1 != crosspairs.end(); ++i1) {
+        if ((*i1).read[0].q<Qmin) {continue;} 
+        //first end for read depth
+        p0 = (*i1).read[0].pos;
+        p1 = p0+(*i1).read[0].len;
+        if ((p0>=pos0)&&(p0<=pos1)) {read_start.n[p0-pos0]+=1;}
+        if (!boundlimit(p0,p1,pos0,pos1)) {continue;}
+        for (int p = p0; p<p1; p++) {
+            read_depth.n[p]+=1;
+        }
     }
-    if (!boundlimit(p0,p1,pos0,pos1)) {continue;}
-    for (int p = p0; p<p1; p++) {
-        frag_depth.n[p]+=1;
-    }    
-  }
-  // fill depth from cross pairs (not so many...)
-  N = crosspairs.size();
-  list<C_crosspair>::iterator i1;
-  // loop over pairs
-  for(i1=crosspairs.begin(); i1 != crosspairs.end(); ++i1) {
-    if ((*i1).read[0].q<Qmin) {continue;} 
-    //first end for read depth
-    p0 = (*i1).read[0].pos;
-    p1 = p0+(*i1).read[0].len;
-    if ((p0>=pos0)&&(p0<=pos1)) {read_start.n[p0-pos0]+=1;}
-    if (!boundlimit(p0,p1,pos0,pos1)) {continue;}
-    for (int p = p0; p<p1; p++) {
-        read_depth.n[p]+=1;
+    // fill depth from dangles 
+    N = dangle.size();
+    list<C_singleEnd>::iterator i2; 
+    for(i2=dangle.begin(); i2 != dangle.end(); ++i2) {
+        if ((*i2).q<Qmin) {continue;} 
+        //first end for read depth
+        p0 = (*i2).pos;
+        p1 = p0+(*i2).len;
+        if ((p0>=pos0)&&(p0<=pos1)) {read_start.n[p0-pos0]+=1;}
+        if (!boundlimit(p0,p1,pos0,pos1)) {continue;}
+        for (int p = p0; p<p1; p++) {
+            read_depth.n[p]+=1;
+        }
     }
-  }
-  // fill depth from dangles 
-  N = dangle.size();
-  list<C_singleEnd>::iterator i2; 
-  for(i2=dangle.begin(); i2 != dangle.end(); ++i2) {
-    if ((*i2).q<Qmin) {continue;} 
-    //first end for read depth
-    p0 = (*i2).pos;
-    p1 = p0+(*i2).len;
-    if ((p0>=pos0)&&(p0<=pos1)) {read_start.n[p0-pos0]+=1;}
-    if (!boundlimit(p0,p1,pos0,pos1)) {continue;}
-    for (int p = p0; p<p1; p++) {
-        read_depth.n[p]+=1;
+    // fill depth from unique ends 
+    N = umpairs.size();
+    list<C_umpair>::iterator i3;
+    for(i3=umpairs.begin(); i3 != umpairs.end(); ++i3) {
+        if ((*i3).read[0].q<Qmin) {continue;} 
+        //first end for read depth
+        p0 = (*i3).read[0].pos;
+        p1 = p0+(*i3).read[0].len;
+        if ((p0>=pos0)&&(p0<=pos1)) {read_start.n[p0-pos0]+=1;}
+        if (!boundlimit(p0,p1,pos0,pos1)) {continue;}
+        for (int p = p0; p<p1; p++) {
+            read_depth.n[p]+=1;
+        }
     }
-  }
-  // fill depth from unique ends 
-  N = umpairs.size();
-  list<C_umpair>::iterator i3;
-  for(i3=umpairs.begin(); i3 != umpairs.end(); ++i3) {
-    if ((*i3).read[0].q<Qmin) {continue;} 
-    //first end for read depth
-    p0 = (*i3).read[0].pos;
-    p1 = p0+(*i3).read[0].len;
-    if ((p0>=pos0)&&(p0<=pos1)) {read_start.n[p0-pos0]+=1;}
-    if (!boundlimit(p0,p1,pos0,pos1)) {continue;}
-    for (int p = p0; p<p1; p++) {
-        read_depth.n[p]+=1;
+    // fill depth from unique ends 
+    N = singleton.size();
+    for(i2=singleton.begin(); i2 != singleton.end(); ++i2) {
+        if ((*i2).q<Qmin) {continue;} 
+        //first end for read depth
+        p0 = (*i2).pos;
+        p1 = p0+(*i2).len;
+        if ((p0>=pos0)&&(p0<=pos1)) {read_start.n[p0-pos0]+=1;}
+        if (!boundlimit(p0,p1,pos0,pos1)) {continue;}
+        for (int p = p0; p<p1; p++) {
+            read_depth.n[p]+=1;
+        }
     }
-  }
-  // fill depth from unique ends 
-  N = singleton.size();
-  for(i2=singleton.begin(); i2 != singleton.end(); ++i2) {
-    if ((*i2).q<Qmin) {continue;} 
-    //first end for read depth
-    p0 = (*i2).pos;
-    p1 = p0+(*i2).len;
-    if ((p0>=pos0)&&(p0<=pos1)) {read_start.n[p0-pos0]+=1;}
-    if (!boundlimit(p0,p1,pos0,pos1)) {continue;}
-    for (int p = p0; p<p1; p++) {
-        read_depth.n[p]+=1;
-    }
-  }
-  this->read_depth.Stats.Initialize(5001,-0.5,5000.5);  
-  read_depth.Stats.h.setTitle("RD count of reads/base ");
-  read_depth.Stats.h.setXlabel("bases");
-  this->read_start.Stats.Initialize(5001,-0.5,5000.5);  
-  read_start.Stats.h.setTitle("SD count of starts/base ");
-  read_start.Stats.h.setXlabel("bases");
-  this->frag_depth.Stats.Initialize(5001,-0.5,5000.5);  
-  frag_depth.Stats.h.setTitle("FD count of fragments/base ");
-  frag_depth.Stats.h.setXlabel("bases");
-  for (int p=0; p<L; p++) {
- //    if (!this->repeat.x[i]) {
+    this->read_depth.Stats.Initialize(5001,-0.5,5000.5);  
+    read_depth.Stats.h.setTitle("RD count of reads/base ");
+    read_depth.Stats.h.setXlabel("bases");
+    this->read_start.Stats.Initialize(5001,-0.5,5000.5);  
+    read_start.Stats.h.setTitle("SD count of starts/base ");
+    read_start.Stats.h.setXlabel("bases");
+    this->frag_depth.Stats.Initialize(5001,-0.5,5000.5);  
+    frag_depth.Stats.h.setTitle("FD count of fragments/base ");
+    frag_depth.Stats.h.setXlabel("bases");
+    for (int p=0; p<L; p++) {
+        //    if (!this->repeat.x[i]) {
         this->read_depth.Stats.Fill1(this->read_depth.n[p]);  
         this->read_start.Stats.Fill1(this->read_start.n[p]);  
         this->frag_depth.Stats.Fill1(this->frag_depth.n[p]);  
- //    }
-  }
-  this->read_depth.Stats.Finalize();     
-  this->read_start.Stats.Finalize();     
-  this->frag_depth.Stats.Finalize();     
+        //    }
+    }
+    this->read_depth.Stats.Finalize();     
+    this->read_start.Stats.Finalize();     
+    this->frag_depth.Stats.Finalize();     
 }
 
 //------------------------------------------------------------------------------
 // Calculate UU Fragment coverage for this contig
 //------------------------------------------------------------------------------
 void C_contig::calcFragDepth(int lmLow, int lmHigh) {
-  // initialize depth arrays (this can take a while)
-  calcFragDepth(0,Length,lmLow,lmHigh);
+    // initialize depth arrays (this can take a while)
+    calcFragDepth(0,Length,lmLow,lmHigh);
 }
 
 void C_contig::calcFragDepth(int P0, int P1, int lmLow, int lmHigh) {
-  // initialize depth arrays (this can take a while)
-  if (P1>=Length) P1=Length-1;
-  int L = P1-P0;
-  frag_depth.n.resize(L,0);
-  frag_depth.pos0=P0;
-  frag_depth.pos1=P1;
-  //int lmLow = int(pars.getFragmentLengthLo());
-  //int lmHigh = int(pars.getFragmentLengthHi());    
-  int pos0=P0;
-  int pos1=P1;
-  int p0=0;
-  int p1=0;
-  // fill depth from local pairs
-  //unsigned int N = localpairs.size();
-  list<C_localpair>::iterator i;
-  // loop over pairs
-  for(i=localpairs.begin(); i != localpairs.end(); ++i) {
-    // fragment depth
-    int lm = (*i).lm;
-    // demand usual fragment
-    if ((lm<lmLow)|(lm>lmHigh)) {continue; }
-    // add only the non-read part of the fragment
-    p0 = (*i).pos+(*i).len1;
-    p1 = p0+(*i).lm-(*i).len2;
-    if (!boundlimit(p0,p1,pos0,pos1)) {continue;}
-    for (int p = p0; p<p1; p++) {
-        frag_depth.n[p]+=1;
-    }    
-  }
-  this->frag_depth.Stats.Initialize(5001,-0.5,5000.5);  
-  frag_depth.Stats.h.setTitle("FD count of fragments/base ");
-  frag_depth.Stats.h.setXlabel("bases");
-  for (int p=0; p<L; p++) {
+    // initialize depth arrays (this can take a while)
+    if (P1>=Length) P1=Length-1;
+    int L = P1-P0;
+    frag_depth.n.resize(L,0);
+    frag_depth.pos0=P0;
+    frag_depth.pos1=P1;
+    //int lmLow = int(pars.getFragmentLengthLo());
+    //int lmHigh = int(pars.getFragmentLengthHi());    
+    int pos0=P0;
+    int pos1=P1;
+    int p0=0;
+    int p1=0;
+    // fill depth from local pairs
+    //unsigned int N = localpairs.size();
+    list<C_localpair>::iterator i;
+    // loop over pairs
+    for(i=localpairs.begin(); i != localpairs.end(); ++i) {
+        // fragment depth
+        int lm = (*i).lm;
+        // demand usual fragment
+        if ((lm<lmLow)|(lm>lmHigh)) {continue; }
+        // add only the non-read part of the fragment
+        p0 = (*i).pos+(*i).len1;
+        p1 = p0+(*i).lm-(*i).len2;
+        if (!boundlimit(p0,p1,pos0,pos1)) {continue;}
+        for (int p = p0; p<p1; p++) {
+            frag_depth.n[p]+=1;
+        }    
+    }
+    this->frag_depth.Stats.Initialize(5001,-0.5,5000.5);  
+    frag_depth.Stats.h.setTitle("FD count of fragments/base ");
+    frag_depth.Stats.h.setXlabel("bases");
+    for (int p=0; p<L; p++) {
         this->frag_depth.Stats.Fill1(this->frag_depth.n[p]);  
-  }
-  this->frag_depth.Stats.Finalize();     
+    }
+    this->frag_depth.Stats.Finalize();     
 }
 
 
 
 
 void C_contig::calcStarts(int Qmin) {
-  // check if read starts already done 
-  if (read_start.Stats.N>0) return;
-  // initialize depth arrays (this can take a while)
-  read_start.n.resize(Length,0);
-  int p0=0;
-  // fill depth from local pairs
-  unsigned int N = localpairs.size();
-  list<C_localpair>::iterator i;
-  for(i=localpairs.begin(); i != localpairs.end(); ++i) {
-    //loop over ends for read depth
-    for (int e=0; e<2; e++) {
-      switch (e) {
-        case 0: 
-          if ((*i).q1<Qmin) {continue;} 
-          p0 = (*i).pos;
-          break;
-        case 1:
-          if ((*i).q1<Qmin) {continue;} 
-          p0 = (*i).pos+(*i).lm-(*i).len2;
-      }
-      read_start.n[p0]+=1;
+    // check if read starts already done 
+    if (read_start.Stats.N>0) return;
+    // initialize depth arrays (this can take a while)
+    read_start.n.resize(Length,0);
+    int p0=0;
+    // fill depth from local pairs
+    unsigned int N = localpairs.size();
+    list<C_localpair>::iterator i;
+    for(i=localpairs.begin(); i != localpairs.end(); ++i) {
+        //loop over ends for read depth
+        for (int e=0; e<2; e++) {
+            switch (e) {
+                case 0: 
+                    if ((*i).q1<Qmin) {continue;} 
+                    p0 = (*i).pos;
+                    break;
+                case 1:
+                    if ((*i).q1<Qmin) {continue;} 
+                    p0 = (*i).pos+(*i).lm-(*i).len2;
+            }
+            read_start.n[p0]+=1;
+        }
     }
-  }
-  // fill depth from cross pairs (not so many...)
-  N = crosspairs.size();
-  list<C_crosspair>::iterator i1;
-  for(i1=crosspairs.begin(); i1 != crosspairs.end(); ++i1) {
-    if ((*i1).read[0].q<Qmin) {continue;} 
-    p0 = (*i1).read[0].pos;
-    read_start.n[p0]+=1;
-  }
-  // fill depth from dangles
-  N = dangle.size();
-  list<C_singleEnd>::iterator i2; 
-  for(i2=dangle.begin(); i2 != dangle.end(); ++i2) {
-    if ((*i2).q<Qmin) {continue;} 
-    p0 = (*i2).pos;
-    read_start.n[p0]+=1;
-  }
-  // fill depth from umpairs
-  N = umpairs.size();
-  list<C_umpair>::iterator i3;
-  for(i3=umpairs.begin(); i3 != umpairs.end(); ++i3) {
-    if ((*i3).read[0].q<Qmin) {continue;} 
-    p0 = (*i3).read[0].pos;
-    read_start.n[p0]+=1;
-  }
-  // fill depth from unique ends 
-  N = singleton.size();
-  for(i2=singleton.begin(); i2 != singleton.end(); ++i2) {
-    if ((*i2).q<Qmin) {continue;} 
-    p0 = (*i2).pos;
-    read_start.n[p0]+=1;
-  }
-  this->read_start.Stats.Initialize(5001,-0.5,5000.5);  
-  read_start.Stats.h.setTitle("SD count of starts/base ");
-  read_start.Stats.h.setXlabel("bases");
-  for (int p=0; p<Length; p++) {
-     //if (!this->repeat.x[i]) {
+    // fill depth from cross pairs (not so many...)
+    N = crosspairs.size();
+    list<C_crosspair>::iterator i1;
+    for(i1=crosspairs.begin(); i1 != crosspairs.end(); ++i1) {
+        if ((*i1).read[0].q<Qmin) {continue;} 
+        p0 = (*i1).read[0].pos;
+        read_start.n[p0]+=1;
+    }
+    // fill depth from dangles
+    N = dangle.size();
+    list<C_singleEnd>::iterator i2; 
+    for(i2=dangle.begin(); i2 != dangle.end(); ++i2) {
+        if ((*i2).q<Qmin) {continue;} 
+        p0 = (*i2).pos;
+        read_start.n[p0]+=1;
+    }
+    // fill depth from umpairs
+    N = umpairs.size();
+    list<C_umpair>::iterator i3;
+    for(i3=umpairs.begin(); i3 != umpairs.end(); ++i3) {
+        if ((*i3).read[0].q<Qmin) {continue;} 
+        p0 = (*i3).read[0].pos;
+        read_start.n[p0]+=1;
+    }
+    // fill depth from unique ends 
+    N = singleton.size();
+    for(i2=singleton.begin(); i2 != singleton.end(); ++i2) {
+        if ((*i2).q<Qmin) {continue;} 
+        p0 = (*i2).pos;
+        read_start.n[p0]+=1;
+    }
+    this->read_start.Stats.Initialize(5001,-0.5,5000.5);  
+    read_start.Stats.h.setTitle("SD count of starts/base ");
+    read_start.Stats.h.setXlabel("bases");
+    for (int p=0; p<Length; p++) {
+        //if (!this->repeat.x[i]) {
         this->read_start.Stats.Fill1(this->read_start.n[p]);  
-     //} else {
-     //   this->read_start.Stats.Fill1(-1);  
-     //}
-  }
-  this->read_start.Stats.Finalize();     
+        //} else {
+        //   this->read_start.Stats.Fill1(-1);  
+        //}
+    }
+    this->read_start.Stats.Finalize();     
 }
 
 C_depth  C_contig::countReads(int binsize) {
-  // check if read starts already done 
-  if (read_start.Stats.N>0) {
-    C_depth c0;
-    return c0;
-  }
-  int nbin = 1+(Length/binsize);
-  // initialize depth arrays (this can take a while)
-  C_depth c(nbin);
-  // fill header info  
-  light_t info;
-  info.i64=0;  
-  info.i16[0]=binsize;
-  info.i16[1]=0;  
-  c.light = info.i64;
-  // position var
-  int p0=0;
-  // fill depth from local pairs
-  unsigned int N = localpairs.size();
-  list<C_localpair>::iterator i;
-  for(i=localpairs.begin(); i != localpairs.end(); ++i) {
-    //loop over ends for read depth
-    for (int e=0; e<2; e++) {
-      // skip an end if was found by constraint  
-	  // if (((e+1)&((*i).constrain)>0) {continue;} ???? 
-	  if (((e+1)&(*i).constrain)>0) {continue;} 
-      switch (e) {
-        case 0: 
-          p0 = (*i).pos;
-          break;
-        case 1:
-          p0 = (*i).pos+(*i).lm-(*i).len2;
-      }
-      p0=p0/binsize;
-      c.n[p0]+=1;
+    // check if read starts already done 
+    if (read_start.Stats.N>0) {
+        C_depth c0;
+        return c0;
     }
-  }
-  // fill depth from cross pairs (not so many...)
-  N = crosspairs.size();
-  list<C_crosspair>::iterator i1;
-  for(i1=crosspairs.begin(); i1 != crosspairs.end(); ++i1) {
-    p0 = (*i1).read[0].pos/binsize;
-    c.n[p0]+=1;
-  }
-  // fill depth from dangles
-  N = dangle.size();
-  list<C_singleEnd>::iterator i2; 
-  for(i2=dangle.begin(); i2 != dangle.end(); ++i2) {
-    p0 = (*i2).pos/binsize;
-    c.n[p0]+=1;
-  }
-  // fill depth from unique ends 
-  N = umpairs.size();
-  list<C_umpair>::iterator i3;
-  for(i3=umpairs.begin(); i3 != umpairs.end(); ++i3) {
-    p0 = (*i3).read[0].pos/binsize;
-    c.n[p0]+=1;
-  }
-  // fill depth from singleton ends 
-  N = singleton.size();
-  for(i2=singleton.begin(); i2 != singleton.end(); ++i2) {
-    p0 = (*i2).pos/binsize;
-    c.n[p0]+=1;
-  }
-  // stats
-  c.calcStats();
-  /*
-  c.Stats.Initialize(15001,-0.5,15000.5);  
-  c.Stats.h.setTitle("UR count of starts/base ");
-  c.Stats.h.setXlabel("bases");
-  for (int p=0; p<nbin; p++) {
+    int nbin = 1+(Length/binsize);
+    // initialize depth arrays (this can take a while)
+    C_depth c(nbin);
+    // fill header info  
+    light_t info;
+    info.i64=0;  
+    info.i16[0]=binsize;
+    info.i16[1]=0;  
+    c.light = info.i64;
+    // position var
+    int p0=0;
+    // fill depth from local pairs
+    unsigned int N = localpairs.size();
+    list<C_localpair>::iterator i;
+    for(i=localpairs.begin(); i != localpairs.end(); ++i) {
+        //loop over ends for read depth
+        for (int e=0; e<2; e++) {
+            // skip an end if was found by constraint  
+            // if (((e+1)&((*i).constrain)>0) {continue;} ???? 
+            if (((e+1)&(*i).constrain)>0) {continue;} 
+            switch (e) {
+                case 0: 
+                    p0 = (*i).pos;
+                    break;
+                case 1:
+                    p0 = (*i).pos+(*i).lm-(*i).len2;
+            }
+            p0=p0/binsize;
+            c.n[p0]+=1;
+        }
+    }
+    // fill depth from cross pairs (not so many...)
+    N = crosspairs.size();
+    list<C_crosspair>::iterator i1;
+    for(i1=crosspairs.begin(); i1 != crosspairs.end(); ++i1) {
+        p0 = (*i1).read[0].pos/binsize;
+        c.n[p0]+=1;
+    }
+    // fill depth from dangles
+    N = dangle.size();
+    list<C_singleEnd>::iterator i2; 
+    for(i2=dangle.begin(); i2 != dangle.end(); ++i2) {
+        p0 = (*i2).pos/binsize;
+        c.n[p0]+=1;
+    }
+    // fill depth from unique ends 
+    N = umpairs.size();
+    list<C_umpair>::iterator i3;
+    for(i3=umpairs.begin(); i3 != umpairs.end(); ++i3) {
+        p0 = (*i3).read[0].pos/binsize;
+        c.n[p0]+=1;
+    }
+    // fill depth from singleton ends 
+    N = singleton.size();
+    for(i2=singleton.begin(); i2 != singleton.end(); ++i2) {
+        p0 = (*i2).pos/binsize;
+        c.n[p0]+=1;
+    }
+    // stats
+    c.calcStats();
+    /*
+     c.Stats.Initialize(15001,-0.5,15000.5);  
+     c.Stats.h.setTitle("UR count of starts/base ");
+     c.Stats.h.setXlabel("bases");
+     for (int p=0; p<nbin; p++) {
      c.Stats.Fill1(c.n[p]);  
-  }
-  c.Stats.Finalize();     
-  */
-  return c;
+     }
+     c.Stats.Finalize();     
+     */
+    return c;
 }
 
 
 unsigned short C_contig::getAnchorIndex() {
-// this seems to alaways return zero
-/*
-  list<C_localpair>::iterator i;
-  i=localpairs.begin(); 
-  unsigned short a = (*i).anchor;
-*/
-  unsigned short a=0;
-  for (size_t i = 0; i<this->anchors.names.size(); i++) {
-      string name= this->anchors.names[i];
-      a++;
-      if (contigName.compare(name)==0) break;
-  }
-  return a;
+    // this seems to alaways return zero
+    /*
+     list<C_localpair>::iterator i;
+     i=localpairs.begin(); 
+     unsigned short a = (*i).anchor;
+     */
+    unsigned short a=0;
+    for (size_t i = 0; i<this->anchors.names.size(); i++) {
+        string name= this->anchors.names[i];
+        a++;
+        if (contigName.compare(name)==0) break;
+    }
+    return a;
 }
 
 long long C_contig::countReads(int P0, int P1) {
-  // initialize depth arrays (this can take a while)
-  if (P1>=Length) P1=Length-1;
-  if (P0<0) P0=0;
-  int p0, p1;
-  long long Nread = 0;
-  // fill depth from local pairs
-  unsigned int N = localpairs.size();
-  list<C_localpair>::iterator i;
-  // 
-  cout << " countReads " << contigName << " " << P0 << " " << P1 << " " << N << endl; 
-  // loop over pairs
-  for(i=localpairs.begin(); i != localpairs.end(); ++i) {
-    //loop over ends for read depth
-    for (int e=0; e<2; e++) {
-      switch (e) {
-        case 0: 
-          p0 = (*i).pos;
-          p1 = p0+(*i).len1;
-          break;
-        case 1:
-          p0 = (*i).pos+(*i).lm-(*i).len2;
-          p1 = (*i).pos+(*i).lm;
-      }
-      if ((p0>=P0)&&(p0<=P1)) {
-       Nread+=1;
-      }
+    // initialize depth arrays (this can take a while)
+    if (P1>=Length) P1=Length-1;
+    if (P0<0) P0=0;
+    int p0, p1;
+    long long Nread = 0;
+    // fill depth from local pairs
+    unsigned int N = localpairs.size();
+    list<C_localpair>::iterator i;
+    // 
+    cout << " countReads " << contigName << " " << P0 << " " << P1 << " " << N << endl; 
+    // loop over pairs
+    for(i=localpairs.begin(); i != localpairs.end(); ++i) {
+        //loop over ends for read depth
+        for (int e=0; e<2; e++) {
+            switch (e) {
+                case 0: 
+                    p0 = (*i).pos;
+                    p1 = p0+(*i).len1;
+                    break;
+                case 1:
+                    p0 = (*i).pos+(*i).lm-(*i).len2;
+                    p1 = (*i).pos+(*i).lm;
+            }
+            if ((p0>=P0)&&(p0<=P1)) {
+                Nread+=1;
+            }
+        }
     }
-  }
-  //
-  cout << " countReads pairs " << Nread << endl;
+    //
+    cout << " countReads pairs " << Nread << endl;
     
-  // fill depth from cross pairs (not so many...)
-  N = crosspairs.size();
-  list<C_crosspair>::iterator i1;
-  // loop over pairs
-  for(i1=crosspairs.begin(); i1 != crosspairs.end(); ++i1) {
-    //first end for read depth
-    p0 = (*i1).read[0].pos;
-    p1 = p0+(*i1).read[0].len;
-    if ((p0>=P0)&&(p0<=P1)) {
-      Nread+=1;
-    } else if (p0>P1) {
-      break;
+    // fill depth from cross pairs (not so many...)
+    N = crosspairs.size();
+    list<C_crosspair>::iterator i1;
+    // loop over pairs
+    for(i1=crosspairs.begin(); i1 != crosspairs.end(); ++i1) {
+        //first end for read depth
+        p0 = (*i1).read[0].pos;
+        p1 = p0+(*i1).read[0].len;
+        if ((p0>=P0)&&(p0<=P1)) {
+            Nread+=1;
+        } else if (p0>P1) {
+            break;
+        }
     }
-  }
-  // fill depth from dangles
-  N = dangle.size();
-  list<C_singleEnd>::iterator i2; 
-  for(i2=dangle.begin(); i2 != dangle.end(); ++i2) {
-    //first end for read depth
-    p0 = (*i2).pos;
-    if ((p0>=P0)&&(p0<=P1)) {
-      Nread+=1;
-    } else if (p0>P1) {
-      break;
+    // fill depth from dangles
+    N = dangle.size();
+    list<C_singleEnd>::iterator i2; 
+    for(i2=dangle.begin(); i2 != dangle.end(); ++i2) {
+        //first end for read depth
+        p0 = (*i2).pos;
+        if ((p0>=P0)&&(p0<=P1)) {
+            Nread+=1;
+        } else if (p0>P1) {
+            break;
+        }
     }
-  }
-  // fill depth from unique ends 
-  N = umpairs.size();
-  list<C_umpair>::iterator i3;
-  for(i3=umpairs.begin(); i3 != umpairs.end(); ++i3) {
-    //first end for read depth
-    p0 = (*i3).read[0].pos;
-    p1 = p0+(*i3).read[0].len;
-    if ((p0>=P0)&&(p0<=P1)) {
-      Nread+=1;
-    } else if (p0>P1) {
-      break;
+    // fill depth from unique ends 
+    N = umpairs.size();
+    list<C_umpair>::iterator i3;
+    for(i3=umpairs.begin(); i3 != umpairs.end(); ++i3) {
+        //first end for read depth
+        p0 = (*i3).read[0].pos;
+        p1 = p0+(*i3).read[0].len;
+        if ((p0>=P0)&&(p0<=P1)) {
+            Nread+=1;
+        } else if (p0>P1) {
+            break;
+        }
     }
-  }
-  // fill depth from unique ends 
-  N = singleton.size();
-  for(i2=singleton.begin(); i2 != singleton.end(); ++i2) {
-    //first end for read depth
-    p0 = (*i2).pos;
-    p1 = p0+(*i2).len;
-    if ((p0>=P0)&&(p0<=P1)) {
-      Nread+=1;
-    } else if (p0>P1) {
-      break;
+    // fill depth from unique ends 
+    N = singleton.size();
+    for(i2=singleton.begin(); i2 != singleton.end(); ++i2) {
+        //first end for read depth
+        p0 = (*i2).pos;
+        p1 = p0+(*i2).len;
+        if ((p0>=P0)&&(p0<=P1)) {
+            Nread+=1;
+        } else if (p0>P1) {
+            break;
+        }
     }
-  }
-  return Nread;
+    return Nread;
 }
 
 
 int C_contig::howFar(int p0, int Nnu) {
-  //---------------------------------------------------------------------------
-  // returns end position of region starting at P0 
-  // with Nnu non-repeat bases
-  //---------------------------------------------------------------------------
-  if (p0<0) p0=0;
-  int inu = 0;
-  int n;
-  if (repeat.n.size()<1)  {
-     n=p0+Nnu;
-     n = (n>=Length? Length-1: n);
-     return n;
-  }
-  // loop over repeats until reaching Nnu non-repeats
-  for(n=p0; n < (Length-1); n++) {
-      inu+=1-int(repeat.n[n]>0);
-      if (inu == Nnu) { break; }
-  }
-  return n;
+    //---------------------------------------------------------------------------
+    // returns end position of region starting at P0 
+    // with Nnu non-repeat bases
+    //---------------------------------------------------------------------------
+    if (p0<0) p0=0;
+    int inu = 0;
+    int n;
+    if (repeat.n.size()<1)  {
+        n=p0+Nnu;
+        n = (n>=Length? Length-1: n);
+        return n;
+    }
+    // loop over repeats until reaching Nnu non-repeats
+    for(n=p0; n < (Length-1); n++) {
+        inu+=1-int(repeat.n[n]>0);
+        if (inu == Nnu) { break; }
+    }
+    return n;
 }
 
 void C_contig::sort() {
-
+    
     // check if already done, bug out if done
     if (uniquified>0) return;
-
+    
     localpairs.sort();               
     crosspairs.sort();               
     dangle.sort();         
@@ -2630,10 +2633,10 @@ void C_contig::sort() {
 }
 
 void C_contig::uniquify() {
-
+    
     // check if already done, bug out if done
     if (uniquified>1) return;    
-
+    
     int N0 = localpairs.size();               
     localpairs.unique(isRedundantPair);               
     int NU = localpairs.size();
@@ -2647,18 +2650,18 @@ void C_contig::uniquify() {
     // remove only for variable read length platforms (454 / Helicos)
     //-------------------------------------------------------------     
     if ( (sLR/aLR)>0.25 ) {  // large variable read length
-      N0 = dangle.size();               
-      dangle.unique(isRedundantRead);               
-      NU = dangle.size();               
-      printf(" remove %d of %d (%5.2f%%) dangles\n",N0-NU,N0,100.*double(N0-NU)/N0);               
-      N0 = singleton.size();               
-      singleton.unique(isRedundantRead);               
-      NU = singleton.size();               
-      printf(" remove %d of %d (%5.2f%%) singletons\n",N0-NU,N0,100.*double(N0-NU)/N0);               
-      N0 = umpairs.size();               
-      umpairs.unique(isRedundantMulti);               
-      NU = umpairs.size();               
-      printf(" remove %d of %d (%5.2f%%) U-M\n",N0-NU,N0,100.*double(N0-NU)/N0);               
+        N0 = dangle.size();               
+        dangle.unique(isRedundantRead);               
+        NU = dangle.size();               
+        printf(" remove %d of %d (%5.2f%%) dangles\n",N0-NU,N0,100.*double(N0-NU)/N0);               
+        N0 = singleton.size();               
+        singleton.unique(isRedundantRead);               
+        NU = singleton.size();               
+        printf(" remove %d of %d (%5.2f%%) singletons\n",N0-NU,N0,100.*double(N0-NU)/N0);               
+        N0 = umpairs.size();               
+        umpairs.unique(isRedundantMulti);               
+        NU = umpairs.size();               
+        printf(" remove %d of %d (%5.2f%%) U-M\n",N0-NU,N0,100.*double(N0-NU)/N0);               
     }
     uniquified=2;
     
@@ -2668,1013 +2671,1013 @@ void C_contig::uniquify() {
 // I/O function for contigset
 void C_contig::writePairs(string & outfilename) //const
 {
-  // format: optimized to loadFragments.m matlab script  
-  // open output binary file. bomb if unable to open
-  fstream output(outfilename.c_str(), ios::out | ios::binary);
-  if (!output) {
-      cerr << "Unable to open file: " << outfilename << endl;
-      return;
-  }
-  C_headerSpan h;
-  h.setName = setName;
-  h.contigName = contigName;
-  int t =0;
-  while(outfilename.find(h.spanext[t])==string::npos) t++;
-  h.typeName = h.spanext[t];
-  h.reclen =   3*sizeof(int)+2*sizeof(short)+6*sizeof(char);
-  h.N = this->localpairs.size();
-  h.write(output);
-  list<C_localpair>::iterator i;
-  for(i=localpairs.begin(); i != localpairs.end(); ++i) {
-    unsigned int pos = (*i).pos;  
-    int lm = (*i).lm;  
-    char o = (*i).orient;  
-    char q1 = (*i).q1;  
-    char q2 = (*i).q2;  
-    char mm1 = (*i).mm1;  
-    char mm2 = (*i).mm2;  
-    short len1 = (*i).len1;  
-    short len2 = (*i).len2;  
-    char constrain = (*i).constrain;  
-    unsigned int ReadGroupCode0 = (*i).ReadGroupCode;  
-    
-    output.write(reinterpret_cast<const char *>(&pos), sizeof(int));
-    output.write(reinterpret_cast<const char *>(&lm), sizeof(int));
-    output.write(reinterpret_cast<const char *>(&o), sizeof(char));
-    output.write(reinterpret_cast<const char *>(&len1), sizeof(short));
-    output.write(reinterpret_cast<const char *>(&len2), sizeof(short));
-    output.write(reinterpret_cast<const char *>(&q1), sizeof(char));    
-    output.write(reinterpret_cast<const char *>(&q2), sizeof(char));    
-    output.write(reinterpret_cast<const char *>(&mm1), sizeof(char));    
-    output.write(reinterpret_cast<const char *>(&mm2), sizeof(char));    
-    output.write(reinterpret_cast<const char *>(&constrain), sizeof(char));    
-    output.write(reinterpret_cast<const char *>(&ReadGroupCode0), sizeof(unsigned int));    
-  }
-  output.close();
+    // format: optimized to loadFragments.m matlab script  
+    // open output binary file. bomb if unable to open
+    fstream output(outfilename.c_str(), ios::out | ios::binary);
+    if (!output) {
+        cerr << "Unable to open file: " << outfilename << endl;
+        return;
+    }
+    C_headerSpan h;
+    h.setName = setName;
+    h.contigName = contigName;
+    int t =0;
+    while(outfilename.find(h.spanext[t])==string::npos) t++;
+    h.typeName = h.spanext[t];
+    h.reclen =   3*sizeof(int)+2*sizeof(short)+6*sizeof(char);
+    h.N = this->localpairs.size();
+    h.write(output);
+    list<C_localpair>::iterator i;
+    for(i=localpairs.begin(); i != localpairs.end(); ++i) {
+        unsigned int pos = (*i).pos;  
+        int lm = (*i).lm;  
+        char o = (*i).orient;  
+        char q1 = (*i).q1;  
+        char q2 = (*i).q2;  
+        char mm1 = (*i).mm1;  
+        char mm2 = (*i).mm2;  
+        short len1 = (*i).len1;  
+        short len2 = (*i).len2;  
+        char constrain = (*i).constrain;  
+        unsigned int ReadGroupCode0 = (*i).ReadGroupCode;  
+        
+        output.write(reinterpret_cast<const char *>(&pos), sizeof(int));
+        output.write(reinterpret_cast<const char *>(&lm), sizeof(int));
+        output.write(reinterpret_cast<const char *>(&o), sizeof(char));
+        output.write(reinterpret_cast<const char *>(&len1), sizeof(short));
+        output.write(reinterpret_cast<const char *>(&len2), sizeof(short));
+        output.write(reinterpret_cast<const char *>(&q1), sizeof(char));    
+        output.write(reinterpret_cast<const char *>(&q2), sizeof(char));    
+        output.write(reinterpret_cast<const char *>(&mm1), sizeof(char));    
+        output.write(reinterpret_cast<const char *>(&mm2), sizeof(char));    
+        output.write(reinterpret_cast<const char *>(&constrain), sizeof(char));    
+        output.write(reinterpret_cast<const char *>(&ReadGroupCode0), sizeof(unsigned int));    
+    }
+    output.close();
 }
 
 // I/O function for contigset
 void C_contig::printPairs(string & outfilename) //const
 {
-  // format: optimized to loadFragments.m matlab script  
-  // open output binary file. bomb if unable to open
-  fstream output(outfilename.c_str(), ios::out);
-  if (!output) {
-      cerr << "Unable to open file: " << outfilename << endl;
-      return;
-  }
-  int V = 207;
-  output << "Local Pair list, version " << V << endl;
-  output << "Set " << setName << "\tContig " << contigName << endl;
-  unsigned int nf = this->localpairs.size();
-  output << "Number of Pairs " << nf << endl;
-  output << " anchor  position lengthFragment orientation   q1 q2  mm1 mm2 ReadGroup "<< endl;
-  //
-  list<C_localpair>::iterator i;
-  for(i=localpairs.begin(); i != localpairs.end(); ++i) {
-    output << " " << (*i) << endl;
-  }
-  output.close();
+    // format: optimized to loadFragments.m matlab script  
+    // open output binary file. bomb if unable to open
+    fstream output(outfilename.c_str(), ios::out);
+    if (!output) {
+        cerr << "Unable to open file: " << outfilename << endl;
+        return;
+    }
+    int V = 207;
+    output << "Local Pair list, version " << V << endl;
+    output << "Set " << setName << "\tContig " << contigName << endl;
+    unsigned int nf = this->localpairs.size();
+    output << "Number of Pairs " << nf << endl;
+    output << " anchor  position lengthFragment orientation   q1 q2  mm1 mm2 ReadGroup "<< endl;
+    //
+    list<C_localpair>::iterator i;
+    for(i=localpairs.begin(); i != localpairs.end(); ++i) {
+        output << " " << (*i) << endl;
+    }
+    output.close();
 }
 
 
 // I/O function for contigset
 void C_contig::printEnd(string & outfilename,  list<C_singleEnd> &  reads) //const
 {
-  // format: optimized to loadFragments.m matlab script  
-  // open output binary file. bomb if unable to open
-  fstream output(outfilename.c_str(), ios::out);
-  if (!output) {
-      cerr << "Unable to open End output file: " << outfilename << endl;
-      return;
-  }
-  int V = 207;
-  output << "Read-end list, version " << V << endl;
-  output << "Set " << setName << "\tContig " << contigName << endl;
-  unsigned int ne = reads.size();
-  output << "Number of Ends " << ne << endl;
-  output << " anchor  position length sense   quality mm ReadGroup"<< endl;
-  //
-  list<C_singleEnd>::iterator i;
-  for(i=reads.begin(); i != reads.end(); ++i) {
-    output << " " << (*i) << endl;
-  }
-  output.close();
+    // format: optimized to loadFragments.m matlab script  
+    // open output binary file. bomb if unable to open
+    fstream output(outfilename.c_str(), ios::out);
+    if (!output) {
+        cerr << "Unable to open End output file: " << outfilename << endl;
+        return;
+    }
+    int V = 207;
+    output << "Read-end list, version " << V << endl;
+    output << "Set " << setName << "\tContig " << contigName << endl;
+    unsigned int ne = reads.size();
+    output << "Number of Ends " << ne << endl;
+    output << " anchor  position length sense   quality mm ReadGroup"<< endl;
+    //
+    list<C_singleEnd>::iterator i;
+    for(i=reads.begin(); i != reads.end(); ++i) {
+        output << " " << (*i) << endl;
+    }
+    output.close();
 }
 
 
 // I/O function for crosspairs
 void C_contig::printCross(string & outfilename) //const
 {
-  // format: optimized to loadFragments.m matlab script  
-  // open output binary file. bomb if unable to open
-  fstream output(outfilename.c_str(), ios::out);
-  if (!output) {
-      cerr << "Unable to open Cross output file: " << outfilename << endl;
-      return;
-  }
-  int V = 207;
-  output << "Cross pair list, version " << V << endl;
-  output << "Set " << setName << "\tContig " << contigName << endl;
-  unsigned int nc = crosspairs.size();
-  output << "Number of Cross pairs " << nc << endl;
-  output << " anchor0  position0 length0 sense0   quality0 mm0";
-  output << " anchor1  position1 length1 sense1   quality1 mm1";
-  output << " readGroup " << endl;
-  //
-  list<C_crosspair>::iterator i;
-  for(i=crosspairs.begin(); i != crosspairs.end(); ++i) {
-    output << " " << (*i).read[0] << "\t " << (*i).read[1]  << endl;
-  }
-  output.close();
+    // format: optimized to loadFragments.m matlab script  
+    // open output binary file. bomb if unable to open
+    fstream output(outfilename.c_str(), ios::out);
+    if (!output) {
+        cerr << "Unable to open Cross output file: " << outfilename << endl;
+        return;
+    }
+    int V = 207;
+    output << "Cross pair list, version " << V << endl;
+    output << "Set " << setName << "\tContig " << contigName << endl;
+    unsigned int nc = crosspairs.size();
+    output << "Number of Cross pairs " << nc << endl;
+    output << " anchor0  position0 length0 sense0   quality0 mm0";
+    output << " anchor1  position1 length1 sense1   quality1 mm1";
+    output << " readGroup " << endl;
+    //
+    list<C_crosspair>::iterator i;
+    for(i=crosspairs.begin(); i != crosspairs.end(); ++i) {
+        output << " " << (*i).read[0] << "\t " << (*i).read[1]  << endl;
+    }
+    output.close();
 }
 // I/O function for crosspairs
 void C_contig::printMulti(string & outfilename, list<C_umpair> &  um) //const
 {
-  // format: optimized to loadFragments.m matlab script  
-  // open output binary file. bomb if unable to open
-  fstream output(outfilename.c_str(), ios::out);
-  if (!output) {
-      cerr << "Unable to open Retro output file: " << outfilename << endl;
-      return;
-  }
-  int V = 207;
-  output << "UM pair list, version " << V << endl;
-  output << "Set " << setName << "\tContig " << contigName << endl;
-  unsigned int nm = um.size();
-  output << "Number of U-M pairs " << nm << endl;
-  output << " anchor0  position0 length0 sense0   quality0 mm0 ";
-  output << " anchor1  position1 length1 sense1   quality1 mm1 ";
-  output << " Nmap  ReadGroup"<< endl;
-  //
-  list<C_umpair>::iterator i;
-  for(i=um.begin(); i != um.end(); ++i) {
-    output << " " << (*i).read[0] << "\t " << (*i).read[1]; 
-    output << "\t " << (*i).nmap <<  "\t " << int2binary((*i).elements) << endl;
-  }
-  output.close();
+    // format: optimized to loadFragments.m matlab script  
+    // open output binary file. bomb if unable to open
+    fstream output(outfilename.c_str(), ios::out);
+    if (!output) {
+        cerr << "Unable to open Retro output file: " << outfilename << endl;
+        return;
+    }
+    int V = 207;
+    output << "UM pair list, version " << V << endl;
+    output << "Set " << setName << "\tContig " << contigName << endl;
+    unsigned int nm = um.size();
+    output << "Number of U-M pairs " << nm << endl;
+    output << " anchor0  position0 length0 sense0   quality0 mm0 ";
+    output << " anchor1  position1 length1 sense1   quality1 mm1 ";
+    output << " Nmap  ReadGroup"<< endl;
+    //
+    list<C_umpair>::iterator i;
+    for(i=um.begin(); i != um.end(); ++i) {
+        output << " " << (*i).read[0] << "\t " << (*i).read[1]; 
+        output << "\t " << (*i).nmap <<  "\t " << int2binary((*i).elements) << endl;
+    }
+    output.close();
 }
 
 // I/O function for contigset
 void C_contig::printStats(string & outfilename) //const
 {
-  // format: optimized to loadFragments.m matlab script  
-  // open output binary file. bomb if unable to open
-  fstream output(outfilename.c_str(), ios::out);
-  if (!output) {
-      cerr << "Unable to open Stats output file: " << outfilename << endl;
-      return;
-  }
-  int V = 207;
-  output << "stats, version " << V << endl;
-  output << "Set " << setName << "\tContig " << contigName << endl;
-  //
-  output << "repeats " << endl;
-  output <<   repeat.Stats << endl;
-  output <<   repeat.Stats.h << endl;
-  output << "pairs " << endl;
-  output <<   pairStats << endl;
-  output <<   pairStats.h << endl;
-  output << "cross " << endl;
-  output <<   crossStats << endl;
-  output <<   crossStats.h << endl;
-  output.close();
+    // format: optimized to loadFragments.m matlab script  
+    // open output binary file. bomb if unable to open
+    fstream output(outfilename.c_str(), ios::out);
+    if (!output) {
+        cerr << "Unable to open Stats output file: " << outfilename << endl;
+        return;
+    }
+    int V = 207;
+    output << "stats, version " << V << endl;
+    output << "Set " << setName << "\tContig " << contigName << endl;
+    //
+    output << "repeats " << endl;
+    output <<   repeat.Stats << endl;
+    output <<   repeat.Stats.h << endl;
+    output << "pairs " << endl;
+    output <<   pairStats << endl;
+    output <<   pairStats.h << endl;
+    output << "cross " << endl;
+    output <<   crossStats << endl;
+    output <<   crossStats.h << endl;
+    output.close();
 }
 
 
 // I/O function for contigset
 void C_contig::writeCross(string & outfilename) //const
 {
-  // open output binary file. bomb if unable to open
-  fstream output(outfilename.c_str(), ios::out | ios::binary);
-  if (!output) {
-      cerr << "Unable to open Cross output file: " << outfilename << endl;
-      return;
-  }
-  C_headerSpan h;
-  h.typeName = "cross";
-  h.setName = setName;
-  h.contigName = contigName;
-  int t =0;
-  while(outfilename.find(h.spanext[t])==string::npos) t++;
-  h.typeName = h.spanext[t];
-  h.reclen =   2*(sizeof(int)+2*sizeof(short)+3*sizeof(char))+sizeof(int);
-  h.N = this->crosspairs.size();
-  h.write(output);  // write version 
-  //
-  list<C_crosspair>::iterator i;
-  for(i=crosspairs.begin(); i != crosspairs.end(); ++i) {
-    for (int e=0; e<2; e++) {
-      unsigned int p0 = (*i).read[e].pos;
-      unsigned short l0 = (*i).read[e].len;          // length of this read aligment 
-      unsigned short a0 = (*i).read[e].anchor;    // anchor index  
-      char  s0 = (*i).read[e].sense;    // anchor index  
-      char  q0 = (*i).read[e].q;    // anchor index  
-      char  mm0 = (*i).read[e].mm;    // anchor index  
-      //position
-      output.write(reinterpret_cast<const char *>(&p0), sizeof(int));
-      //length
-      output.write(reinterpret_cast<const char *>(&l0), sizeof(short));
-      output.write(reinterpret_cast<const char *>(&a0), sizeof(short));
-      output.write(reinterpret_cast<const char *>(&s0), sizeof(char));
-      output.write(reinterpret_cast<const char *>(&q0), sizeof(char));
-      output.write(reinterpret_cast<const char *>(&mm0), sizeof(char));
+    // open output binary file. bomb if unable to open
+    fstream output(outfilename.c_str(), ios::out | ios::binary);
+    if (!output) {
+        cerr << "Unable to open Cross output file: " << outfilename << endl;
+        return;
     }
-    unsigned int ReadGroupCode0 = (*i).ReadGroupCode;
-    output.write(reinterpret_cast<const char *>(&ReadGroupCode0), sizeof(int));
-    
-  }
-  output.close();
+    C_headerSpan h;
+    h.typeName = "cross";
+    h.setName = setName;
+    h.contigName = contigName;
+    int t =0;
+    while(outfilename.find(h.spanext[t])==string::npos) t++;
+    h.typeName = h.spanext[t];
+    h.reclen =   2*(sizeof(int)+2*sizeof(short)+3*sizeof(char))+sizeof(int);
+    h.N = this->crosspairs.size();
+    h.write(output);  // write version 
+    //
+    list<C_crosspair>::iterator i;
+    for(i=crosspairs.begin(); i != crosspairs.end(); ++i) {
+        for (int e=0; e<2; e++) {
+            unsigned int p0 = (*i).read[e].pos;
+            unsigned short l0 = (*i).read[e].len;          // length of this read aligment 
+            unsigned short a0 = (*i).read[e].anchor;    // anchor index  
+            char  s0 = (*i).read[e].sense;    // anchor index  
+            char  q0 = (*i).read[e].q;    // anchor index  
+            char  mm0 = (*i).read[e].mm;    // anchor index  
+            //position
+            output.write(reinterpret_cast<const char *>(&p0), sizeof(int));
+            //length
+            output.write(reinterpret_cast<const char *>(&l0), sizeof(short));
+            output.write(reinterpret_cast<const char *>(&a0), sizeof(short));
+            output.write(reinterpret_cast<const char *>(&s0), sizeof(char));
+            output.write(reinterpret_cast<const char *>(&q0), sizeof(char));
+            output.write(reinterpret_cast<const char *>(&mm0), sizeof(char));
+        }
+        unsigned int ReadGroupCode0 = (*i).ReadGroupCode;
+        output.write(reinterpret_cast<const char *>(&ReadGroupCode0), sizeof(int));
+        
+    }
+    output.close();
 }
 
 void C_contig::writeEnd(string & outfilename, list<C_singleEnd> &  reads) 
-  {
-  // open output binary file. bomb if unable to open
-  fstream output(outfilename.c_str(), ios::out | ios::binary);
-  if (!output) {
-      cerr << "Unable to open End output file: " << outfilename << endl;
-      return;
-  }
-  C_headerSpan h;
-  h.typeName = "End";
-  h.setName = setName;
-  h.contigName = contigName;
-  int t =0;
-  while(outfilename.find(h.spanext[t])==string::npos) t++;
-  h.typeName = h.spanext[t];
-  //
-  h.reclen = 2*sizeof(int)+2*sizeof(short)+3*sizeof(char);
-  h.N = reads.size();
-  h.write(output);
-
-  list<C_singleEnd>::iterator i;
-  for(i=reads.begin(); i != reads.end(); ++i) {
-    unsigned int p0 = (*i).pos;
-    unsigned short l0 = (*i).len;                 // length of this read aligment 
-    unsigned short a0 = (*i).anchor;              // anchor index  
-    char  s0 = (*i).sense;                        // sense  
-    char  q0 = (*i).q;                            // quality index  
-    char  mm0 = (*i).mm;                          // mismatch  
-    unsigned int ReadGroupCode0 = (*i).ReadGroupCode;    // library  index  
-    //position
-    output.write(reinterpret_cast<const char *>(&p0), sizeof(int));
-    //length
-    output.write(reinterpret_cast<const char *>(&l0), sizeof(short));
-    output.write(reinterpret_cast<const char *>(&a0), sizeof(short));
-    output.write(reinterpret_cast<const char *>(&s0), sizeof(char));
-    output.write(reinterpret_cast<const char *>(&q0), sizeof(char));
-    output.write(reinterpret_cast<const char *>(&mm0), sizeof(char));
-    output.write(reinterpret_cast<const char *>(&ReadGroupCode0), sizeof(int));
-  }
-  output.close();
+{
+    // open output binary file. bomb if unable to open
+    fstream output(outfilename.c_str(), ios::out | ios::binary);
+    if (!output) {
+        cerr << "Unable to open End output file: " << outfilename << endl;
+        return;
+    }
+    C_headerSpan h;
+    h.typeName = "End";
+    h.setName = setName;
+    h.contigName = contigName;
+    int t =0;
+    while(outfilename.find(h.spanext[t])==string::npos) t++;
+    h.typeName = h.spanext[t];
+    //
+    h.reclen = 2*sizeof(int)+2*sizeof(short)+3*sizeof(char);
+    h.N = reads.size();
+    h.write(output);
+    
+    list<C_singleEnd>::iterator i;
+    for(i=reads.begin(); i != reads.end(); ++i) {
+        unsigned int p0 = (*i).pos;
+        unsigned short l0 = (*i).len;                 // length of this read aligment 
+        unsigned short a0 = (*i).anchor;              // anchor index  
+        char  s0 = (*i).sense;                        // sense  
+        char  q0 = (*i).q;                            // quality index  
+        char  mm0 = (*i).mm;                          // mismatch  
+        unsigned int ReadGroupCode0 = (*i).ReadGroupCode;    // library  index  
+        //position
+        output.write(reinterpret_cast<const char *>(&p0), sizeof(int));
+        //length
+        output.write(reinterpret_cast<const char *>(&l0), sizeof(short));
+        output.write(reinterpret_cast<const char *>(&a0), sizeof(short));
+        output.write(reinterpret_cast<const char *>(&s0), sizeof(char));
+        output.write(reinterpret_cast<const char *>(&q0), sizeof(char));
+        output.write(reinterpret_cast<const char *>(&mm0), sizeof(char));
+        output.write(reinterpret_cast<const char *>(&ReadGroupCode0), sizeof(int));
+    }
+    output.close();
 }
 
 void C_contig::writeMulti(string & outfilename, list<C_umpair> &  um) 
-  {
-  // open output binary file. bomb if unable to open
-  fstream output(outfilename.c_str(), ios::out | ios::binary);
-  if (!output) {
-      cerr << "Unable to open Retro output file: " << outfilename << endl;
-      return;
-  }
-  C_headerSpan h;
-  h.typeName = "Multi";
-  h.setName = setName;
-  h.contigName = contigName;
-  int Nt=h.spanext.size(),t;
-  for (t=0; t<Nt; t++) {
-    if (outfilename.find(h.spanext[t])!=string::npos) { break;}
-  }
-  if (t<Nt) { 
-    h.typeName = h.spanext[t];
-  } else {
-    h.typeName = "multi.span";
-  }  
-  // two reads + nmap
-  h.reclen =3*sizeof(int)+2*(sizeof(int)+2*sizeof(short)+3*sizeof(char));
-  h.N = um.size();
-  h.write(output);
-  // loop
-  list<C_umpair>::iterator i;
-  for(i=um.begin(); i != um.end(); ++i) {
-    for (int e=0; e<2; e++) {
-      unsigned int p0 = (*i).read[e].pos;
-      unsigned short l0 = (*i).read[e].len;       // length of this read aligment 
-      unsigned short a0 = (*i).read[e].anchor;    // anchor index  
-      char  s0 = (*i).read[e].sense;              // sense 
-      char  q0 = (*i).read[e].q;                  // quality
+{
+    // open output binary file. bomb if unable to open
+    fstream output(outfilename.c_str(), ios::out | ios::binary);
+    if (!output) {
+        cerr << "Unable to open Retro output file: " << outfilename << endl;
+        return;
+    }
+    C_headerSpan h;
+    h.typeName = "Multi";
+    h.setName = setName;
+    h.contigName = contigName;
+    int Nt=h.spanext.size(),t;
+    for (t=0; t<Nt; t++) {
+        if (outfilename.find(h.spanext[t])!=string::npos) { break;}
+    }
+    if (t<Nt) { 
+        h.typeName = h.spanext[t];
+    } else {
+        h.typeName = "multi.span";
+    }  
+    // two reads + nmap
+    h.reclen =3*sizeof(int)+2*(sizeof(int)+2*sizeof(short)+3*sizeof(char));
+    h.N = um.size();
+    h.write(output);
+    // loop
+    list<C_umpair>::iterator i;
+    for(i=um.begin(); i != um.end(); ++i) {
+        for (int e=0; e<2; e++) {
+            unsigned int p0 = (*i).read[e].pos;
+            unsigned short l0 = (*i).read[e].len;       // length of this read aligment 
+            unsigned short a0 = (*i).read[e].anchor;    // anchor index  
+            char  s0 = (*i).read[e].sense;              // sense 
+            char  q0 = (*i).read[e].q;                  // quality
 			
 			/* doesn't work with linked span file input...
-			if (e>0) {
-				q0=(*i).Qproperpair;											// aberrant pair metric
-			}
-			*/
-
-      char mm0 = (*i).read[e].mm;                 // mm  
-      //position
-      output.write(reinterpret_cast<const char *>(&p0), sizeof(int));
-      //length
-      output.write(reinterpret_cast<const char *>(&l0), sizeof(short));
-      output.write(reinterpret_cast<const char *>(&a0), sizeof(short));
-      output.write(reinterpret_cast<const char *>(&s0), sizeof(char));
-      output.write(reinterpret_cast<const char *>(&q0), sizeof(char));
-      output.write(reinterpret_cast<const char *>(&mm0), sizeof(char));
-    }
-    int nmap= (*i).nmap;                          //nmapped positions
-    output.write(reinterpret_cast<const char *>(&nmap), sizeof(int));
-    int elements= (*i).elements;                  //nmapped positions
-    output.write(reinterpret_cast<const char *>(&elements), sizeof(int));
-    unsigned int ReadGroupCode= (*i).ReadGroupCode;   //library index 
-    output.write(reinterpret_cast<const char *>(&ReadGroupCode), sizeof(int));
-  }  
-  output.close();
+             if (e>0) {
+             q0=(*i).Qproperpair;											// aberrant pair metric
+             }
+             */
+            
+            char mm0 = (*i).read[e].mm;                 // mm  
+            //position
+            output.write(reinterpret_cast<const char *>(&p0), sizeof(int));
+            //length
+            output.write(reinterpret_cast<const char *>(&l0), sizeof(short));
+            output.write(reinterpret_cast<const char *>(&a0), sizeof(short));
+            output.write(reinterpret_cast<const char *>(&s0), sizeof(char));
+            output.write(reinterpret_cast<const char *>(&q0), sizeof(char));
+            output.write(reinterpret_cast<const char *>(&mm0), sizeof(char));
+        }
+        int nmap= (*i).nmap;                          //nmapped positions
+        output.write(reinterpret_cast<const char *>(&nmap), sizeof(int));
+        int elements= (*i).elements;                  //nmapped positions
+        output.write(reinterpret_cast<const char *>(&elements), sizeof(int));
+        unsigned int ReadGroupCode= (*i).ReadGroupCode;   //library index 
+        output.write(reinterpret_cast<const char *>(&ReadGroupCode), sizeof(int));
+    }  
+    output.close();
 }
 
 // I/O function for depth of coverage
 void C_contig::writeMarker(string & outfilename, C_marker & m1) 
 {
-  // open output binary file. bomb if unable to open
-  fstream output(outfilename.c_str(), ios::out | ios::binary);
-  if (!output) {
-      cerr << "Unable to open Marker output file: " << outfilename << endl;
-      return;
-  }
-  C_headerSpan h;
-  h.setName = setName;
-  h.contigName = contigName;
-  // find typeName in spanext (build file extensions)
-  for (int t=0; t< int(h.spanext.size()); t++) {
-    if (!outfilename.find(h.spanext[t])==string::npos) break;
-    h.typeName = h.spanext[t];
-  }
-  // find typeName in spanextc (cluster file extensions)
-  for (int t=0; t<int(h.spanextc.size()); t++) {
-    if (!outfilename.find(h.spanextc[t])==string::npos) break;
-    h.typeName = h.spanextc[t];
-  }
-  if (h.typeName.size()==0) { 
-    cerr << " unknown marker file extension " << outfilename << endl; 
-  }
-  h.reclen = sizeof(bool);
-  h.N = m1.x.size();
-  h.write(output);
-  // old 204
-  //copy(m1.x.begin(), m1.x.end(), ostreambuf_iterator<char>(output));
-  int dp = DPCOMPRESS;
-  char ibuf[dp];
-  char cbuf[dp];
-  int L = h.N;
-  for (int p0=0; p0<L; p0+=dp)	{
-    int d1 = dp;
-    if ((p0+d1)>L) d1 = L-p0;
-    for (int p=0; p<d1; p++) {
-      ibuf[p]=m1.x[p0+p];
+    // open output binary file. bomb if unable to open
+    fstream output(outfilename.c_str(), ios::out | ios::binary);
+    if (!output) {
+        cerr << "Unable to open Marker output file: " << outfilename << endl;
+        return;
     }
-    int nc = fastlz_compress(ibuf,d1, cbuf);	
-    output.write(reinterpret_cast<const char *>(&p0), sizeof(int));
-    output.write(reinterpret_cast<const char *>(&d1), sizeof(int));
-    output.write(reinterpret_cast<const char *>(&nc), sizeof(int));
-    output.write(reinterpret_cast<const char *>(cbuf), nc);
-  }
-  output.close(); 
+    C_headerSpan h;
+    h.setName = setName;
+    h.contigName = contigName;
+    // find typeName in spanext (build file extensions)
+    for (int t=0; t< int(h.spanext.size()); t++) {
+        if (!outfilename.find(h.spanext[t])==string::npos) break;
+        h.typeName = h.spanext[t];
+    }
+    // find typeName in spanextc (cluster file extensions)
+    for (int t=0; t<int(h.spanextc.size()); t++) {
+        if (!outfilename.find(h.spanextc[t])==string::npos) break;
+        h.typeName = h.spanextc[t];
+    }
+    if (h.typeName.size()==0) { 
+        cerr << " unknown marker file extension " << outfilename << endl; 
+    }
+    h.reclen = sizeof(bool);
+    h.N = m1.x.size();
+    h.write(output);
+    // old 204
+    //copy(m1.x.begin(), m1.x.end(), ostreambuf_iterator<char>(output));
+    int dp = DPCOMPRESS;
+    char ibuf[dp];
+    char cbuf[dp];
+    int L = h.N;
+    for (int p0=0; p0<L; p0+=dp)	{
+        int d1 = dp;
+        if ((p0+d1)>L) d1 = L-p0;
+        for (int p=0; p<d1; p++) {
+            ibuf[p]=m1.x[p0+p];
+        }
+        int nc = fastlz_compress(ibuf,d1, cbuf);	
+        output.write(reinterpret_cast<const char *>(&p0), sizeof(int));
+        output.write(reinterpret_cast<const char *>(&d1), sizeof(int));
+        output.write(reinterpret_cast<const char *>(&nc), sizeof(int));
+        output.write(reinterpret_cast<const char *>(cbuf), nc);
+    }
+    output.close(); 
 }
 
 // I/O function for depth of coverage
 void C_contig::writeDepth(string & outfilename, C_depth & d1) 
 {
-  // open output binary file. bomb if unable to open
-  fstream output(outfilename.c_str(), ios::out | ios::binary);
-  if (!output) {
-      cerr << "Unable to open Depth output file: " << outfilename << endl;
-      return;
-  }
-  // cout << " depth " <<endl;
-  // cout << d1 << endl << endl;
-  C_headerSpan h;
-  h.setName = setName;
-  h.contigName = contigName;
-  h.light = d1.light;
-  // find typeName in spanext (build file extensions)
-  for (int t=0; t<int(h.spanext.size()); t++) {
-    if (outfilename.find(h.spanext[t])!=string::npos) {
-      h.typeName = h.spanext[t];
+    // open output binary file. bomb if unable to open
+    fstream output(outfilename.c_str(), ios::out | ios::binary);
+    if (!output) {
+        cerr << "Unable to open Depth output file: " << outfilename << endl;
+        return;
     }
-  }
-  // find typeName in spanextc (cluster file extensions)
-  for (int t=0; t<int(h.spanextc.size()); t++) {
-    if (outfilename.find(h.spanextc[t])==string::npos) {
-      h.typeName = h.spanextc[t];
+    // cout << " depth " <<endl;
+    // cout << d1 << endl << endl;
+    C_headerSpan h;
+    h.setName = setName;
+    h.contigName = contigName;
+    h.light = d1.light;
+    // find typeName in spanext (build file extensions)
+    for (int t=0; t<int(h.spanext.size()); t++) {
+        if (outfilename.find(h.spanext[t])!=string::npos) {
+            h.typeName = h.spanext[t];
+        }
     }
-  }
-  if (h.typeName.size()==0) { 
-    cerr << " unknown write depth file extension " << outfilename << endl; 
-    size_t k = outfilename.find(contigName);
-    if (k!=string::npos) {
-       h.typeName = outfilename.substr(k+1);
-    } 
-    cerr << " unknown write depth file extension " << outfilename << endl; 
-    cerr << " use " << h.typeName << endl; 
-
-  }
-  //
-  h.reclen = sizeof(float);
-  h.N = d1.n.size();
-  h.write(output);
-  int L=d1.n.size();
-  //old version < 206
-  /*
-  for (int i=0; i<L; i++)	{
-    output.write(reinterpret_cast<const char *>(&d1.n[i]), sizeof(float));
-  }
-  */
-  int dp = DPCOMPRESS;
-  float ibuf[dp];
-  char  cbuf[dp*sizeof(float)];
-  for (int p0=0; p0<L; p0+=dp)	{
-    int dp1 = dp;
-    if ((p0+dp1)>L) dp1 = L-p0;
-    for (int p=0; p<dp1; p++) {
-      ibuf[p]=d1.n[p0+p];
+    // find typeName in spanextc (cluster file extensions)
+    for (int t=0; t<int(h.spanextc.size()); t++) {
+        if (outfilename.find(h.spanextc[t])==string::npos) {
+            h.typeName = h.spanextc[t];
+        }
     }
-    int nc = fastlz_compress(ibuf,dp1*sizeof(float), cbuf);	
-    output.write(reinterpret_cast<const char *>(&p0), sizeof(int));
-    output.write(reinterpret_cast<const char *>(&dp1), sizeof(int));
-    output.write(reinterpret_cast<const char *>(&nc), sizeof(int));
-    output.write(reinterpret_cast<const char *>(cbuf), nc);
-  }
-  output.close(); 
+    if (h.typeName.size()==0) { 
+        cerr << " unknown write depth file extension " << outfilename << endl; 
+        size_t k = outfilename.find(contigName);
+        if (k!=string::npos) {
+            h.typeName = outfilename.substr(k+1);
+        } 
+        cerr << " unknown write depth file extension " << outfilename << endl; 
+        cerr << " use " << h.typeName << endl; 
+        
+    }
+    //
+    h.reclen = sizeof(float);
+    h.N = d1.n.size();
+    h.write(output);
+    int L=d1.n.size();
+    //old version < 206
+    /*
+     for (int i=0; i<L; i++)	{
+     output.write(reinterpret_cast<const char *>(&d1.n[i]), sizeof(float));
+     }
+     */
+    int dp = DPCOMPRESS;
+    float ibuf[dp];
+    char  cbuf[dp*sizeof(float)];
+    for (int p0=0; p0<L; p0+=dp)	{
+        int dp1 = dp;
+        if ((p0+dp1)>L) dp1 = L-p0;
+        for (int p=0; p<dp1; p++) {
+            ibuf[p]=d1.n[p0+p];
+        }
+        int nc = fastlz_compress(ibuf,dp1*sizeof(float), cbuf);	
+        output.write(reinterpret_cast<const char *>(&p0), sizeof(int));
+        output.write(reinterpret_cast<const char *>(&dp1), sizeof(int));
+        output.write(reinterpret_cast<const char *>(&nc), sizeof(int));
+        output.write(reinterpret_cast<const char *>(cbuf), nc);
+    }
+    output.close(); 
 }
 
 // I/O function for depth of coverage
 void C_contig::writeDepth(string & outfilename, C_depth & d1, int binsize, int totbin) 
 {
-  // open output binary file. bomb if unable to open
-  fstream output(outfilename.c_str(), ios::out | ios::binary);
-  if (!output) {
-      cerr << "Unable to open Depth output file: " << outfilename << endl;
-      return;
-  }
-  cout << " depth " <<endl;
-  cout << d1 << endl << endl;
-  C_headerSpan h;
-  h.setName = setName;
-  h.contigName = contigName;
-  light_t info;
-  info.i64=0;  
-  info.i16[0]=binsize;
-  info.i16[1]=totbin;  
-  h.light = info.i64;
-
-  // find typeName in spanext (build file extensions)
-  for (int t=0; t<int(h.spanext.size()); t++) {
-    if (!outfilename.find(h.spanext[t])==string::npos) break;
-    h.typeName = h.spanext[t];
-  }
-  // find typeName in spanextc (cluster file extensions)
-  for (int t=0; t<int(h.spanextc.size()); t++) {
-    if (!outfilename.find(h.spanextc[t])==string::npos) break;
-    h.typeName = h.spanextc[t];
-  }
-  if (h.typeName.size()==0) { 
-    cerr << " unknown write depth file extension " << outfilename << endl; 
-  }
-  //
-  h.reclen = sizeof(float);
-  h.N = d1.n.size();
-  h.write(output);
-  int L=d1.n.size();
-  //old version < 206
-  /*
-  for (int i=0; i<L; i++)	{
-    output.write(reinterpret_cast<const char *>(&d1.n[i]), sizeof(float));
-  }
-  */
-  int dp = DPCOMPRESS;
-  float ibuf[dp];
-  char  cbuf[dp*sizeof(float)];
-  for (int p0=0; p0<L; p0+=dp)	{
-    int dp1 = dp;
-    if ((p0+dp1)>L) dp1 = L-p0;
-    for (int p=0; p<dp1; p++) {
-      ibuf[p]=d1.n[p0+p];
+    // open output binary file. bomb if unable to open
+    fstream output(outfilename.c_str(), ios::out | ios::binary);
+    if (!output) {
+        cerr << "Unable to open Depth output file: " << outfilename << endl;
+        return;
     }
-    int nc = fastlz_compress(ibuf,dp1*sizeof(float), cbuf);	
-    output.write(reinterpret_cast<const char *>(&p0), sizeof(int));
-    output.write(reinterpret_cast<const char *>(&dp1), sizeof(int));
-    output.write(reinterpret_cast<const char *>(&nc), sizeof(int));
-    output.write(reinterpret_cast<const char *>(cbuf), nc);
-  }
-  output.close(); 
+    cout << " depth " <<endl;
+    cout << d1 << endl << endl;
+    C_headerSpan h;
+    h.setName = setName;
+    h.contigName = contigName;
+    light_t info;
+    info.i64=0;  
+    info.i16[0]=binsize;
+    info.i16[1]=totbin;  
+    h.light = info.i64;
+    
+    // find typeName in spanext (build file extensions)
+    for (int t=0; t<int(h.spanext.size()); t++) {
+        if (!outfilename.find(h.spanext[t])==string::npos) break;
+        h.typeName = h.spanext[t];
+    }
+    // find typeName in spanextc (cluster file extensions)
+    for (int t=0; t<int(h.spanextc.size()); t++) {
+        if (!outfilename.find(h.spanextc[t])==string::npos) break;
+        h.typeName = h.spanextc[t];
+    }
+    if (h.typeName.size()==0) { 
+        cerr << " unknown write depth file extension " << outfilename << endl; 
+    }
+    //
+    h.reclen = sizeof(float);
+    h.N = d1.n.size();
+    h.write(output);
+    int L=d1.n.size();
+    //old version < 206
+    /*
+     for (int i=0; i<L; i++)	{
+     output.write(reinterpret_cast<const char *>(&d1.n[i]), sizeof(float));
+     }
+     */
+    int dp = DPCOMPRESS;
+    float ibuf[dp];
+    char  cbuf[dp*sizeof(float)];
+    for (int p0=0; p0<L; p0+=dp)	{
+        int dp1 = dp;
+        if ((p0+dp1)>L) dp1 = L-p0;
+        for (int p=0; p<dp1; p++) {
+            ibuf[p]=d1.n[p0+p];
+        }
+        int nc = fastlz_compress(ibuf,dp1*sizeof(float), cbuf);	
+        output.write(reinterpret_cast<const char *>(&p0), sizeof(int));
+        output.write(reinterpret_cast<const char *>(&dp1), sizeof(int));
+        output.write(reinterpret_cast<const char *>(&nc), sizeof(int));
+        output.write(reinterpret_cast<const char *>(cbuf), nc);
+    }
+    output.close(); 
 }
 
 
 // I/O function for depth of coverage
 C_depth  C_contig::loadDepth(string & infilename) 
 {
-   C_depth x1;
-  // open output binary file. bomb if unable to open
-  fstream input(infilename.c_str(), ios::in  | ios::binary);
-  if (!input) {
-      cerr << "Unable to open Depth input file: " << infilename << endl;
-      return x1;
-  }
-  C_headerSpan  h(input); 
-  int L=h.N;
-  C_depth d1(L);
-  d1.light=h.light;
-  float  n1=0;
-  d1.Stats.N=0;
-  if (h.V<206) {  //non-compressed array 
-    for (int i=0; i<L; i++)	{
-      input.read(reinterpret_cast < char * > (&n1), sizeof(n1));
-      d1.n[i]=n1;
-      d1.Stats.N+=int(n1);
-    }
-  } else { // compressed 
-    float ibuf[DPCOMPRESS];
-    char  cbuf[DPCOMPRESS*sizeof(float)];
-    int p1=0; 
-    int p0, dp, nc;
-    while (p1<L) {
-      input.read(reinterpret_cast < char * > (&p0), sizeof(p0));
-      input.read(reinterpret_cast < char * > (&dp), sizeof(dp));
-      input.read(reinterpret_cast < char * > (&nc), sizeof(nc));
-      input.read(reinterpret_cast < char * > (cbuf), nc);
-      int nd = fastlz_decompress(cbuf,nc, ibuf,int(dp*1.1*sizeof(float)));	
-      p1 = p0+dp;
-      if (nd!=(dp*int(sizeof(float)))) {
-        cerr << "Unable to decompress Depth input file: " << infilename << endl;
+    C_depth x1;
+    // open output binary file. bomb if unable to open
+    fstream input(infilename.c_str(), ios::in  | ios::binary);
+    if (!input) {
+        cerr << "Unable to open Depth input file: " << infilename << endl;
         return x1;
-      }
-      for (int p=0; p<dp; p++) {
-        d1.n[p0+p]=ibuf[p];
-        d1.Stats.N+=int(d1.n[p0+p]);
-      }
     }
-  }
-  input.close(); 
-  return d1;
+    C_headerSpan  h(input); 
+    int L=h.N;
+    C_depth d1(L);
+    d1.light=h.light;
+    float  n1=0;
+    d1.Stats.N=0;
+    if (h.V<206) {  //non-compressed array 
+        for (int i=0; i<L; i++)	{
+            input.read(reinterpret_cast < char * > (&n1), sizeof(n1));
+            d1.n[i]=n1;
+            d1.Stats.N+=int(n1);
+        }
+    } else { // compressed 
+        float ibuf[DPCOMPRESS];
+        char  cbuf[DPCOMPRESS*sizeof(float)];
+        int p1=0; 
+        int p0, dp, nc;
+        while (p1<L) {
+            input.read(reinterpret_cast < char * > (&p0), sizeof(p0));
+            input.read(reinterpret_cast < char * > (&dp), sizeof(dp));
+            input.read(reinterpret_cast < char * > (&nc), sizeof(nc));
+            input.read(reinterpret_cast < char * > (cbuf), nc);
+            int nd = fastlz_decompress(cbuf,nc, ibuf,int(dp*1.1*sizeof(float)));	
+            p1 = p0+dp;
+            if (nd!=(dp*int(sizeof(float)))) {
+                cerr << "Unable to decompress Depth input file: " << infilename << endl;
+                return x1;
+            }
+            for (int p=0; p<dp; p++) {
+                d1.n[p0+p]=ibuf[p];
+                d1.Stats.N+=int(d1.n[p0+p]);
+            }
+        }
+    }
+    input.close(); 
+    return d1;
 }
 
 C_marker   C_contig::loadMarker(string & infilename) 
 {
-  C_marker x1;
-  // open output binary file. bomb if unable to open
-  fstream input(infilename.c_str(), ios::in  | ios::binary);
-  if (!input) {
-      cerr << "Unable to open Marker input file: " << infilename << endl;
-      return x1;
-  }
-  C_headerSpan h(input);
-  int L = h.N;
-  C_marker m1(L);
-  bool b1=false;
-  if (h.V<206) {  //non-compressed array 
-    for (int i=0; i<L; i++)	{
-      input.read(reinterpret_cast < char * > (&b1), sizeof(b1));
-      m1.x[i]=b1;
-    }
-  } else { // compressed buffer
-
-    char ibuf[DPCOMPRESS];
-    char  cbuf[DPCOMPRESS];
-    int p1=0; 
-    int p0, dp, nc;
-    while (p1<L) {
-      input.read(reinterpret_cast < char * > (&p0), sizeof(p0));
-      input.read(reinterpret_cast < char * > (&dp), sizeof(dp));
-      input.read(reinterpret_cast < char * > (&nc), sizeof(nc));
-      input.read(reinterpret_cast < char * > (cbuf), nc);
-      int nd = fastlz_decompress(cbuf,nc, ibuf,dp);	
-      p1 = p0+dp;
-      if (nd!=dp) {
-        cerr << "Unable to decompress Marker input file: " << infilename << endl;
+    C_marker x1;
+    // open output binary file. bomb if unable to open
+    fstream input(infilename.c_str(), ios::in  | ios::binary);
+    if (!input) {
+        cerr << "Unable to open Marker input file: " << infilename << endl;
         return x1;
-      }
-      for (int p=0; p<dp; p++) {
-        m1.x[p0+p]=ibuf[p];
-      }
     }
-  }
-  input.close(); 
-  return m1;
+    C_headerSpan h(input);
+    int L = h.N;
+    C_marker m1(L);
+    bool b1=false;
+    if (h.V<206) {  //non-compressed array 
+        for (int i=0; i<L; i++)	{
+            input.read(reinterpret_cast < char * > (&b1), sizeof(b1));
+            m1.x[i]=b1;
+        }
+    } else { // compressed buffer
+        
+        char ibuf[DPCOMPRESS];
+        char  cbuf[DPCOMPRESS];
+        int p1=0; 
+        int p0, dp, nc;
+        while (p1<L) {
+            input.read(reinterpret_cast < char * > (&p0), sizeof(p0));
+            input.read(reinterpret_cast < char * > (&dp), sizeof(dp));
+            input.read(reinterpret_cast < char * > (&nc), sizeof(nc));
+            input.read(reinterpret_cast < char * > (cbuf), nc);
+            int nd = fastlz_decompress(cbuf,nc, ibuf,dp);	
+            p1 = p0+dp;
+            if (nd!=dp) {
+                cerr << "Unable to decompress Marker input file: " << infilename << endl;
+                return x1;
+            }
+            for (int p=0; p<dp; p++) {
+                m1.x[p0+p]=ibuf[p];
+            }
+        }
+    }
+    input.close(); 
+    return m1;
 }
 
 void  C_contig::loadRepeat(string & infilename) 
 {
-  C_depth r1=loadDepth(infilename);
-  if (repeat.n.size()==0) {
-     repeat = r1;
-  } else {
-     if (repeat.n.size()==r1.n.size()) {
-        for (int i=0; i<int(r1.n.size()); i++) {
-          repeat.n[i]+=r1.n[i];
+    C_depth r1=loadDepth(infilename);
+    if (repeat.n.size()==0) {
+        repeat = r1;
+    } else {
+        if (repeat.n.size()==r1.n.size()) {
+            for (int i=0; i<int(r1.n.size()); i++) {
+                repeat.n[i]+=r1.n[i];
+            }
+            // stats??
+        } else { 
+            cerr << " mixed length repeat.span " << endl;
+            cerr << infilename << "\t length " << r1.n.size() << endl;
+            cerr << "existing repeat length " << repeat.n.size() << endl;
+            exit(-1);
         }
-        // stats??
-     } else { 
-       cerr << " mixed length repeat.span " << endl;
-       cerr << infilename << "\t length " << r1.n.size() << endl;
-       cerr << "existing repeat length " << repeat.n.size() << endl;
-       exit(-1);
     }
-  }
 }
 
 void  C_contig::loadPairs(string & infilename) 
 {
-  fstream input(infilename.c_str(), ios::in  | ios::binary);
-  if (!input) {
-      cerr << "Unable to open local pairs input file: " << infilename << endl;
-  }
-  C_headerSpan h(input);
-
-  int N= h.N;
-  contigName=h.contigName;
-  setName=h.setName;
-  // read data
-  for(int i=0; i<N; i++)  {
-    C_localpair p1;
-    input.read(reinterpret_cast < char * > (&p1.pos), sizeof(int));
-    input.read(reinterpret_cast < char * > (&p1.lm), sizeof(int));
-    input.read(reinterpret_cast < char * > (&p1.orient), sizeof(char));
-    input.read(reinterpret_cast < char * > (&p1.len1), sizeof(short));
-    input.read(reinterpret_cast < char * > (&p1.len2), sizeof(short));
-    input.read(reinterpret_cast < char * > (&p1.q1), sizeof(char));
-    if (h.V>206) {
-        input.read(reinterpret_cast < char * > (&p1.q2), sizeof(char));
-        input.read(reinterpret_cast < char * > (&p1.mm1), sizeof(char));
-        input.read(reinterpret_cast < char * > (&p1.mm2), sizeof(char));
-    } else {
-      p1.q2=0;
-      p1.mm1=0;
-      p1.mm2=0;
+    fstream input(infilename.c_str(), ios::in  | ios::binary);
+    if (!input) {
+        cerr << "Unable to open local pairs input file: " << infilename << endl;
     }
-    if (h.V>203) {
-        input.read(reinterpret_cast < char * > (&p1.constrain), sizeof(char));
-    } else {
-        p1.constrain=0;
+    C_headerSpan h(input);
+    
+    int N= h.N;
+    contigName=h.contigName;
+    setName=h.setName;
+    // read data
+    for(int i=0; i<N; i++)  {
+        C_localpair p1;
+        input.read(reinterpret_cast < char * > (&p1.pos), sizeof(int));
+        input.read(reinterpret_cast < char * > (&p1.lm), sizeof(int));
+        input.read(reinterpret_cast < char * > (&p1.orient), sizeof(char));
+        input.read(reinterpret_cast < char * > (&p1.len1), sizeof(short));
+        input.read(reinterpret_cast < char * > (&p1.len2), sizeof(short));
+        input.read(reinterpret_cast < char * > (&p1.q1), sizeof(char));
+        if (h.V>206) {
+            input.read(reinterpret_cast < char * > (&p1.q2), sizeof(char));
+            input.read(reinterpret_cast < char * > (&p1.mm1), sizeof(char));
+            input.read(reinterpret_cast < char * > (&p1.mm2), sizeof(char));
+        } else {
+            p1.q2=0;
+            p1.mm1=0;
+            p1.mm2=0;
+        }
+        if (h.V>203) {
+            input.read(reinterpret_cast < char * > (&p1.constrain), sizeof(char));
+        } else {
+            p1.constrain=0;
+        }
+        if (h.V>206) {
+            input.read(reinterpret_cast < char * > (&p1.ReadGroupCode), sizeof(int));
+        } else {
+            p1.ReadGroupCode=0;
+        }
+        this->localpairs.push_back(p1);
     }
-    if (h.V>206) {
-        input.read(reinterpret_cast < char * > (&p1.ReadGroupCode), sizeof(int));
-    } else {
-        p1.ReadGroupCode=0;
-    }
-    this->localpairs.push_back(p1);
-  }
-  input.close();
+    input.close();
 }
 
 void  C_contig::loadCross(string & infilename) 
 {
-  fstream input(infilename.c_str(), ios::in  | ios::binary);
-  if (!input) {
-      cerr << "Unable to open Cross input file: " << infilename << endl;
-  }
-  C_headerSpan h(input);
-
-  int N = h.N;
-  //
-  for(int i=0; i<N; i++)  {
-    C_crosspair c1;
-    //read 0
-    input.read(reinterpret_cast < char * > (&c1.read[0].pos), sizeof(int));
-    input.read(reinterpret_cast < char * > (&c1.read[0].len), sizeof(short));
-    input.read(reinterpret_cast < char * > (&c1.read[0].anchor), sizeof(short));
-    input.read(reinterpret_cast < char * > (&c1.read[0].sense), sizeof(char));
-    input.read(reinterpret_cast < char * > (&c1.read[0].q), sizeof(char));
-    if (h.V>206) {
-        input.read(reinterpret_cast < char * > (&c1.read[0].mm), sizeof(char));
-    } else {
-       c1.read[0].mm=0;
+    fstream input(infilename.c_str(), ios::in  | ios::binary);
+    if (!input) {
+        cerr << "Unable to open Cross input file: " << infilename << endl;
     }
-    //read 1
-    input.read(reinterpret_cast < char * > (&c1.read[1].pos), sizeof(int));
-    input.read(reinterpret_cast < char * > (&c1.read[1].len), sizeof(short));
-    input.read(reinterpret_cast < char * > (&c1.read[1].anchor), sizeof(short));
-    input.read(reinterpret_cast < char * > (&c1.read[1].sense), sizeof(char));
-    input.read(reinterpret_cast < char * > (&c1.read[1].q), sizeof(char));
-    if (h.V>206) {
-        input.read(reinterpret_cast < char * > (&c1.read[1].mm), sizeof(char));
-        input.read(reinterpret_cast < char * > (&c1.ReadGroupCode), sizeof(int));
-    } else {
-       c1.read[1].mm=0;
-       c1.ReadGroupCode=0;
+    C_headerSpan h(input);
+    
+    int N = h.N;
+    //
+    for(int i=0; i<N; i++)  {
+        C_crosspair c1;
+        //read 0
+        input.read(reinterpret_cast < char * > (&c1.read[0].pos), sizeof(int));
+        input.read(reinterpret_cast < char * > (&c1.read[0].len), sizeof(short));
+        input.read(reinterpret_cast < char * > (&c1.read[0].anchor), sizeof(short));
+        input.read(reinterpret_cast < char * > (&c1.read[0].sense), sizeof(char));
+        input.read(reinterpret_cast < char * > (&c1.read[0].q), sizeof(char));
+        if (h.V>206) {
+            input.read(reinterpret_cast < char * > (&c1.read[0].mm), sizeof(char));
+        } else {
+            c1.read[0].mm=0;
+        }
+        //read 1
+        input.read(reinterpret_cast < char * > (&c1.read[1].pos), sizeof(int));
+        input.read(reinterpret_cast < char * > (&c1.read[1].len), sizeof(short));
+        input.read(reinterpret_cast < char * > (&c1.read[1].anchor), sizeof(short));
+        input.read(reinterpret_cast < char * > (&c1.read[1].sense), sizeof(char));
+        input.read(reinterpret_cast < char * > (&c1.read[1].q), sizeof(char));
+        if (h.V>206) {
+            input.read(reinterpret_cast < char * > (&c1.read[1].mm), sizeof(char));
+            input.read(reinterpret_cast < char * > (&c1.ReadGroupCode), sizeof(int));
+        } else {
+            c1.read[1].mm=0;
+            c1.ReadGroupCode=0;
+        }
+        this->crosspairs.push_back(c1);
     }
-    this->crosspairs.push_back(c1);
-  }
-  input.close();
+    input.close();
 }                  
 
 void  C_contig::loadMultipairs(string & infilename) 
 {
-  list<C_umpair> x1 =loadMulti(infilename);
-  umpairs.merge(x1);
+    list<C_umpair> x1 =loadMulti(infilename);
+    umpairs.merge(x1);
 }
 
 void  C_contig::loadDangle(string & infilename) 
 {
-  list<C_singleEnd> x1 =loadEnd(infilename);
-  dangle.merge(x1);
+    list<C_singleEnd> x1 =loadEnd(infilename);
+    dangle.merge(x1);
 }
 
 
 void  C_contig::loadSingleton(string & infilename) 
 {
-  list<C_singleEnd> x1 =loadEnd(infilename);
-  singleton.merge(x1);
+    list<C_singleEnd> x1 =loadEnd(infilename);
+    singleton.merge(x1);
 }
 
 bool C_contig::isRedundantPair(const C_localpair &p1, const C_localpair &p2) 
 {
-   if( p1.pos != p2.pos) return false;
-   if( p1.anchor != p2.anchor) return false;
-   if( p1.lm != p2.lm) return false;
-   if( p1.orient != p2.orient) return false;
-   return true;
+    if( p1.pos != p2.pos) return false;
+    if( p1.anchor != p2.anchor) return false;
+    if( p1.lm != p2.lm) return false;
+    if( p1.orient != p2.orient) return false;
+    return true;
 }
 
 
 /*
-//-----------------------------------------------------------------------------
-// special test for Bam fragments which are expected to be redundant in pairs
-// except for items like mm1 mm2 q1 q2
-// this function overwrites reciprocal information from each end such that 
-// p1 and p2 are really redundant 
-//-----------------------------------------------------------------------------
-bool C_contig::isRedundantPairBam(C_localpair &p1, C_localpair &p2) 
-{
-   if( p1.pos != p2.pos) return false;
-   if( p1.anchor != p2.anchor) return false;
-   if( p1.lm != p2.lm) return false;
-   if( p1.orient != p2.orient) return false;
-   // impose redundant information
-   // determine which end is the "mate" with incomplete info
-   bool fixp1m1=((p1.mm1==99)&&(p1.mm2!=99));
-   bool fixp2m1=((p2.mm1==99)&&(p2.mm2!=99));
-   bool fixp1m2=((p1.mm2==99)&&(p1.mm1!=99));
-   bool fixp2m2=((p2.mm2==99)&&(p2.mm1!=99));
-   // p1m2 and p2m1 are ok
-   if (fixp1m1) {
-      p1.q1=p2.q1;
-      p1.len1=p2.len1;
-      p1.mm1=p2.mm1;
-      return true;      
-   } 
-   if (fixp2m2) {
-      p2.q2=p1.q2;
-      p2.len2=p1.len2;
-      p2.mm2=p1.mm2;
-      return true;      
-   }
-    // p1m1 and p2m2 are ok
-   if (fixp1m2) {
-      p1.q2=p2.q2;
-      p1.len2=p2.len2;
-      p1.mm2=p2.mm2;
-      return true;      
-   }
-   if (fixp2m1) {
-      p2.q1=p1.q1;
-      p2.len1=p1.len1;
-      p2.mm1=p1.mm1;
-      return true;      
-   } 
-   // other combinations problematic
-   cerr << "problem Bam redundancy" << endl;
-   cerr << p1 << endl;
-   cerr << p2 << endl;
-   return true;
-}
-
+ //-----------------------------------------------------------------------------
+ // special test for Bam fragments which are expected to be redundant in pairs
+ // except for items like mm1 mm2 q1 q2
+ // this function overwrites reciprocal information from each end such that 
+ // p1 and p2 are really redundant 
+ //-----------------------------------------------------------------------------
+ bool C_contig::isRedundantPairBam(C_localpair &p1, C_localpair &p2) 
+ {
+ if( p1.pos != p2.pos) return false;
+ if( p1.anchor != p2.anchor) return false;
+ if( p1.lm != p2.lm) return false;
+ if( p1.orient != p2.orient) return false;
+ // impose redundant information
+ // determine which end is the "mate" with incomplete info
+ bool fixp1m1=((p1.mm1==99)&&(p1.mm2!=99));
+ bool fixp2m1=((p2.mm1==99)&&(p2.mm2!=99));
+ bool fixp1m2=((p1.mm2==99)&&(p1.mm1!=99));
+ bool fixp2m2=((p2.mm2==99)&&(p2.mm1!=99));
+ // p1m2 and p2m1 are ok
+ if (fixp1m1) {
+ p1.q1=p2.q1;
+ p1.len1=p2.len1;
+ p1.mm1=p2.mm1;
+ return true;      
+ } 
+ if (fixp2m2) {
+ p2.q2=p1.q2;
+ p2.len2=p1.len2;
+ p2.mm2=p1.mm2;
+ return true;      
+ }
+ // p1m1 and p2m2 are ok
+ if (fixp1m2) {
+ p1.q2=p2.q2;
+ p1.len2=p2.len2;
+ p1.mm2=p2.mm2;
+ return true;      
+ }
+ if (fixp2m1) {
+ p2.q1=p1.q1;
+ p2.len1=p1.len1;
+ p2.mm1=p1.mm1;
+ return true;      
+ } 
+ // other combinations problematic
+ cerr << "problem Bam redundancy" << endl;
+ cerr << p1 << endl;
+ cerr << p2 << endl;
+ return true;
+ }
+ 
  */
 
 
 bool C_contig::isRedundantRead(const C_singleEnd &p1, const C_singleEnd &p2)
 {
-   if( !(p1.pos == p2.pos)) return false;
-   if( !(p1.anchor == p2.anchor)) return false;
-   if( !(p1.len == p2.len)) return false;
-   return true;
+    if( !(p1.pos == p2.pos)) return false;
+    if( !(p1.anchor == p2.anchor)) return false;
+    if( !(p1.len == p2.len)) return false;
+    return true;
 }
 
 bool C_contig::isRedundantMulti(const C_umpair &p1, const C_umpair &p2)
 {
-   if( !(p1.read[0].pos == p2.read[0].pos)) return false;
-   if( !(p1.read[0].anchor == p2.read[0].anchor)) return false;
-   if( !(p1.read[0].len == p2.read[0].len)) return false;
-   // check number of mappings on other end... if within 10% then redundant
-   double xnm=2.0*fabs(double(p1.nmap-p2.nmap))/double(p1.nmap+p2.nmap);   
-   if( xnm>0.1) return false;
-   return true;
+    if( !(p1.read[0].pos == p2.read[0].pos)) return false;
+    if( !(p1.read[0].anchor == p2.read[0].anchor)) return false;
+    if( !(p1.read[0].len == p2.read[0].len)) return false;
+    // check number of mappings on other end... if within 10% then redundant
+    double xnm=2.0*fabs(double(p1.nmap-p2.nmap))/double(p1.nmap+p2.nmap);   
+    if( xnm>0.1) return false;
+    return true;
 }
 
 bool C_contig::isRedundantCross(const C_crosspair &p1, const C_crosspair &p2)
 {
-   if( !(p1.read[0].pos == p2.read[0].pos)) return false;
-   if( !(p1.read[1].pos == p2.read[1].pos)) return false;
-   if( !(p1.read[0].anchor == p2.read[0].anchor)) return false;
-   if( !(p1.read[1].anchor == p2.read[1].anchor)) return false;
-   if( !(p1.read[0].sense == p2.read[0].sense)) return false;
-   if( !(p1.read[1].sense == p2.read[1].sense)) return false;
-   return true;
+    if( !(p1.read[0].pos == p2.read[0].pos)) return false;
+    if( !(p1.read[1].pos == p2.read[1].pos)) return false;
+    if( !(p1.read[0].anchor == p2.read[0].anchor)) return false;
+    if( !(p1.read[1].anchor == p2.read[1].anchor)) return false;
+    if( !(p1.read[0].sense == p2.read[0].sense)) return false;
+    if( !(p1.read[1].sense == p2.read[1].sense)) return false;
+    return true;
 }
-    
- 
+
+
 list<C_singleEnd>   C_contig::loadEnd(string &   infilename) 
 {
-  list<C_singleEnd> x1;
-  fstream input(infilename.c_str(), ios::in|ios::binary);
-  if (!input) {
-      cerr << "Unable to open read end input file: " << infilename << endl;
-      return x1;
-  }
-  C_headerSpan h(input);
-  int N = h.N;
-  for(int i=0; i<N; i++)  {
-    C_singleEnd r1;
-    //position
-    input.read(reinterpret_cast < char * > (&r1.pos), sizeof(int));
-    //length
-    input.read(reinterpret_cast < char * > (&r1.len), sizeof(short));
-    input.read(reinterpret_cast < char * > (&r1.anchor), sizeof(short));
-    input.read(reinterpret_cast < char * > (&r1.sense), sizeof(char));
-    input.read(reinterpret_cast < char * > (&r1.q), sizeof(char));
-    if (h.V>206) {
-      input.read(reinterpret_cast < char * > (&r1.mm), sizeof(char));
-      input.read(reinterpret_cast < char * > (&r1.ReadGroupCode), sizeof(int));
-    } else {
-       r1.mm=0;
-       r1.ReadGroupCode=0;
+    list<C_singleEnd> x1;
+    fstream input(infilename.c_str(), ios::in|ios::binary);
+    if (!input) {
+        cerr << "Unable to open read end input file: " << infilename << endl;
+        return x1;
     }
-    x1.push_back(r1);
-  }
-  input.close();
-  return x1;
+    C_headerSpan h(input);
+    int N = h.N;
+    for(int i=0; i<N; i++)  {
+        C_singleEnd r1;
+        //position
+        input.read(reinterpret_cast < char * > (&r1.pos), sizeof(int));
+        //length
+        input.read(reinterpret_cast < char * > (&r1.len), sizeof(short));
+        input.read(reinterpret_cast < char * > (&r1.anchor), sizeof(short));
+        input.read(reinterpret_cast < char * > (&r1.sense), sizeof(char));
+        input.read(reinterpret_cast < char * > (&r1.q), sizeof(char));
+        if (h.V>206) {
+            input.read(reinterpret_cast < char * > (&r1.mm), sizeof(char));
+            input.read(reinterpret_cast < char * > (&r1.ReadGroupCode), sizeof(int));
+        } else {
+            r1.mm=0;
+            r1.ReadGroupCode=0;
+        }
+        x1.push_back(r1);
+    }
+    input.close();
+    return x1;
 }        
 
 list<C_umpair>   C_contig::loadMulti(string &   infilename) 
 {
-  list<C_umpair> x1;
-  fstream input(infilename.c_str(), ios::in|ios::binary);
-  if (!input) {
-      cerr << "Unable to open read retro input file: " << infilename << endl;
-      return x1;
-  }
-  C_headerSpan h(input);
-  int reclen0 =sizeof(int)+2*(sizeof(int)+2*sizeof(short)+2*sizeof(char));
-  //int reclen1 =reclen0+sizeof(int);
-  int N = h.N;
-  for(int i=0; i<N; i++)  {
-    C_umpair c1;
-    //read 0 - unique end
-    input.read(reinterpret_cast < char * > (&c1.read[0].pos), sizeof(int));
-    input.read(reinterpret_cast < char * > (&c1.read[0].len), sizeof(short));
-    input.read(reinterpret_cast < char * > (&c1.read[0].anchor), sizeof(short));
-    input.read(reinterpret_cast < char * > (&c1.read[0].sense), sizeof(char));
-    input.read(reinterpret_cast < char * > (&c1.read[0].q), sizeof(char));
-    if (h.V>206) {
-        input.read(reinterpret_cast < char * > (&c1.read[0].mm), sizeof(char));
-    } else {
-      c1.read[0].mm=0;
+    list<C_umpair> x1;
+    fstream input(infilename.c_str(), ios::in|ios::binary);
+    if (!input) {
+        cerr << "Unable to open read retro input file: " << infilename << endl;
+        return x1;
     }
-    //read 1 - multiple map
-    input.read(reinterpret_cast < char * > (&c1.read[1].pos), sizeof(int));
-    input.read(reinterpret_cast < char * > (&c1.read[1].len), sizeof(short));
-    input.read(reinterpret_cast < char * > (&c1.read[1].anchor), sizeof(short));
-    input.read(reinterpret_cast < char * > (&c1.read[1].sense), sizeof(char));
-    input.read(reinterpret_cast < char * > (&c1.read[1].q), sizeof(char));
-    if (h.V>206) {
-        input.read(reinterpret_cast < char * > (&c1.read[1].mm), sizeof(char));
-    } else {
-      c1.read[1].mm=0;
+    C_headerSpan h(input);
+    int reclen0 =sizeof(int)+2*(sizeof(int)+2*sizeof(short)+2*sizeof(char));
+    //int reclen1 =reclen0+sizeof(int);
+    int N = h.N;
+    for(int i=0; i<N; i++)  {
+        C_umpair c1;
+        //read 0 - unique end
+        input.read(reinterpret_cast < char * > (&c1.read[0].pos), sizeof(int));
+        input.read(reinterpret_cast < char * > (&c1.read[0].len), sizeof(short));
+        input.read(reinterpret_cast < char * > (&c1.read[0].anchor), sizeof(short));
+        input.read(reinterpret_cast < char * > (&c1.read[0].sense), sizeof(char));
+        input.read(reinterpret_cast < char * > (&c1.read[0].q), sizeof(char));
+        if (h.V>206) {
+            input.read(reinterpret_cast < char * > (&c1.read[0].mm), sizeof(char));
+        } else {
+            c1.read[0].mm=0;
+        }
+        //read 1 - multiple map
+        input.read(reinterpret_cast < char * > (&c1.read[1].pos), sizeof(int));
+        input.read(reinterpret_cast < char * > (&c1.read[1].len), sizeof(short));
+        input.read(reinterpret_cast < char * > (&c1.read[1].anchor), sizeof(short));
+        input.read(reinterpret_cast < char * > (&c1.read[1].sense), sizeof(char));
+        input.read(reinterpret_cast < char * > (&c1.read[1].q), sizeof(char));
+        if (h.V>206) {
+            input.read(reinterpret_cast < char * > (&c1.read[1].mm), sizeof(char));
+        } else {
+            c1.read[1].mm=0;
+        }
+        // nmap
+        input.read(reinterpret_cast < char * > (&c1.nmap), sizeof(int));
+        // elements
+        if (int(h.reclen)>int(reclen0)) {
+            input.read(reinterpret_cast < char * > (&c1.elements), sizeof(int));
+        }
+        if (h.V>206) {
+            input.read(reinterpret_cast < char * > (&c1.ReadGroupCode), sizeof(int));
+        } else {
+            c1.ReadGroupCode=0;
+        }
+        x1.push_back(c1);
     }
-    // nmap
-    input.read(reinterpret_cast < char * > (&c1.nmap), sizeof(int));
-    // elements
-    if (int(h.reclen)>int(reclen0)) {
-      input.read(reinterpret_cast < char * > (&c1.elements), sizeof(int));
-    }
-    if (h.V>206) {
-        input.read(reinterpret_cast < char * > (&c1.ReadGroupCode), sizeof(int));
-    } else {
-      c1.ReadGroupCode=0;
-    }
-    x1.push_back(c1);
-  }
-  input.close();
-  return x1;
+    input.close();
+    return x1;
 }        
-    
+
 C_set::C_set(string & setName1, RunControlParameters & pars1) {
-  setSetName(setName1);  
-  this->fileName = "";
-  this->pars=pars1;
-  this->Nfrag = 0;  
-  this->Npair = 0;  
-  this->Npair_00 = 0;    
-  this->Npair_01 = 0;  
-  this->Npair_0N = 0;
-  this->Npair_11 = 0;
-  this->Npair_11o = 0;
-  this->Npair_1N = 0;
-  this->Npair_NN = 0;
- 
-  // Initialize stats 
-  // labels: 0=no map; 1=one-map; N=multi-map;
-  string pairCountLab1[] = {"0-0","0-1","0-N","X","1-1","1-N","X","X","N-N"};
-  vector<string> pairCountLab(pairCountLab1, pairCountLab1 + 9);
-  // labels: F1R2=(first in pos order)(next); F=forward sense, R=reverse;  1=mate 1, 2=mate 2;
+    setSetName(setName1);  
+    this->fileName = "";
+    this->pars=pars1;
+    this->Nfrag = 0;  
+    this->Npair = 0;  
+    this->Npair_00 = 0;    
+    this->Npair_01 = 0;  
+    this->Npair_0N = 0;
+    this->Npair_11 = 0;
+    this->Npair_11o = 0;
+    this->Npair_1N = 0;
+    this->Npair_NN = 0;
+    
+    // Initialize stats 
+    // labels: 0=no map; 1=one-map; N=multi-map;
+    string pairCountLab1[] = {"0-0","0-1","0-N","X","1-1","1-N","X","X","N-N"};
+    vector<string> pairCountLab(pairCountLab1, pairCountLab1 + 9);
+    // labels: F1R2=(first in pos order)(next); F=forward sense, R=reverse;  1=mate 1, 2=mate 2;
 	
-  string pairModelLab1[] = {"F1F2","F1R2","R1F2","R1R2","F2F1","F2R1","R2F1","R2R1"};
-  vector<string> pairModelLab(pairModelLab1, pairModelLab1 + 8);
-  
-  repeatStats.Initialize(1001,-0.5,1000.5);  
-  repeatStats.h.setTitle("NA read mapping multiplicity");
-  
-  lengthStats.Initialize(1001,-0.5,1000.5);  
-  lengthStats.h.setTitle("LR read length");
-
-  fragStats.Initialize(10100,-99.5,10000.5);  
-  fragStats.h.setTitle("LF fragment mapping length");
-
-  spanStats.Initialize(10100,-99.5,10000.5);   
-  spanStats.h.setTitle("SL span mapping length");
+    string pairModelLab1[] = {"F1F2","F1R2","R1F2","R1R2","F2F1","F2R1","R2F1","R2R1"};
+    vector<string> pairModelLab(pairModelLab1, pairModelLab1 + 8);
+    
+    repeatStats.Initialize(1001,-0.5,1000.5);  
+    repeatStats.h.setTitle("NA read mapping multiplicity");
+    
+    lengthStats.Initialize(1001,-0.5,1000.5);  
+    lengthStats.h.setTitle("LR read length");
+    
+    fragStats.Initialize(10100,-99.5,10000.5);  
+    fragStats.h.setTitle("LF fragment mapping length");
+    
+    spanStats.Initialize(10100,-99.5,10000.5);   
+    spanStats.h.setTitle("SL span mapping length");
 	
-  qStats.Initialize(101,-0.5,100.5); 
-  qStats.h.setTitle("RQ read map quality");
-  
-  pairCountStats.Initialize(9,-0.5,8.5); 
-  pairCountStats.h.setTitle("RC pair multiplicity combinations");
-  pairCountStats.h.setXlabel("combo");
-  pairCountStats.h.setBinLabels(pairCountLab);
-
-  pairModelStats.Initialize(8,0.5,8.5); 
-  pairModelStats.h.setTitle("PM pair model combinations");
-  pairModelStats.h.setXlabel("model");
-  pairModelStats.h.setBinLabels(pairModelLab);
+    qStats.Initialize(101,-0.5,100.5); 
+    qStats.h.setTitle("RQ read map quality");
+    
+    pairCountStats.Initialize(9,-0.5,8.5); 
+    pairCountStats.h.setTitle("RC pair multiplicity combinations");
+    pairCountStats.h.setXlabel("combo");
+    pairCountStats.h.setBinLabels(pairCountLab);
+    
+    pairModelStats.Initialize(8,0.5,8.5); 
+    pairModelStats.h.setTitle("PM pair model combinations");
+    pairModelStats.h.setXlabel("model");
+    pairModelStats.h.setBinLabels(pairModelLab);
 	
-  refStats.Initialize(101,-0.5,100.5); 
-  refStats.h.setTitle("RS reference ID");
+    refStats.Initialize(101,-0.5,100.5); 
+    refStats.h.setTitle("RS reference ID");
 	
 	
-  // Debug
-  /*
-  this->Npair_ALU = 0;
-  this->Npair_ALUC = 0;
-  */
-  //
-  elementMinAnchor=255; // init min element anchor index
+    // Debug
+    /*
+     this->Npair_ALU = 0;
+     this->Npair_ALUC = 0;
+     */
+    //
+    elementMinAnchor=255; // init min element anchor index
 	SpannerMode = 0;
 	
 }
 
 void C_set::initContigs() {
-  for (size_t i = 0; i<this->anchors.names.size(); i++) {
-      string name= this->anchors.names[i];
-      int L = 0;
-      if (this->anchors.use[i]) { L = this->anchors.L[name]; }
-
-      // turn off repeat checking by setting L<0
+    for (size_t i = 0; i<this->anchors.names.size(); i++) {
+        string name= this->anchors.names[i];
+        int L = 0;
+        if (this->anchors.use[i]) { L = this->anchors.L[name]; }
+        
+        // turn off repeat checking by setting L<0
   		bool doRepeatCheck = false; //pars.getDoRepeatCheck();
-      
-      C_contig contig1(name,L, doRepeatCheck);
-      contig1.setName=setName;
-      this->contig[name]=contig1;
-      // add anchor info to each contig object
-      this->contig[name].anchors=this->anchors;
-  }
+        
+        C_contig contig1(name,L, doRepeatCheck);
+        contig1.setName=setName;
+        this->contig[name]=contig1;
+        // add anchor info to each contig object
+        this->contig[name].anchors=this->anchors;
+    }
 }
 
 void C_set::processRepeat(C_readmaps & read1, int MinMap=2) {
-  //if (!pars.getDoRepeatCheck()) return;
-  int N = read1.align.size();     
-  if (N<MinMap) {return;}
-  for (int i = 0 ; i<N; i++) {
-    unsigned int p = read1.align[i].pos;
-    unsigned short a = read1.align[i].anchor;
-    string name = anchors.names[a];
-    if (this->contig[name].Length>0) {
-        contig[name].repeat.n[p]++;
+    //if (!pars.getDoRepeatCheck()) return;
+    int N = read1.align.size();     
+    if (N<MinMap) {return;}
+    for (int i = 0 ; i<N; i++) {
+        unsigned int p = read1.align[i].pos;
+        unsigned short a = read1.align[i].anchor;
+        string name = anchors.names[a];
+        if (this->contig[name].Length>0) {
+            contig[name].repeat.n[p]++;
+        }
     }
-  }
 }
 
 void C_set::processSingleton(C_readmaps & read1,unsigned int ReadGroupCode) {
-  int N = read1.align.size();     
-  if (N!=1) {return;}
-  unsigned short a = read1.align[0].anchor;
-  string name = anchors.names[a];
-  if (this->contig[name].Length>0) {
-      C_singleEnd r1;
-      r1.pos=read1.align[0].pos;
-      r1.len=read1.align[0].len;
-      r1.anchor=read1.align[0].anchor;
-      r1.sense=read1.align[0].sense;
-      r1.q=read1.align[0].q;
-      r1.mm=read1.align[0].mm;
-      r1.ReadGroupCode=ReadGroupCode;
-      contig[name].singleton.push_back(r1);
-  }
+    int N = read1.align.size();     
+    if (N!=1) {return;}
+    unsigned short a = read1.align[0].anchor;
+    string name = anchors.names[a];
+    if (this->contig[name].Length>0) {
+        C_singleEnd r1;
+        r1.pos=read1.align[0].pos;
+        r1.len=read1.align[0].len;
+        r1.anchor=read1.align[0].anchor;
+        r1.sense=read1.align[0].sense;
+        r1.q=read1.align[0].q;
+        r1.mm=read1.align[0].mm;
+        r1.ReadGroupCode=ReadGroupCode;
+        contig[name].singleton.push_back(r1);
+    }
 }
 
 
@@ -3682,148 +3685,148 @@ void C_set::processSingleton(C_readmaps & read1,unsigned int ReadGroupCode) {
 // sort out fragment types to fill spanner records 
 //------------------------------------------------------------------------------
 void C_set::processPair(C_pairedread & pair1, char constrain) {
-
-  //int N0 = pair1.read[0].align[0].nmap;     
-  //int N1 = pair1.read[1].align[0].nmap;   
-  int N0 = pair1.read[0].Nalign;     
-  int N1 = pair1.read[1].Nalign;   
-  
-  //----------------------------------------------------------------------------
-  // bump N if the unique hit is ANY element
-  // prevent mobile-element hits from going into UU pairs
-  // want them to go to UM pairs
+    
+    //int N0 = pair1.read[0].align[0].nmap;     
+    //int N1 = pair1.read[1].align[0].nmap;   
+    int N0 = pair1.read[0].Nalign;     
+    int N1 = pair1.read[1].Nalign;   
+    
+    //----------------------------------------------------------------------------
+    // bump N if the unique hit is ANY element
+    // prevent mobile-element hits from going into UU pairs
+    // want them to go to UM pairs
 	// this is problematic for non-repeat elements (eg. virus, bacteria, vector...)
-  //----------------------------------------------------------------------------
-  if ( (pair1.read[0].element!=0)&&(N0==1) ) {
-     N0++;
-  }
-  if ( (pair1.read[1].element!=0)&&(N1==1) ) {
-     N1++;
-  }
-  //Npair++;
-
-  //----------------------------------------------------------------------------
-  //  U0 pairs
-  //----------------------------------------------------------------------------
-  if ((N0+N1)==1) {
-    //=========================
-    // 0 1 / 1 0  dangling reads
-    //=========================
-    Npair_01++;
-    int e = (N0==1 ? 0: 1);
+    //----------------------------------------------------------------------------
+    if ( (pair1.read[0].element!=0)&&(N0==1) ) {
+        N0++;
+    }
+    if ( (pair1.read[1].element!=0)&&(N1==1) ) {
+        N1++;
+    }
+    //Npair++;
+    
+    //----------------------------------------------------------------------------
+    //  U0 pairs
+    //----------------------------------------------------------------------------
+    if ((N0+N1)==1) {
+        //=========================
+        // 0 1 / 1 0  dangling reads
+        //=========================
+        Npair_01++;
+        int e = (N0==1 ? 0: 1);
 		if (pair1.read[e].align.size()>0) {
 			unsigned short a = pair1.read[e].align[0].anchor;
 			string name = anchors.names[a];
 			if (this->contig[name].Length>0) {
-        //char s = pair1.read[e].align[0].sense;
-        C_singleEnd r1;
-        r1.pos=pair1.read[e].align[0].pos;
-        r1.len=pair1.read[e].align[0].len;
-        r1.anchor=pair1.read[e].align[0].anchor;
-        r1.sense=pair1.read[e].align[0].sense;
-        r1.q=pair1.read[e].align[0].q;
-        r1.mm=pair1.read[e].align[0].mm;
-        r1.ReadGroupCode=pair1.ReadGroupCode;
-        contig[name].dangle.push_back(r1);
+                //char s = pair1.read[e].align[0].sense;
+                C_singleEnd r1;
+                r1.pos=pair1.read[e].align[0].pos;
+                r1.len=pair1.read[e].align[0].len;
+                r1.anchor=pair1.read[e].align[0].anchor;
+                r1.sense=pair1.read[e].align[0].sense;
+                r1.q=pair1.read[e].align[0].q;
+                r1.mm=pair1.read[e].align[0].mm;
+                r1.ReadGroupCode=pair1.ReadGroupCode;
+                contig[name].dangle.push_back(r1);
 			}
 		}
 		
-
-  //----------------------------------------------------------------------------
-  //  UM pairs
-  //---------------------------------------------------------------------------    
-  } else if ( (N0+N1)>2 && (N0==1 || N1==1) ) {
-    //--------------------------------------------------------------------------
-    // unique read on one end - many on other end 1 N
-    //--------------------------------------------------------------------------
-    Npair_1N++;
-    int e = (N0==1 ? 0: 1);
-    unsigned short a = pair1.read[e].align[0].anchor;
-    string name = anchors.names[a];
-    if (this->contig[name].Length>0) {
-    
-        //----------------------------------------------------------------------
-        // retro pairs - Starts "F" - Ends "R"
-        //----------------------------------------------------------------------
-        //char s = pair1.read[e].align[0].sense;
-        //int em = (e==1 ? 0: 1);
-        //int nmap = pair1.read[em].align.size();
-        //--------------------------------------------------------------------------
         
-        // Debug
-        /*
-        if ( ((pair1.read[0].element&1)>0) || ((pair1.read[1].element&1)>0)  ) {
-            Npair_ALU++;
-            int lm = Fraglength(pair1);
-            if (abs(lm-140)<70) { 
-              Npair_ALUC++;
-            } else {
-              // cerr << " missed aluy " << lm  <<  " Nalu " << Npair_ALU << " Naluc " << Npair_ALUC << endl;
-            }
-        }
-        */
-          
-        C_umpair r1(pair1,anchors);
-        contig[name].umpairs.push_back(r1);
-  
-        /*
-        if (s=='F') {
-            contig[name].retroStart.push_back(r1);
-        } else {
-            contig[name].retroEnd.push_back(r1);
-        }
-        */
-    }    
-    
-  //----------------------------------------------------------------------------
-  // UU pairs
-  //----------------------------------------------------------------------------
-  } else if ((N0*N1)==1) {
-    //=========================
-    // unique pairs 
-    //=========================
-    Npair_11++;
-    unsigned short a0 = pair1.read[0].align[0].anchor;
-    unsigned short a1 = pair1.read[1].align[0].anchor;
-    if (a0==a1) {
-      //===========
-      // local pair
-      //===========
-      C_localpair localpair1(pair1,constrain);
-      string name = anchors.names[a0];
-      if (this->contig[name].Length>0) {
-        contig[name].localpairs.push_back(localpair1);
-      }
-    } else {
-      //==================
-      // cross-anchor pair
-      //==================
-      for (int e=0; e<2; e++) {
+        //----------------------------------------------------------------------------
+        //  UM pairs
+        //---------------------------------------------------------------------------    
+    } else if ( (N0+N1)>2 && (N0==1 || N1==1) ) {
+        //--------------------------------------------------------------------------
+        // unique read on one end - many on other end 1 N
+        //--------------------------------------------------------------------------
+        Npair_1N++;
+        int e = (N0==1 ? 0: 1);
         unsigned short a = pair1.read[e].align[0].anchor;
         string name = anchors.names[a];
-        int e1 = (e==0? 1: 0);
         if (this->contig[name].Length>0) {
-            C_crosspair cross1(pair1.read[e].align[0],pair1.read[e1].align[0],pair1.ReadGroupCode);
-            contig[name].crosspairs.push_back(cross1);
-        }
-      }
-    } 
-  } else if (N0==0 && N1==0) {
-     //-------------------------------------------------------------------------
-     // No mappings on either end 
-     //-------------------------------------------------------------------------
-     Npair_00++;
-  } else if ( (N0*N1==0)&& ((N0+N1)>1) ) {
-     //-------------------------------------------------------------------------
-     // many mappings on one end - none on other end
-     //-------------------------------------------------------------------------
-     Npair_0N++;
-  } else {
-     //-------------------------------------------------------------------------
-     // many mappings on both ends
-     //-------------------------------------------------------------------------
-     Npair_NN++;
-  }
+            
+            //----------------------------------------------------------------------
+            // retro pairs - Starts "F" - Ends "R"
+            //----------------------------------------------------------------------
+            //char s = pair1.read[e].align[0].sense;
+            //int em = (e==1 ? 0: 1);
+            //int nmap = pair1.read[em].align.size();
+            //--------------------------------------------------------------------------
+            
+            // Debug
+            /*
+             if ( ((pair1.read[0].element&1)>0) || ((pair1.read[1].element&1)>0)  ) {
+             Npair_ALU++;
+             int lm = Fraglength(pair1);
+             if (abs(lm-140)<70) { 
+             Npair_ALUC++;
+             } else {
+             // cerr << " missed aluy " << lm  <<  " Nalu " << Npair_ALU << " Naluc " << Npair_ALUC << endl;
+             }
+             }
+             */
+            
+            C_umpair r1(pair1,anchors);
+            contig[name].umpairs.push_back(r1);
+            
+            /*
+             if (s=='F') {
+             contig[name].retroStart.push_back(r1);
+             } else {
+             contig[name].retroEnd.push_back(r1);
+             }
+             */
+        }    
+        
+        //----------------------------------------------------------------------------
+        // UU pairs
+        //----------------------------------------------------------------------------
+    } else if ((N0*N1)==1) {
+        //=========================
+        // unique pairs 
+        //=========================
+        Npair_11++;
+        unsigned short a0 = pair1.read[0].align[0].anchor;
+        unsigned short a1 = pair1.read[1].align[0].anchor;
+        if (a0==a1) {
+            //===========
+            // local pair
+            //===========
+            C_localpair localpair1(pair1,constrain);
+            string name = anchors.names[a0];
+            if (this->contig[name].Length>0) {
+                contig[name].localpairs.push_back(localpair1);
+            }
+        } else {
+            //==================
+            // cross-anchor pair
+            //==================
+            for (int e=0; e<2; e++) {
+                unsigned short a = pair1.read[e].align[0].anchor;
+                string name = anchors.names[a];
+                int e1 = (e==0? 1: 0);
+                if (this->contig[name].Length>0) {
+                    C_crosspair cross1(pair1.read[e].align[0],pair1.read[e1].align[0],pair1.ReadGroupCode);
+                    contig[name].crosspairs.push_back(cross1);
+                }
+            }
+        } 
+    } else if (N0==0 && N1==0) {
+        //-------------------------------------------------------------------------
+        // No mappings on either end 
+        //-------------------------------------------------------------------------
+        Npair_00++;
+    } else if ( (N0*N1==0)&& ((N0+N1)>1) ) {
+        //-------------------------------------------------------------------------
+        // many mappings on one end - none on other end
+        //-------------------------------------------------------------------------
+        Npair_0N++;
+    } else {
+        //-------------------------------------------------------------------------
+        // many mappings on both ends
+        //-------------------------------------------------------------------------
+        Npair_NN++;
+    }
 }
 
 int C_set::Fraglength(C_pairedread & pair1) {
@@ -3889,7 +3892,7 @@ int C_set::pairModel(C_pairedread & pair1) {
 			m=3; // R1F2
 		} else if ((o0=='R')&&(o1=='R')&&(p0<=p1))  {
 			m=4;  // 454 Mate Pairs R1R2
-	  } else if ((o0=='F')&&(o1=='F')&&(p0>p1))  {
+        } else if ((o0=='F')&&(o1=='F')&&(p0>p1))  {
 			m=5;  // 454 Mate Pairs  F2F1
 		} else if ((o0=='R')&&(o1=='F')&&(p0>p1))  {
 			m=6;  // Illumina PE  R2F1
@@ -3904,286 +3907,286 @@ int C_set::pairModel(C_pairedread & pair1) {
 
 
 void C_set::calcStats() {
-  C_contigs::const_iterator iterContig;   
-  for (iterContig = contig.begin();	iterContig != contig.end(); iterContig++) {
-      string name = iterContig->first;
-      if (contig[name].Length>0) { 
-        cout << "calc stats for contig " << name << endl;
-        // fill depth & repeat vector before uniquifying pairs
-        contig[name].calcStats();
-      }
-  }
+    C_contigs::const_iterator iterContig;   
+    for (iterContig = contig.begin();	iterContig != contig.end(); iterContig++) {
+        string name = iterContig->first;
+        if (contig[name].Length>0) { 
+            cout << "calc stats for contig " << name << endl;
+            // fill depth & repeat vector before uniquifying pairs
+            contig[name].calcStats();
+        }
+    }
 }
 
 void C_set::uniquify() {
-  if (pars.getDupRemove()<1) return;
-  C_contigs::const_iterator iterContig;   
-  for (iterContig = contig.begin();	iterContig != contig.end(); iterContig++) {
-      string name = iterContig->first;
-      if (contig[name].Length>0) { 
-        cout << "uniquify contig " << name << endl;
-        // fill depth & repeat vector before uniquifying pairs
-        contig[name].uniquify();
-      }
-  }
+    if (pars.getDupRemove()<1) return;
+    C_contigs::const_iterator iterContig;   
+    for (iterContig = contig.begin();	iterContig != contig.end(); iterContig++) {
+        string name = iterContig->first;
+        if (contig[name].Length>0) { 
+            cout << "uniquify contig " << name << endl;
+            // fill depth & repeat vector before uniquifying pairs
+            contig[name].uniquify();
+        }
+    }
 }
 
 void C_set::sort() {
-  C_contigs::const_iterator iterContig;   
-  for (iterContig = contig.begin();	iterContig != contig.end(); iterContig++) {
-      string name = iterContig->first;
-      if (contig[name].Length>0) { 
-        cout << "sort contig " << name << endl;
-        // fill depth & repeat vector before uniquifying pairs
-        contig[name].sort();
-      }
-  }
+    C_contigs::const_iterator iterContig;   
+    for (iterContig = contig.begin();	iterContig != contig.end(); iterContig++) {
+        string name = iterContig->first;
+        if (contig[name].Length>0) { 
+            cout << "sort contig " << name << endl;
+            // fill depth & repeat vector before uniquifying pairs
+            contig[name].sort();
+        }
+    }
 }
 void C_set::countReads(int binsize) {
-  C_contigs::const_iterator iterContig;   
-  for (iterContig = contig.begin();	iterContig != contig.end(); iterContig++) {
-      string name = iterContig->first;
-      if (contig[name].Length>0) { 
-        cout << "calc Depth contig " << name << endl;
-        contig[name].read_counts = contig[name].countReads(binsize);
-      }
-  }
+    C_contigs::const_iterator iterContig;   
+    for (iterContig = contig.begin();	iterContig != contig.end(); iterContig++) {
+        string name = iterContig->first;
+        if (contig[name].Length>0) { 
+            cout << "calc Depth contig " << name << endl;
+            contig[name].read_counts = contig[name].countReads(binsize);
+        }
+    }
 }
- 
+
 void C_set::calcDepth() {
-  C_contigs::const_iterator iterContig;   
-  int Qmin = pars.getQmin();
-  for (iterContig = contig.begin();	iterContig != contig.end(); iterContig++) {
-      string name = iterContig->first;
-      if (contig[name].Length>0) { 
-        cout << "calc Depth contig " << name << endl;
-        contig[name].calcDepth(Qmin);
-      }
-  }
+    C_contigs::const_iterator iterContig;   
+    int Qmin = pars.getQmin();
+    for (iterContig = contig.begin();	iterContig != contig.end(); iterContig++) {
+        string name = iterContig->first;
+        if (contig[name].Length>0) { 
+            cout << "calc Depth contig " << name << endl;
+            contig[name].calcDepth(Qmin);
+        }
+    }
 }
 
 
 void C_set::write() {
-  C_contigs::const_iterator iterContig;   
-  string area = pars.getOutputDir();
-  int k = 1+area.find_last_of("/");
-  string subdir = area.substr(k);
-  if (area.size()>0) { area = area+"/";}
-  string prefix = pars.getPrefix();
-  if (prefix.size()>0) { prefix = prefix+".";}
-  
+    C_contigs::const_iterator iterContig;   
+    string area = pars.getOutputDir();
+    int k = 1+area.find_last_of("/");
+    string subdir = area.substr(k);
+    if (area.size()>0) { area = area+"/";}
+    string prefix = pars.getPrefix();
+    if (prefix.size()>0) { prefix = prefix+".";}
+    
+    
+    string sn1 = setName;
+    // dont need redundant setName if subdirectory is already the setName
+    // if (sn1==subdir) sn1="";
+    string fn1 = fileName;
+    size_t f1 = fn1.find(sn1); 
+    if ((fn1.size()>0)&&(f1==string::npos)) sn1=fn1+"."+sn1;      
+    if (sn1.size()>0) sn1 = sn1+".";
+    
+    string anchorfile = area+prefix+sn1+"anchors.txt";
+    anchors.printAnchorInfo(anchorfile);          
+    
+    cout << "write span output  " <<  endl;
+    
+    
+    string fname = area+prefix+sn1+"library.span";
+    cout << "\t " << fname << "\t " << libraries.libmap.size() << endl;
+    libraries.writeLibraryInfo(fname,setName);
+    
+    for (iterContig = contig.begin();	iterContig != contig.end(); iterContig++) {
+        string cn1 = iterContig->first;      
+        string basename = area+prefix+sn1+cn1;
+        if (setName==cn1) basename = area+prefix+cn1;
         
-  string sn1 = setName;
-  // dont need redundant setName if subdirectory is already the setName
-  // if (sn1==subdir) sn1="";
-  string fn1 = fileName;
-  size_t f1 = fn1.find(sn1); 
-  if ((fn1.size()>0)&&(f1==string::npos)) sn1=fn1+"."+sn1;      
-  if (sn1.size()>0) sn1 = sn1+".";
-
-  string anchorfile = area+prefix+sn1+"anchors.txt";
-  anchors.printAnchorInfo(anchorfile);          
-  
-  cout << "write span output  " <<  endl;
-    
-    
-  string fname = area+prefix+sn1+"library.span";
-  cout << "\t " << fname << "\t " << libraries.libmap.size() << endl;
-  libraries.writeLibraryInfo(fname,setName);
-  
-  for (iterContig = contig.begin();	iterContig != contig.end(); iterContig++) {
-      string cn1 = iterContig->first;      
-      string basename = area+prefix+sn1+cn1;
-      if (setName==cn1) basename = area+prefix+cn1;
-
-      // replace evil character "|" with benign "_" 
-      size_t found=basename.find("|");
-      while (found!=string::npos) {
-        basename.replace(found,1,"_");
-        found=basename.find("|");
-      }
-  
-      if (contig[cn1].Length>0) { 
-				
-				if (SpannerMode!=SPANNER_MOBI) {
-					//cout << "write output for contig " << cn1 << endl;
-					fname = basename+".pair.span";
-					cout << "\t " << fname << "\t " << contig[cn1].localpairs.size() << endl;
-					contig[cn1].writePairs(fname);
-					fname = basename+".cross.span";
-					cout << "\t " << fname << "\t " << contig[cn1].crosspairs.size() << endl;
-					contig[cn1].writeCross(fname);
-					//
-					/* skip repeat write
-					 fname = basename+".repeat.span";
-					 cout << "\t " << fname << "\t " << contig[cn1].repeat.n.size() << endl;
-					 contig[cn1].writeDepth(fname, contig[cn1].repeat);
-
-					//
-					fname = basename+".dangle.span";
-					cout << "\t " << fname << "\t " << contig[cn1].dangle.size() << endl;
-					contig[cn1].writeEnd(fname, contig[cn1].dangle);
-				  */
-				}
-				if (SpannerMode!=SPANNER_BUILD) {					
-					string notspecial = basename;
-					size_t found = notspecial.find(".special.");
-					if (found!=string::npos) {
-						notspecial.erase (found,8);
-					}
-          fname = notspecial+".multi.span";
-          cout << "\t " << fname << "\t " << contig[cn1].umpairs.size() << endl;
-          contig[cn1].writeMulti(fname, contig[cn1].umpairs);
-				}
-      }
-   }
+        // replace evil character "|" with benign "_" 
+        size_t found=basename.find("|");
+        while (found!=string::npos) {
+            basename.replace(found,1,"_");
+            found=basename.find("|");
+        }
+        
+        if (contig[cn1].Length>0) { 
+            
+            if (SpannerMode!=SPANNER_MOBI) {
+                //cout << "write output for contig " << cn1 << endl;
+                fname = basename+".pair.span";
+                cout << "\t " << fname << "\t " << contig[cn1].localpairs.size() << endl;
+                contig[cn1].writePairs(fname);
+                fname = basename+".cross.span";
+                cout << "\t " << fname << "\t " << contig[cn1].crosspairs.size() << endl;
+                contig[cn1].writeCross(fname);
+                //
+                /* skip repeat write
+                 fname = basename+".repeat.span";
+                 cout << "\t " << fname << "\t " << contig[cn1].repeat.n.size() << endl;
+                 contig[cn1].writeDepth(fname, contig[cn1].repeat);
+                 
+                 //
+                 fname = basename+".dangle.span";
+                 cout << "\t " << fname << "\t " << contig[cn1].dangle.size() << endl;
+                 contig[cn1].writeEnd(fname, contig[cn1].dangle);
+                 */
+            }
+            if (SpannerMode!=SPANNER_BUILD) {					
+                string notspecial = basename;
+                size_t found = notspecial.find(".special.");
+                if (found!=string::npos) {
+                    notspecial.erase (found,8);
+                }
+                fname = notspecial+".multi.span";
+                cout << "\t " << fname << "\t " << contig[cn1].umpairs.size() << endl;
+                contig[cn1].writeMulti(fname, contig[cn1].umpairs);
+            }
+        }
+    }
 }
 
 void C_set::printOut() {
-  C_contigs::const_iterator iterContig;   
-  string area = pars.getOutputDir();
-  int k = 1+area.find_last_of("/");
-  string subdir = area.substr(k);
-  if (area.size()>0) { area = area+"/";}
-  string prefix = pars.getPrefix();
-  if (prefix.size()>0) { prefix = prefix+".";}
-  
-  string sn1 = setName;
-  // dont need redundant setName if subdirectory is already the setName
-  // if (sn1==subdir) sn1="";
-  string fn1 = fileName;
-  size_t f1 = fn1.find(sn1); 
-  if ((fn1.size()>0)&&(f1==string::npos)) sn1=fn1+"."+sn1;    
-  if (sn1.size()>0) { sn1 = sn1+".";}
-  
-  for (iterContig = contig.begin();	iterContig != contig.end(); iterContig++) {
-      string cn1 = iterContig->first;      
-      string basename = area+prefix+sn1+cn1;  
-      if (setName==cn1) basename = area+prefix+cn1;
-
-      
-      
-      // replace evil character "|" with benign "_" 
-      size_t found=basename.find("|");
-      while (found!=string::npos) {
-        basename.replace(found,1,"_");
-        found=basename.find("|");
-      }
-      
-      if (contig[cn1].Length>0) { 
-        cout << "print output for contig " << cn1 << endl;
-        string fname = basename+".pair.span.txt";
-        cout << "\t " << fname << "\t " << contig[cn1].localpairs.size() << endl;
-        contig[cn1].printPairs(fname);
-        fname = basename+".cross.span.txt";
-        cout << "\t " << fname << "\t " << contig[cn1].crosspairs.size() << endl;
-        contig[cn1].printCross(fname);
-        /*
-        fname = basename+".repeat.span";
-        cout << "\t " << fname << endl;
-        contig[cn1].writeMarker(fname, contig[cn1].repeat);
-        */
-        fname = basename+".dangle.span.txt";
-        cout << "\t " << fname << "\t " << contig[cn1].dangle.size() << endl;
-        contig[cn1].printEnd(fname, contig[cn1].dangle);
-		fname = basename+".stat.span.txt";
-        cout << "\t " << fname << endl;
-        contig[cn1].printStats(fname);
-        //
-        fname = basename+".multi.span.txt";
-        cout << "\t " << fname << "\t " << contig[cn1].umpairs.size() << endl;
-        contig[cn1].printMulti(fname, contig[cn1].umpairs);
-      }
-   }
+    C_contigs::const_iterator iterContig;   
+    string area = pars.getOutputDir();
+    int k = 1+area.find_last_of("/");
+    string subdir = area.substr(k);
+    if (area.size()>0) { area = area+"/";}
+    string prefix = pars.getPrefix();
+    if (prefix.size()>0) { prefix = prefix+".";}
+    
+    string sn1 = setName;
+    // dont need redundant setName if subdirectory is already the setName
+    // if (sn1==subdir) sn1="";
+    string fn1 = fileName;
+    size_t f1 = fn1.find(sn1); 
+    if ((fn1.size()>0)&&(f1==string::npos)) sn1=fn1+"."+sn1;    
+    if (sn1.size()>0) { sn1 = sn1+".";}
+    
+    for (iterContig = contig.begin();	iterContig != contig.end(); iterContig++) {
+        string cn1 = iterContig->first;      
+        string basename = area+prefix+sn1+cn1;  
+        if (setName==cn1) basename = area+prefix+cn1;
+        
+        
+        
+        // replace evil character "|" with benign "_" 
+        size_t found=basename.find("|");
+        while (found!=string::npos) {
+            basename.replace(found,1,"_");
+            found=basename.find("|");
+        }
+        
+        if (contig[cn1].Length>0) { 
+            cout << "print output for contig " << cn1 << endl;
+            string fname = basename+".pair.span.txt";
+            cout << "\t " << fname << "\t " << contig[cn1].localpairs.size() << endl;
+            contig[cn1].printPairs(fname);
+            fname = basename+".cross.span.txt";
+            cout << "\t " << fname << "\t " << contig[cn1].crosspairs.size() << endl;
+            contig[cn1].printCross(fname);
+            /*
+             fname = basename+".repeat.span";
+             cout << "\t " << fname << endl;
+             contig[cn1].writeMarker(fname, contig[cn1].repeat);
+             */
+            fname = basename+".dangle.span.txt";
+            cout << "\t " << fname << "\t " << contig[cn1].dangle.size() << endl;
+            contig[cn1].printEnd(fname, contig[cn1].dangle);
+            fname = basename+".stat.span.txt";
+            cout << "\t " << fname << endl;
+            contig[cn1].printStats(fname);
+            //
+            fname = basename+".multi.span.txt";
+            cout << "\t " << fname << "\t " << contig[cn1].umpairs.size() << endl;
+            contig[cn1].printMulti(fname, contig[cn1].umpairs);
+        }
+    }
 }
 
 void C_set::writeDepth() {
-  C_contigs::const_iterator iterContig;   
-  string area = pars.getOutputDir();
-  int k = 1+area.find_last_of("/");
-  string subdir = area.substr(k);
-  if (area.size()>0) { area = area+"/";}
-  string prefix = pars.getPrefix();
-  if (prefix.size()>0) { prefix = prefix+".";}
-  
-  string sn1 = setName;
-  
-  // dont need redundant setName if subdirectory is already the setName
-  //if (sn1==subdir) sn1="";
-  
-  string fn1 = fileName;
-  size_t f1 = fn1.find(sn1); 
-  if ((fn1.size()>0)&&(f1==string::npos)) sn1=fn1+"."+sn1;    
-  if (sn1.size()>0) { sn1 = sn1+".";}
-
-
-  for (iterContig = contig.begin();	iterContig != contig.end(); iterContig++) {
-      string cn1 = iterContig->first;      
-      string basename = area+prefix+sn1+cn1;
-      if (setName==cn1) basename = area+prefix+cn1;
+    C_contigs::const_iterator iterContig;   
+    string area = pars.getOutputDir();
+    int k = 1+area.find_last_of("/");
+    string subdir = area.substr(k);
+    if (area.size()>0) { area = area+"/";}
+    string prefix = pars.getPrefix();
+    if (prefix.size()>0) { prefix = prefix+".";}
     
-      // replace evil character "|" with benign "_" 
-      size_t found=basename.find("|");
-      while (found!=string::npos) {
-        basename.replace(found,1,"_");
-        found=basename.find("|");
-      }
-      
-      if (contig[cn1].Length>0) { 
-        cout << "write output for read depth " << cn1 << endl;
-        string fname = basename+".read.depth.span";
-        cout << "\t " << fname << "\t " << contig[cn1].read_depth.n.size() << endl;
-        contig[cn1].writeDepth(fname, contig[cn1].read_depth);
-        cout << "write output for read start " << cn1 << endl;
-        fname = basename+".read.start.span";
-        cout << "\t " << fname << "\t " << contig[cn1].read_start.n.size() << endl;
-        contig[cn1].writeDepth(fname, contig[cn1].read_start);
-        cout << "write output for frag depth " << cn1 << endl;
-        fname = basename+".frag.depth.span";
-        cout << "\t " << fname << "\t " << contig[cn1].frag_depth.n.size() << endl;
-        contig[cn1].writeDepth(fname, contig[cn1].frag_depth);
-       }
-  }
+    string sn1 = setName;
+    
+    // dont need redundant setName if subdirectory is already the setName
+    //if (sn1==subdir) sn1="";
+    
+    string fn1 = fileName;
+    size_t f1 = fn1.find(sn1); 
+    if ((fn1.size()>0)&&(f1==string::npos)) sn1=fn1+"."+sn1;    
+    if (sn1.size()>0) { sn1 = sn1+".";}
+    
+    
+    for (iterContig = contig.begin();	iterContig != contig.end(); iterContig++) {
+        string cn1 = iterContig->first;      
+        string basename = area+prefix+sn1+cn1;
+        if (setName==cn1) basename = area+prefix+cn1;
+        
+        // replace evil character "|" with benign "_" 
+        size_t found=basename.find("|");
+        while (found!=string::npos) {
+            basename.replace(found,1,"_");
+            found=basename.find("|");
+        }
+        
+        if (contig[cn1].Length>0) { 
+            cout << "write output for read depth " << cn1 << endl;
+            string fname = basename+".read.depth.span";
+            cout << "\t " << fname << "\t " << contig[cn1].read_depth.n.size() << endl;
+            contig[cn1].writeDepth(fname, contig[cn1].read_depth);
+            cout << "write output for read start " << cn1 << endl;
+            fname = basename+".read.start.span";
+            cout << "\t " << fname << "\t " << contig[cn1].read_start.n.size() << endl;
+            contig[cn1].writeDepth(fname, contig[cn1].read_start);
+            cout << "write output for frag depth " << cn1 << endl;
+            fname = basename+".frag.depth.span";
+            cout << "\t " << fname << "\t " << contig[cn1].frag_depth.n.size() << endl;
+            contig[cn1].writeDepth(fname, contig[cn1].frag_depth);
+        }
+    }
 }
 
 void C_set::writeCountReads() {
-  C_contigs::const_iterator iterContig;   
-  string area = pars.getOutputDir();
-  int k = 1+area.find_last_of("/");
-  string subdir = area.substr(k);
-  if (area.size()>0) { area = area+"/";}
-  string prefix = pars.getPrefix();
-  if (prefix.size()>0) { prefix = prefix+".";}
-  
-  // input filename + setname 
-  string sn1 = setName;
-  // dont need redundant setName if subdirectory is already the setName
-  // if (sn1==subdir) sn1="";
-  string fn1 = fileName;
-  size_t f1 = fn1.find(sn1); 
-  if ((fn1.size()>0)&&(f1==string::npos)) sn1=fn1+"."+sn1;   
-  if (sn1.size()>0) { sn1 = sn1+".";}
-
-
-  for (iterContig = contig.begin();	iterContig != contig.end(); iterContig++) {
-      string cn1 = iterContig->first;      
-      string basename = area+prefix+sn1+cn1;
-      if (setName==cn1) basename = area+prefix+cn1;
-
-      // replace evil character "|" with benign "_" 
-      size_t found=basename.find("|");
-      while (found!=string::npos) {
-        basename.replace(found,1,"_");
-        found=basename.find("|");
-      }
-      
-      if (contig[cn1].Length>0) { 
-        cout << "write output for read depth " << cn1 << endl;
-        string fname = basename+".read.count.span";
-        cout << "\t " << fname << "\t " << contig[cn1].read_counts.n.size() << endl;
-        contig[cn1].writeDepth(fname, contig[cn1].read_counts);
-       }
-  }
+    C_contigs::const_iterator iterContig;   
+    string area = pars.getOutputDir();
+    int k = 1+area.find_last_of("/");
+    string subdir = area.substr(k);
+    if (area.size()>0) { area = area+"/";}
+    string prefix = pars.getPrefix();
+    if (prefix.size()>0) { prefix = prefix+".";}
+    
+    // input filename + setname 
+    string sn1 = setName;
+    // dont need redundant setName if subdirectory is already the setName
+    // if (sn1==subdir) sn1="";
+    string fn1 = fileName;
+    size_t f1 = fn1.find(sn1); 
+    if ((fn1.size()>0)&&(f1==string::npos)) sn1=fn1+"."+sn1;   
+    if (sn1.size()>0) { sn1 = sn1+".";}
+    
+    
+    for (iterContig = contig.begin();	iterContig != contig.end(); iterContig++) {
+        string cn1 = iterContig->first;      
+        string basename = area+prefix+sn1+cn1;
+        if (setName==cn1) basename = area+prefix+cn1;
+        
+        // replace evil character "|" with benign "_" 
+        size_t found=basename.find("|");
+        while (found!=string::npos) {
+            basename.replace(found,1,"_");
+            found=basename.find("|");
+        }
+        
+        if (contig[cn1].Length>0) { 
+            cout << "write output for read depth " << cn1 << endl;
+            string fname = basename+".read.count.span";
+            cout << "\t " << fname << "\t " << contig[cn1].read_counts.n.size() << endl;
+            contig[cn1].writeDepth(fname, contig[cn1].read_counts);
+        }
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -4196,348 +4199,348 @@ C_pairedread C_set::resolvePairConstraint(C_pairedread & pair0) {
     
     //--------------------------------------------------------------------------
     // one library in build phase.... get from pars  
-	  // this is a problem for bam files with multiple libraries 
+    // this is a problem for bam files with multiple libraries 
     //--------------------------------------------------------------------------
     int lmLow = int(pars.getFragmentLengthLo());
     int lmHigh = int(pars.getFragmentLengthHi());    
     double fraglen = pars.getFragmentLength();    
- 
+    
     //--------------------------------------------------------------------------
     // widen resolve window for first M map - to LF 'ballpark' 
     //--------------------------------------------------------------------------
     lmHigh=(2*lmHigh)-int(fraglen);
     lmLow=(2*lmLow)-int(fraglen);
-
+    
     int i0,i1;
     
     // blank output uu constrained pair
     C_pairedread pair1;
     
     if ((Nalign0*Nalign1)==0) {
-      return pair0;                     // missing end - singleton
+        return pair0;                     // missing end - singleton
     } else if ((Nalign0*Nalign1)==1) {
-      return pair0;                     // already unique - no constraint needed
+        return pair0;                     // already unique - no constraint needed
     } else {
-      //------------------------------------------------------------------------
-      // check combinations for a single combination meeting the constraint
-      //------------------------------------------------------------------------
-      int Nok = 0;
-      // init lm closest to average lm
-      double dlmin=1e20;
-      // init indices to best lm
-      int    m0 = -1;
-      int    m1 = -1;
-      int   m0p =  0;
-      int   m1p =  0;
-      // init indices to longest element
-      int    mm0 = -1;
-      int    mm1 = -1;
-      int   mmL0 =  0;
-      int   mmL1 =  0;
-      // int target lm
-      //double fraglen=0.5*double(lmLow+lmHigh);      
-      // loop over end 0
-      for (i0=0; i0<Nalign0; i0++) {
-          unsigned char c0 = pair0.read[0].align[i0].anchor;
-          if (c0>=elementMinAnchor) { 
-            string aname= anchors.names[c0];
-            int mmlen= anchors.L[aname]; 
-            if (mmlen>mmL0) {
-              mmL0=mmlen;
-              mm0=i0;
+        //------------------------------------------------------------------------
+        // check combinations for a single combination meeting the constraint
+        //------------------------------------------------------------------------
+        int Nok = 0;
+        // init lm closest to average lm
+        double dlmin=1e20;
+        // init indices to best lm
+        int    m0 = -1;
+        int    m1 = -1;
+        int   m0p =  0;
+        int   m1p =  0;
+        // init indices to longest element
+        int    mm0 = -1;
+        int    mm1 = -1;
+        int   mmL0 =  0;
+        int   mmL1 =  0;
+        // int target lm
+        //double fraglen=0.5*double(lmLow+lmHigh);      
+        // loop over end 0
+        for (i0=0; i0<Nalign0; i0++) {
+            unsigned char c0 = pair0.read[0].align[i0].anchor;
+            if (c0>=elementMinAnchor) { 
+                string aname= anchors.names[c0];
+                int mmlen= anchors.L[aname]; 
+                if (mmlen>mmL0) {
+                    mmL0=mmlen;
+                    mm0=i0;
+                }
+                //continue; 
             }
-            //continue; 
-          }
-          unsigned int p0 = pair0.read[0].align[i0].pos;
-          unsigned short l0 = pair0.read[0].align[i0].len;
-          unsigned char o0 = pair0.read[0].align[i0].sense;
-          
-          /* missing constraint debug
-          if ( (p0>29837)&&(p0<29897)&&(Nalign0==1)&&(Nalign1>1) ) {
+            unsigned int p0 = pair0.read[0].align[i0].pos;
+            unsigned short l0 = pair0.read[0].align[i0].len;
+            unsigned char o0 = pair0.read[0].align[i0].sense;
+            
+            /* missing constraint debug
+             if ( (p0>29837)&&(p0<29897)&&(Nalign0==1)&&(Nalign1>1) ) {
              cerr << p0 << endl;
-          }
-          */
-
-          
-          // loop over end 1
-          for (i1=0; i1<Nalign1; i1++) {
-            double lm = 1e30; 
-            unsigned char c1 = pair0.read[1].align[i1].anchor;
-            if (c1>=elementMinAnchor) { 
-              string aname= anchors.names[c1];
-              int mmlen= anchors.L[aname]; 
-              if (mmlen>mmL1) {
-                mmL1=mmlen;
-                mm1=i1;
-              }
-              //continue; 
+             }
+             */
+            
+            
+            // loop over end 1
+            for (i1=0; i1<Nalign1; i1++) {
+                double lm = 1e30; 
+                unsigned char c1 = pair0.read[1].align[i1].anchor;
+                if (c1>=elementMinAnchor) { 
+                    string aname= anchors.names[c1];
+                    int mmlen= anchors.L[aname]; 
+                    if (mmlen>mmL1) {
+                        mmL1=mmlen;
+                        mm1=i1;
+                    }
+                    //continue; 
+                }
+                unsigned int p1 = pair0.read[1].align[i1].pos;
+                unsigned short l1 = pair0.read[1].align[i1].len;
+                unsigned char o1 = pair0.read[1].align[i1].sense;
+                if ((o0=='F')&&(o1=='R')&&(c0==c1)) {
+                    lm = p1+l1-p0;
+                } else if ((o0=='R')&&(o1=='F')&&(c0==c1)) {
+                    lm = p0+l0-p1;
+                }
+                
+                // fragment constrained
+                bool ok=(lm>lmLow)&&(lm<lmHigh); 
+                if (ok) {
+                    Nok++;
+                    // make a pair record with the first constrained maps
+                    if (Nok==1) {
+                        pair1.read[0].align.push_back(pair0.read[0].align[i0]);
+                        pair1.read[0].element=pair0.read[0].element;
+                        pair1.read[1].align.push_back(pair0.read[1].align[i1]);
+                        pair1.read[1].element=pair0.read[1].element;
+                    }
+                }
+                // check for closest lm to fraglen
+                double dl = fabs(lm-fraglen);
+                if (dl<dlmin) {
+                    m0=i0;
+                    m1=i1;
+                    m0p=p0;
+                    m1p=p1;
+                    dlmin=dl;
+                }
             }
-            unsigned int p1 = pair0.read[1].align[i1].pos;
-            unsigned short l1 = pair0.read[1].align[i1].len;
-            unsigned char o1 = pair0.read[1].align[i1].sense;
-            if ((o0=='F')&&(o1=='R')&&(c0==c1)) {
-                lm = p1+l1-p0;
-            } else if ((o0=='R')&&(o1=='F')&&(c0==c1)) {
-                lm = p0+l0-p1;
+            // if (Nok>1) break;
+            // get out of loop if more than one combination is ok and this is MM fragment
+            // keep going if this is a UM fragment
+            if ( (Nalign0>1)&&(Nalign1>1)&&(Nok>1) ) break;
+        }
+        
+        // contrain collapes UM to UU or MM to UU
+        // bool MM = (Nalign0>1)&&(Nalign1>1);
+        // bool UM = ((Nalign0==1)||(Nalign1==1))&&( (Nalign0*Nalign1)>1) ;
+        bool noelem=(pair0.read[0].element==0)&&(pair0.read[1].element==0);
+        bool crunch = (Nok==1) && noelem;   // no elements allowed in constrained UU
+        
+        /*
+         // debug alu constraint
+         if ((!noelem)&&( (Nalign1==1)||(Nalign0==1) ) ) {
+         if (((pair0.read[0].element&1)>0)&&(Nalign1==1)&&(Nalign0>1)&&(dlmin>300.0)) {
+         cerr << "alu fail" << endl;
+         }
+         if (((pair0.read[1].element&1)>0)&&(Nalign0==1)&&(Nalign1>1)&&(dlmin>300.0)) {
+         cerr << "alu fail" << endl;
+         }
+         }
+         */
+        //------------------------------------------------------------------------
+        // never crunch - just change order...
+        //------------------------------------------------------------------------
+        crunch = false;
+        
+        // crunch constrained fragments
+        if ( crunch ){
+            pair1.read[0].Nalign=1;
+            pair1.read[1].Nalign=1;
+            return pair1;        
+        } else { 
+            // complain if too many combinations are within contraint
+            if (Nok>200) {
+                cerr << " more than 200 combinations contrained in resolvePairContraint! " << endl;
             }
             
-            // fragment constrained
-            bool ok=(lm>lmLow)&&(lm<lmHigh); 
-            if (ok) {
-               Nok++;
-               // make a pair record with the first constrained maps
-               if (Nok==1) {
-                  pair1.read[0].align.push_back(pair0.read[0].align[i0]);
-                  pair1.read[0].element=pair0.read[0].element;
-                  pair1.read[1].align.push_back(pair0.read[1].align[i1]);
-                  pair1.read[1].element=pair0.read[1].element;
-               }
+            //---------------------------------------------------------------------
+            // mobile element hit - put largest reference hit first if not resolved
+            //---------------------------------------------------------------------
+            if (((mm1+mm0)>-2)&&(Nok==0))  {
+                if (mm0>=0) {
+                    pair1=pair0;
+                    C_readmap a1=pair1.read[0].align[mm0];
+                    pair1.read[0].align.erase(pair1.read[0].align.begin()+mm0);
+                    pair1.read[0].align.insert(pair1.read[0].align.begin(),a1);
+                }
+                if (mm1>=0) {
+                    pair1=pair0;
+                    C_readmap a1=pair1.read[1].align[mm1];
+                    pair1.read[1].align.erase(pair1.read[1].align.begin()+mm1);
+                    pair1.read[1].align.insert(pair1.read[1].align.begin(),a1);
+                }         
+                return pair1;
             }
-            // check for closest lm to fraglen
-            double dl = fabs(lm-fraglen);
-            if (dl<dlmin) {
-               m0=i0;
-               m1=i1;
-               m0p=p0;
-               m1p=p1;
-               dlmin=dl;
-            }
-          }
-          // if (Nok>1) break;
-          // get out of loop if more than one combination is ok and this is MM fragment
-          // keep going if this is a UM fragment
-          if ( (Nalign0>1)&&(Nalign1>1)&&(Nok>1) ) break;
-      }
-      
-      // contrain collapes UM to UU or MM to UU
-      // bool MM = (Nalign0>1)&&(Nalign1>1);
-      // bool UM = ((Nalign0==1)||(Nalign1==1))&&( (Nalign0*Nalign1)>1) ;
-      bool noelem=(pair0.read[0].element==0)&&(pair0.read[1].element==0);
-      bool crunch = (Nok==1) && noelem;   // no elements allowed in constrained UU
-      
-      /*
-      // debug alu constraint
-      if ((!noelem)&&( (Nalign1==1)||(Nalign0==1) ) ) {
-        if (((pair0.read[0].element&1)>0)&&(Nalign1==1)&&(Nalign0>1)&&(dlmin>300.0)) {
-             cerr << "alu fail" << endl;
-        }
-        if (((pair0.read[1].element&1)>0)&&(Nalign0==1)&&(Nalign1>1)&&(dlmin>300.0)) {
-             cerr << "alu fail" << endl;
-        }
-      }
-      */
-      //------------------------------------------------------------------------
-      // never crunch - just change order...
-      //------------------------------------------------------------------------
-      crunch = false;
-                  
-      // crunch constrained fragments
-      if ( crunch ){
-        pair1.read[0].Nalign=1;
-        pair1.read[1].Nalign=1;
-        return pair1;        
-      } else { 
-         // complain if too many combinations are within contraint
-         if (Nok>200) {
-            cerr << " more than 200 combinations contrained in resolvePairContraint! " << endl;
-         }
-
-         //---------------------------------------------------------------------
-         // mobile element hit - put largest reference hit first if not resolved
-         //---------------------------------------------------------------------
-         if (((mm1+mm0)>-2)&&(Nok==0))  {
-            if (mm0>=0) {
+            
+            //---------------------------------------------------------------------
+            // no best lm to put at begining of alignment vector
+            //---------------------------------------------------------------------         
+            if (m0<0) {
+                return pair0;
+            } else {
+                //------------------------------------------------------------------
+                // swap m0 and m1 alignments to the front of the vector...
+                //------------------------------------------------------------------
                 pair1=pair0;
-                C_readmap a1=pair1.read[0].align[mm0];
-                pair1.read[0].align.erase(pair1.read[0].align.begin()+mm0);
+                C_readmap a1=pair1.read[0].align[m0];
+                // debug
+                if (int(a1.pos)!=m0p) {
+                    cerr << m0p << endl;
+                }    
+                pair1.read[0].align.erase(pair1.read[0].align.begin()+m0);
                 pair1.read[0].align.insert(pair1.read[0].align.begin(),a1);
-            }
-            if (mm1>=0) {
-                pair1=pair0;
-                C_readmap a1=pair1.read[1].align[mm1];
-                pair1.read[1].align.erase(pair1.read[1].align.begin()+mm1);
+                a1=pair1.read[1].align[m1];
+                // debug
+                if (int(a1.pos)!=m1p) {
+                    cerr << m1p << endl;
+                }    
+                pair1.read[1].align.erase(pair1.read[1].align.begin()+m1);
                 pair1.read[1].align.insert(pair1.read[1].align.begin(),a1);
-            }         
-            return pair1;
-         }
-
-         //---------------------------------------------------------------------
-         // no best lm to put at begining of alignment vector
-         //---------------------------------------------------------------------         
-         if (m0<0) {
-            return pair0;
-         } else {
-            //------------------------------------------------------------------
-            // swap m0 and m1 alignments to the front of the vector...
-            //------------------------------------------------------------------
-            pair1=pair0;
-            C_readmap a1=pair1.read[0].align[m0];
-            // debug
-            if (int(a1.pos)!=m0p) {
-                cerr << m0p << endl;
-            }    
-            pair1.read[0].align.erase(pair1.read[0].align.begin()+m0);
-            pair1.read[0].align.insert(pair1.read[0].align.begin(),a1);
-            a1=pair1.read[1].align[m1];
-            // debug
-            if (int(a1.pos)!=m1p) {
-                cerr << m1p << endl;
-            }    
-            pair1.read[1].align.erase(pair1.read[1].align.begin()+m1);
-            pair1.read[1].align.insert(pair1.read[1].align.begin(),a1);
-            return pair1;
-         }
-      } 
+                return pair1;
+            }
+        } 
     }
 }
 
 /*
-C_pairedread C_set::resolvePairConstraint(C_pairedread & pair0) {
-    int Nalign0 = pair0.read[0].align.size();
-    int Nalign1 = pair0.read[1].align.size();
-    double lm0 = pars.getFragmentLength();
-    int lmLow = int(pars.getFragmentLengthLo());
-    int lmHigh = int(pars.getFragmentLengthHi());    
-    int i0,i1;
-    // blank output object
-    C_pairedread pair1;
-    if ((Nalign0*Nalign1)==0) {
-      return pair0;  // missing end - singleton
-    } else if ((Nalign0*Nalign1)==1) {
-      return pair0;  // already unqiue - no constraint needed
-    } else {
-      //------------------------------------------------------------------------
-      // check combinations for a single combination meeting the constraint
-      //------------------------------------------------------------------------
-      bool reduce = false;
-      struct tfit {
-        double d ;
-        int lm;
-        int i0;
-        int i1;
-      };
-      double big = 1.0e30;
-      tfit best = { big, -1,-1}; 
-      tfit next = { big, -1,-1};
-      for (i0=0; i0<Nalign0; i0++) {
-          unsigned char c0 = pair0.read[0].align[i0].anchor;
-          unsigned int p0 = pair0.read[0].align[i0].pos;
-          unsigned short l0 = pair0.read[0].align[i0].len;
-          unsigned char o0 = pair0.read[0].align[i0].sense;
-          for (i1=0; i1<Nalign1; i1++) {
-            double lm = big*2.0; 
-            unsigned char c1 = pair0.read[1].align[i1].anchor;
-            unsigned int p1 = pair0.read[1].align[i1].pos;
-            unsigned short l1 = pair0.read[1].align[i1].len;
-            unsigned char o1 = pair0.read[1].align[i1].sense;
-            if ((o0=='F')&(o1=='R')&(c0==c1)) {
-                lm = p1+l1-p0;
-            } else if ((o0=='R')&(o1=='F')&(c0==c1)) {
-                lm = p0+l0-p1;
-            }
-            double d=sqrt(pow(lm-lm0,2));
-            if (c0==c1) {
-              if (d<best.d) {
-                next.d=best.d;
-                next.lm=best.lm;                
-                next.i0=best.i0;
-                next.i1=best.i1;
-                best.d=d;
-                best.lm=int(lm);                
-                best.i0=i0;
-                best.i1=i1;
-              } else if (d<next.d) {
-                next.d=d;
-                next.lm=int(lm);
-                next.i0=i0;
-                next.i1=i1;
-              }
-            }
-          }            
-      }
-      if (best.d<big) {        
-        bool ok1=(best.lm>lmLow)&(best.lm<lmHigh); 
-        bool ok2=(next.lm>lmLow)&(next.lm<lmHigh); 
-        if (ok1 &(!ok2)) { // constraint 
-          pair1.read[0].align.push_back(pair0.read[0].align[best.i0]);
-          pair1.read[1].align.push_back(pair0.read[1].align[best.i1]);
-          reduce = true;
-        }
-      }
-      if (reduce) {
-        return pair1;
-      } else { 
-        return pair0;
-      } 
-    }
-}
-*/
+ C_pairedread C_set::resolvePairConstraint(C_pairedread & pair0) {
+ int Nalign0 = pair0.read[0].align.size();
+ int Nalign1 = pair0.read[1].align.size();
+ double lm0 = pars.getFragmentLength();
+ int lmLow = int(pars.getFragmentLengthLo());
+ int lmHigh = int(pars.getFragmentLengthHi());    
+ int i0,i1;
+ // blank output object
+ C_pairedread pair1;
+ if ((Nalign0*Nalign1)==0) {
+ return pair0;  // missing end - singleton
+ } else if ((Nalign0*Nalign1)==1) {
+ return pair0;  // already unqiue - no constraint needed
+ } else {
+ //------------------------------------------------------------------------
+ // check combinations for a single combination meeting the constraint
+ //------------------------------------------------------------------------
+ bool reduce = false;
+ struct tfit {
+ double d ;
+ int lm;
+ int i0;
+ int i1;
+ };
+ double big = 1.0e30;
+ tfit best = { big, -1,-1}; 
+ tfit next = { big, -1,-1};
+ for (i0=0; i0<Nalign0; i0++) {
+ unsigned char c0 = pair0.read[0].align[i0].anchor;
+ unsigned int p0 = pair0.read[0].align[i0].pos;
+ unsigned short l0 = pair0.read[0].align[i0].len;
+ unsigned char o0 = pair0.read[0].align[i0].sense;
+ for (i1=0; i1<Nalign1; i1++) {
+ double lm = big*2.0; 
+ unsigned char c1 = pair0.read[1].align[i1].anchor;
+ unsigned int p1 = pair0.read[1].align[i1].pos;
+ unsigned short l1 = pair0.read[1].align[i1].len;
+ unsigned char o1 = pair0.read[1].align[i1].sense;
+ if ((o0=='F')&(o1=='R')&(c0==c1)) {
+ lm = p1+l1-p0;
+ } else if ((o0=='R')&(o1=='F')&(c0==c1)) {
+ lm = p0+l0-p1;
+ }
+ double d=sqrt(pow(lm-lm0,2));
+ if (c0==c1) {
+ if (d<best.d) {
+ next.d=best.d;
+ next.lm=best.lm;                
+ next.i0=best.i0;
+ next.i1=best.i1;
+ best.d=d;
+ best.lm=int(lm);                
+ best.i0=i0;
+ best.i1=i1;
+ } else if (d<next.d) {
+ next.d=d;
+ next.lm=int(lm);
+ next.i0=i0;
+ next.i1=i1;
+ }
+ }
+ }            
+ }
+ if (best.d<big) {        
+ bool ok1=(best.lm>lmLow)&(best.lm<lmHigh); 
+ bool ok2=(next.lm>lmLow)&(next.lm<lmHigh); 
+ if (ok1 &(!ok2)) { // constraint 
+ pair1.read[0].align.push_back(pair0.read[0].align[best.i0]);
+ pair1.read[1].align.push_back(pair0.read[1].align[best.i1]);
+ reduce = true;
+ }
+ }
+ if (reduce) {
+ return pair1;
+ } else { 
+ return pair0;
+ } 
+ }
+ }
+ */
 ostream &operator<<(ostream &output, const C_set & set1)
 {
-   output << set1.getSetName()  << ":Nfrag=" << set1.Nfrag  << ",Npair=" << set1.Npair << "\t " ;
-   return output;
+    output << set1.getSetName()  << ":Nfrag=" << set1.Nfrag  << ",Npair=" << set1.Npair << "\t " ;
+    return output;
 }
 
 // fetch set name
 string C_set::getSetName() const
 {
-  return this->setName;
+    return this->setName;
 }
 
 // set set name vector
 void C_set::setSetName(string & s1)
 {
-  this->setName = s1;
-  if (s1[s1.size()-1]=='.') {
-    this->setName.erase(s1.size()-1);
-  }
+    this->setName = s1;
+    if (s1[s1.size()-1]=='.') {
+        this->setName.erase(s1.size()-1);
+    }
 }
 
 // fetch file name
 string C_set::getFileName() const
 {
-  return this->fileName;
+    return this->fileName;
 }
 // set file name 
 void C_set::setFileName(string & s1)
 {
-  this->fileName = s1;
+    this->fileName = s1;
 }
 
 //------------------------------------------------------------------------------
- // fill in redundant read part of library info
+// fill in redundant read part of library info
 //------------------------------------------------------------------------------
 void C_set::calcLibraryRedundancy(C_libraryinfo & lib1) 
 {
-  C_contigs::const_iterator iterContig;   
-  lib1.NPair=0;
-  lib1.NSingle=0;
-  lib1.NPairRedundant=0;
-  lib1.NSingleRedundant=0;
-  
-  // cout << "calculate fragment redundancy " << endl;
-  
-  for (iterContig = contig.begin();	iterContig != contig.end(); iterContig++) {
-      string name = iterContig->first;
-      if (contig[name].Length>0) { 
-        
-        cout << "\t sort contig " << name << endl;
-        // fill depth & repeat vector before uniquifying pairs
-        contig[name].calcLengths();
-        C_contig c1 = contig[name];
-        lib1.NPair+=c1.localpairs.size();
-        lib1.NPair+=c1.crosspairs.size();
-        lib1.NSingle+=c1.dangle.size();
-        lib1.NSingle+=c1.singleton.size();
-        lib1.NSingle+=c1.umpairs.size();        
-        c1.sort();
-        c1.uniquify();
-        lib1.NPairRedundant+=c1.localpairs.size();
-        lib1.NPairRedundant+=c1.crosspairs.size();
-        lib1.NSingleRedundant+=c1.dangle.size();
-        lib1.NSingleRedundant+=c1.singleton.size();
-        lib1.NSingleRedundant+=c1.umpairs.size();        
-      }
+    C_contigs::const_iterator iterContig;   
+    lib1.NPair=0;
+    lib1.NSingle=0;
+    lib1.NPairRedundant=0;
+    lib1.NSingleRedundant=0;
+    
+    // cout << "calculate fragment redundancy " << endl;
+    
+    for (iterContig = contig.begin();	iterContig != contig.end(); iterContig++) {
+        string name = iterContig->first;
+        if (contig[name].Length>0) { 
+            
+            cout << "\t sort contig " << name << endl;
+            // fill depth & repeat vector before uniquifying pairs
+            contig[name].calcLengths();
+            C_contig c1 = contig[name];
+            lib1.NPair+=c1.localpairs.size();
+            lib1.NPair+=c1.crosspairs.size();
+            lib1.NSingle+=c1.dangle.size();
+            lib1.NSingle+=c1.singleton.size();
+            lib1.NSingle+=c1.umpairs.size();        
+            c1.sort();
+            c1.uniquify();
+            lib1.NPairRedundant+=c1.localpairs.size();
+            lib1.NPairRedundant+=c1.crosspairs.size();
+            lib1.NSingleRedundant+=c1.dangle.size();
+            lib1.NSingleRedundant+=c1.singleton.size();
+            lib1.NSingleRedundant+=c1.umpairs.size();        
+        }
     }
     // count the redundant fragments rather than the unique ones....
     lib1.NPairRedundant=lib1.NPair-lib1.NPairRedundant;
@@ -4545,47 +4548,47 @@ void C_set::calcLibraryRedundancy(C_libraryinfo & lib1)
 }
 
 /*
-//------------------------------------------------------------------------------
-// remove redundant fragments arising from Bam format conventions and 
-// fill in redundant read part of library info
-//------------------------------------------------------------------------------
-void C_set::fixBamRedundancy(C_libraryinfo & lib1) 
-{
-  C_contigs::const_iterator iterContig;   
-  lib1.NPair=0;
-  lib1.NSingle=0;
-  lib1.NPairRedundant=0;
-  lib1.NSingleRedundant=0;
-  
-  cout << "fix Bam record fragment redundancy " << endl;
-  
-  for (iterContig = contig.begin();	iterContig != contig.end(); iterContig++) {
-      string name = iterContig->first;
-      if (contig[name].Length>0) { 
-        
-        cout << "\t sort contig " << name << endl;
-        // fill depth & repeat vector before uniquifying pairs
-        contig[name].calcLengths();
-        lib1.NPair+=contig[name].localpairs.size();
-        lib1.NPair+=contig[name].crosspairs.size();
-        lib1.NSingle+=contig[name].dangle.size();
-        lib1.NSingle+=contig[name].singleton.size();
-        lib1.NSingle+=contig[name].umpairs.size();        
-        contig[name].sort();
-        contig[name].uniquifyBam();
-        lib1.NPairRedundant+=contig[name].localpairs.size();
-        lib1.NPairRedundant+=contig[name].crosspairs.size();
-        lib1.NSingleRedundant+=contig[name].dangle.size();
-        lib1.NSingleRedundant+=contig[name].singleton.size();
-        lib1.NSingleRedundant+=contig[name].umpairs.size();        
-      }
-    }
-    // count the redundant fragments rather than the unique ones....
-    lib1.NPairRedundant=lib1.NPair-lib1.NPairRedundant;
-    lib1.NSingleRedundant=lib1.NSingle-lib1.NSingleRedundant;
-}
-
-
+ //------------------------------------------------------------------------------
+ // remove redundant fragments arising from Bam format conventions and 
+ // fill in redundant read part of library info
+ //------------------------------------------------------------------------------
+ void C_set::fixBamRedundancy(C_libraryinfo & lib1) 
+ {
+ C_contigs::const_iterator iterContig;   
+ lib1.NPair=0;
+ lib1.NSingle=0;
+ lib1.NPairRedundant=0;
+ lib1.NSingleRedundant=0;
+ 
+ cout << "fix Bam record fragment redundancy " << endl;
+ 
+ for (iterContig = contig.begin();	iterContig != contig.end(); iterContig++) {
+ string name = iterContig->first;
+ if (contig[name].Length>0) { 
+ 
+ cout << "\t sort contig " << name << endl;
+ // fill depth & repeat vector before uniquifying pairs
+ contig[name].calcLengths();
+ lib1.NPair+=contig[name].localpairs.size();
+ lib1.NPair+=contig[name].crosspairs.size();
+ lib1.NSingle+=contig[name].dangle.size();
+ lib1.NSingle+=contig[name].singleton.size();
+ lib1.NSingle+=contig[name].umpairs.size();        
+ contig[name].sort();
+ contig[name].uniquifyBam();
+ lib1.NPairRedundant+=contig[name].localpairs.size();
+ lib1.NPairRedundant+=contig[name].crosspairs.size();
+ lib1.NSingleRedundant+=contig[name].dangle.size();
+ lib1.NSingleRedundant+=contig[name].singleton.size();
+ lib1.NSingleRedundant+=contig[name].umpairs.size();        
+ }
+ }
+ // count the redundant fragments rather than the unique ones....
+ lib1.NPairRedundant=lib1.NPair-lib1.NPairRedundant;
+ lib1.NSingleRedundant=lib1.NSingle-lib1.NSingleRedundant;
+ }
+ 
+ 
  */
 
 //------------------------------------------------------------------------------
@@ -4617,42 +4620,42 @@ C_pairedfiles::C_pairedfiles( string  & file1, RunControlParameters & pars)
 }
 
 float C_pairedfiles::elapsedtime() {
-  time_t t;
-  time(&t);
-  float et = difftime (t,tprev);
-  //float et=float(t-tprev)*1.0/float(CLOCKS_PER_SEC);
-  return et;
+    time_t t;
+    time(&t);
+    float et = difftime (t,tprev);
+    //float et=float(t-tprev)*1.0/float(CLOCKS_PER_SEC);
+    return et;
 }
 
 
 void C_pairedfiles::summaryLog() {
-  // loop over existing sets
-  cout << endl;
-  for(int s=0; s < int(this->setNames.size()); s++) {
-    cout << set[s] << endl;
-    //cout << "read length" << endl;
-    //cout << set[s].lengthStats << endl;   
-	HistObj h = set[s].lengthStats.h.collapse(20);
-	cout << h << endl;
-    //cout << set[s].lengthStats.h << endl;   
-    //cout << "alignments per read" << endl;
-    //cout << set[s].repeatStats << endl;   
-    h = set[s].repeatStats.h.collapse(20);
-    cout << h << endl;
-    //cout << "fragment length" << endl;
-    //cout << set[s].fragStats << endl;
-    h = set[s].fragStats.h.collapse(20);
-    cout << h << endl;
-    //cout << "map quality" << endl;
-    //cout << set[s].qStats << endl;   
-    cout << set[s].qStats.h << endl;   
-    //cout << "pair stats" << endl;
-    //cout << set[s].pairStats << endl;   
-    cout << set[s].pairCountStats.h << endl;   
-	  
-	cout << set[s].pairModelStats.h << endl;   
-
-  }   
+    // loop over existing sets
+    cout << endl;
+    for(int s=0; s < int(this->setNames.size()); s++) {
+        cout << set[s] << endl;
+        //cout << "read length" << endl;
+        //cout << set[s].lengthStats << endl;   
+        HistObj h = set[s].lengthStats.h.collapse(20);
+        cout << h << endl;
+        //cout << set[s].lengthStats.h << endl;   
+        //cout << "alignments per read" << endl;
+        //cout << set[s].repeatStats << endl;   
+        h = set[s].repeatStats.h.collapse(20);
+        cout << h << endl;
+        //cout << "fragment length" << endl;
+        //cout << set[s].fragStats << endl;
+        h = set[s].fragStats.h.collapse(20);
+        cout << h << endl;
+        //cout << "map quality" << endl;
+        //cout << set[s].qStats << endl;   
+        cout << set[s].qStats.h << endl;   
+        //cout << "pair stats" << endl;
+        //cout << set[s].pairStats << endl;   
+        cout << set[s].pairCountStats.h << endl;   
+        
+        cout << set[s].pairModelStats.h << endl;   
+        
+    }   
 }
 
 //------------------------------------------------------------------------------
@@ -4660,72 +4663,72 @@ void C_pairedfiles::summaryLog() {
 //------------------------------------------------------------------------------
 void C_pairedfiles::printScanResults() {
 	
-  string filename = set[0].getFileName();
+    string filename = set[0].getFileName();
 	
-  string outfilename=set[0].pars.getOutputDir()+"/"+set[0].pars.getPrefix()
+    string outfilename=set[0].pars.getOutputDir()+"/"+set[0].pars.getPrefix()
 	+filename+".stat";
-  ofstream outfile(outfilename.c_str(), ios::out);
-  if (!outfile) {
+    ofstream outfile(outfilename.c_str(), ios::out);
+    if (!outfile) {
 		cerr << "unable to open output stats file: " << outfilename << endl;
 		return;
-  }
+    }
 	
 	
-  for(int s=0; s < int(this->setNames.size()); s++) {
-	  string setname = set[s].getSetName();
-	  int tech = 0;
-	  string ReadGroupID="";
-	  string sample="";
-	  C_librarymap::iterator it;
-	  //int N = set[s].libraries.libmap.size();	 
-	  for ( it=set[s].libraries.libmap.begin() ; it != set[s].libraries.libmap.end(); it++ )
-	  {
-		  //unsigned int ReadGroupCode=(*it).first;
-		  C_libraryinfo lib1 = (*it).second; 		  
-		  ReadGroupID = lib1.Info.ReadGroupID;
-		  sample = lib1.Info.SampleName;
-		  tech  = lib1.Info.SequencingTechnology;
-		  // always get first read group
-		  //if (setname.compare(ReadGroupID) == 0) break;
-		  string PlatformTech="unknown";
-		  switch (tech) {
-			  case 1:
-				  PlatformTech = "454";
-				  break;
-			  case 4:
-				  PlatformTech = "Illumina";
-				  break;
-			  case 8:
-				  PlatformTech = "PacificBiosciences";
-				  break;
-			  case 16:
-				  PlatformTech = "SOLiD";
-				  break;
-		  }
-
-		  outfile << "@RG\tID:" << setname << "\tSM:" << sample <<"\tPL:" << PlatformTech << endl;
-      }
-	  
-	  outfile << "\n";
-
-	  outfile << set[s].fragStats.h << "\n";
-	  //outfile << "read length histogram\n";
-	  outfile << set[s].lengthStats.h << "\n";
-	  //outfile << "repeat multiplicity histogram\n";
-	  outfile << set[s].repeatStats.h << "\n";
-	  //outfile << "mapping quality histogram\n";
-	  outfile << set[s].qStats.h << "\n";
-	  //outfile << "pair stat histogram\n";
-	  outfile << set[s].pairCountStats.h << "\n";
-
-	  outfile << set[s].pairModelStats.h << "\n";
-
-	  outfile << set[s].spanStats.h << "\n";
-	  
-	  outfile << set[s].refStats.h << "\n";
-
-  }
-  outfile.close(); 
+    for(int s=0; s < int(this->setNames.size()); s++) {
+        string setname = set[s].getSetName();
+        int tech = 0;
+        string ReadGroupID="";
+        string sample="";
+        C_librarymap::iterator it;
+        //int N = set[s].libraries.libmap.size();	 
+        for ( it=set[s].libraries.libmap.begin() ; it != set[s].libraries.libmap.end(); it++ )
+        {
+            //unsigned int ReadGroupCode=(*it).first;
+            C_libraryinfo lib1 = (*it).second; 		  
+            ReadGroupID = lib1.Info.ReadGroupID;
+            sample = lib1.Info.SampleName;
+            tech  = lib1.Info.SequencingTechnology;
+            // always get first read group
+            //if (setname.compare(ReadGroupID) == 0) break;
+            string PlatformTech="unknown";
+            switch (tech) {
+                case 1:
+                    PlatformTech = "454";
+                    break;
+                case 4:
+                    PlatformTech = "Illumina";
+                    break;
+                case 8:
+                    PlatformTech = "PacificBiosciences";
+                    break;
+                case 16:
+                    PlatformTech = "SOLiD";
+                    break;
+            }
+            
+            outfile << "@RG\tID:" << setname << "\tSM:" << sample <<"\tPL:" << PlatformTech << endl;
+        }
+        
+        outfile << "\n";
+        
+        outfile << set[s].fragStats.h << "\n";
+        //outfile << "read length histogram\n";
+        outfile << set[s].lengthStats.h << "\n";
+        //outfile << "repeat multiplicity histogram\n";
+        outfile << set[s].repeatStats.h << "\n";
+        //outfile << "mapping quality histogram\n";
+        outfile << set[s].qStats.h << "\n";
+        //outfile << "pair stat histogram\n";
+        outfile << set[s].pairCountStats.h << "\n";
+        
+        outfile << set[s].pairModelStats.h << "\n";
+        
+        outfile << set[s].spanStats.h << "\n";
+        
+        outfile << set[s].refStats.h << "\n";
+        
+    }
+    outfile.close(); 
 }
 
 
@@ -4745,8 +4748,8 @@ void C_pairedfiles::inputcheck( string & in1, RunControlParameters & pars)
 	//string patternHS("^Reference_ID");
 	// attempt parsing set of Spanner files if there is no in2 filename
 	fstream file1;
-  
-  
+    
+    
 	C_headerSpan h1;
 	if (checkSpannerDirectory(in1))  {
 		inputType='D';  // spanner files      
@@ -4789,42 +4792,42 @@ void C_pairedfiles::inputcheck( string & in1, RunControlParameters & pars)
 		exit(1);
 	}
 	file1.close();
-  
-  //==================================
-  // check non-Spanner input files....
-  //==================================
-  file1.open(in1.c_str(), ios::in);	
-  if (!file1) {
-    cerr << "Unable to open file: " << in1 << endl;
-    exit(1);
-  }
+    
+    //==================================
+    // check non-Spanner input files....
+    //==================================
+    file1.open(in1.c_str(), ios::in);	
+    if (!file1) {
+        cerr << "Unable to open file: " << in1 << endl;
+        exit(1);
+    }
 	
 	/*
-  string line;
-  string match;
-  inputType='X';
-  int n = 0;
-  while ( (getline(file1, line).good()) && (inputType=='X') && (n<4) ) {		
-		//================
-    // line test
-		//================
-
-		 if (RE2::FullMatch(line.c_str(),patternMSK.c_str(),&match) ) {
-		 inputType='M'; 
-		 };	
-		 n++;	
-		 // skip comment lines in header (Helicos...)
-		 if (line[0]=='#') {
-		 n--;
-		 }
-	};
-	*/
-  file1.close();
-  //if (inputType=='X') {
+     string line;
+     string match;
+     inputType='X';
+     int n = 0;
+     while ( (getline(file1, line).good()) && (inputType=='X') && (n<4) ) {		
+     //================
+     // line test
+     //================
+     
+     if (RE2::FullMatch(line.c_str(),patternMSK.c_str(),&match) ) {
+     inputType='M'; 
+     };	
+     n++;	
+     // skip comment lines in header (Helicos...)
+     if (line[0]=='#') {
+     n--;
+     }
+     };
+     */
+    file1.close();
+    //if (inputType=='X') {
     if (checkBamFile(in1))  {
-			inputType='Z';  // Bam files      
+        inputType='Z';  // Bam files      
     }
-  //}
+    //}
 }
 
 //------------------------------------------------------------------------------
@@ -4832,26 +4835,26 @@ void C_pairedfiles::inputcheck( string & in1, RunControlParameters & pars)
 //------------------------------------------------------------------------------
 void C_pairedfiles::loadSpannerDirectory( string  & dir1,  RunControlParameters & pars)
 {
-  C_headers::iterator hi;
- 
-  int Nfile = SpannerFileNames.size();
-  for (int i=0; i<Nfile; i++) {
-     string f = dir1+"/"+SpannerFileNames[i];
-     headers.clear();
-     if (checkSpannerFiles(f)) {
-        hi=headers.begin();
-        string filename = hi->first;
-        int k = 1+dir1.find_last_of("/");
-        string sets = dir1.substr(k);
-        headers[filename].setName=sets;
-        loadSpanner(f, pars);
-     }
-  }
-  cout << "-----------------------------------------------------------------\n";
-  //cout << "final stats: "<< dir1 << endl;
-  //summaryLog();
-  //cout << "-----------------------------------------------------------------\n";
-
+    C_headers::iterator hi;
+    
+    int Nfile = SpannerFileNames.size();
+    for (int i=0; i<Nfile; i++) {
+        string f = dir1+"/"+SpannerFileNames[i];
+        headers.clear();
+        if (checkSpannerFiles(f)) {
+            hi=headers.begin();
+            string filename = hi->first;
+            int k = 1+dir1.find_last_of("/");
+            string sets = dir1.substr(k);
+            headers[filename].setName=sets;
+            loadSpanner(f, pars);
+        }
+    }
+    cout << "-----------------------------------------------------------------\n";
+    //cout << "final stats: "<< dir1 << endl;
+    //summaryLog();
+    //cout << "-----------------------------------------------------------------\n";
+    
 }
 
 //------------------------------------------------------------------------------
@@ -4859,95 +4862,95 @@ void C_pairedfiles::loadSpannerDirectory( string  & dir1,  RunControlParameters 
 //------------------------------------------------------------------------------
 void C_pairedfiles::loadSpanner( string  & file1,  RunControlParameters & pars)
 {
-  C_headers::iterator hi;
-  if (headers.size()==0) {
-    cerr << " bad file " << file1 << endl;
-    return ;
-  }
-  hi=headers.begin();
-  string filename = hi->first;
-  C_headerSpan h1 = hi->second;
-  string setname = h1.setName;
-  string contigname = h1.contigName;
-  if (set.size()==0) {
-    C_set set1(setname, pars); 
-    set.push_back(set1);
-  }
-  // initialize C_contig c1;
-  set[0].contig[contigname];
-  // copy anchor info to set and contig objects
-  set[0].anchors=anchors;
-  set[0].contig[contigname].anchors=anchors;
-  // setName in contig should be setName in set
-  set[0].contig[contigname].setName=set[0].getSetName();
-  //if (headers.size()!=4) return;    
-	if (headers.size()<1) return;  
-
-  // libraries loaded in checkSpannerFiles
-  set[0].libraries=libraries;
-   
-  //----------------------------------------------------------------------------
-  // if tailcut not pars.getFragmentLengthWindow() then revise LMlow, LMhigh 
-  //----------------------------------------------------------------------------
-  double FragmentLengthWindow = pars.getFragmentLengthWindow();
-  int lmmax = set[0].libraries.maxLF();
-  if (lmmax>0) { 
-    double tailcut = set[0].libraries.getTailcut();
-    if (fabs(tailcut-FragmentLengthWindow)>1e-5)  {
-       set[0].libraries.resetFragLimits(FragmentLengthWindow);
+    C_headers::iterator hi;
+    if (headers.size()==0) {
+        cerr << " bad file " << file1 << endl;
+        return ;
     }
-  }
-
-  
-   
-  for(hi=headers.begin(); hi != headers.end(); ++hi) {
-      filename = hi->first;
-      h1 = hi->second;
-      cout  << filename << " \t " << endl;
-      if (h1.V<203) break; 
-      switch (h1.type)  {
-        case 0: 
-          set[0].contig[contigname].loadPairs(filename);
-          break;
-        case 1:
-          set[0].contig[contigname].loadCross(filename);
-          break;
+    hi=headers.begin();
+    string filename = hi->first;
+    C_headerSpan h1 = hi->second;
+    string setname = h1.setName;
+    string contigname = h1.contigName;
+    if (set.size()==0) {
+        C_set set1(setname, pars); 
+        set.push_back(set1);
+    }
+    // initialize C_contig c1;
+    set[0].contig[contigname];
+    // copy anchor info to set and contig objects
+    set[0].anchors=anchors;
+    set[0].contig[contigname].anchors=anchors;
+    // setName in contig should be setName in set
+    set[0].contig[contigname].setName=set[0].getSetName();
+    //if (headers.size()!=4) return;    
+	if (headers.size()<1) return;  
+    
+    // libraries loaded in checkSpannerFiles
+    set[0].libraries=libraries;
+    
+    //----------------------------------------------------------------------------
+    // if tailcut not pars.getFragmentLengthWindow() then revise LMlow, LMhigh 
+    //----------------------------------------------------------------------------
+    double FragmentLengthWindow = pars.getFragmentLengthWindow();
+    int lmmax = set[0].libraries.maxLF();
+    if (lmmax>0) { 
+        double tailcut = set[0].libraries.getTailcut();
+        if (fabs(tailcut-FragmentLengthWindow)>1e-5)  {
+            set[0].libraries.resetFragLimits(FragmentLengthWindow);
+        }
+    }
+    
+    
+    
+    for(hi=headers.begin(); hi != headers.end(); ++hi) {
+        filename = hi->first;
+        h1 = hi->second;
+        cout  << filename << " \t " << endl;
+        if (h1.V<203) break; 
+        switch (h1.type)  {
+            case 0: 
+                set[0].contig[contigname].loadPairs(filename);
+                break;
+            case 1:
+                set[0].contig[contigname].loadCross(filename);
+                break;
 				/*
-        case 100:
-          set[0].contig[contigname].loadSingleton(filename);
-          break;
-        case 2:
-          set[0].contig[contigname].loadDangle(filename);
-          break;
-        */
-				case 3:
-          set[0].contig[contigname].loadMultipairs(filename);
-          break;
+                 case 100:
+                 set[0].contig[contigname].loadSingleton(filename);
+                 break;
+                 case 2:
+                 set[0].contig[contigname].loadDangle(filename);
+                 break;
+                 */
+            case 3:
+                set[0].contig[contigname].loadMultipairs(filename);
+                break;
 				/*
-        case 101:
-          set[0].contig[contigname].loadRepeat(filename);
-          break;
-				*/
-      }
-  }
-  //---------------------------------------------------------------------------
-   set[0].contig[contigname].setLengthFromAnchor(); 
-  //---------------------------------------------------------------------------
-  // Calculate average & stdev read lengths for this contig
-  //---------------------------------------------------------------------------
-  set[0].contig[contigname].calcLengths();
-  //---------------------------------------------------------------------------
-  // make sure contig set name is same as set name (loadSpannerDir)
-  //---------------------------------------------------------------------------
-  set[0].contig[contigname].setName=set[0].getSetName();
-  //---------------------------------------------------------------------------
-  // if mask file exists with contigname - add mask info to repeat Marker object
-  //---------------------------------------------------------------------------
-  string ReferenceFastaFilefile = pars.getReferenceFastaFile(); 
-
-  if ( (ReferenceFastaFilefile.size()>0) and (pars.getDoMasking()) ) {
-    set[0].contig[contigname].repeat.addMarks(ReferenceFastaFilefile, contigname,'N'); 
-  }
+                 case 101:
+                 set[0].contig[contigname].loadRepeat(filename);
+                 break;
+                 */
+        }
+    }
+    //---------------------------------------------------------------------------
+    set[0].contig[contigname].setLengthFromAnchor(); 
+    //---------------------------------------------------------------------------
+    // Calculate average & stdev read lengths for this contig
+    //---------------------------------------------------------------------------
+    set[0].contig[contigname].calcLengths();
+    //---------------------------------------------------------------------------
+    // make sure contig set name is same as set name (loadSpannerDir)
+    //---------------------------------------------------------------------------
+    set[0].contig[contigname].setName=set[0].getSetName();
+    //---------------------------------------------------------------------------
+    // if mask file exists with contigname - add mask info to repeat Marker object
+    //---------------------------------------------------------------------------
+    string ReferenceFastaFilefile = pars.getReferenceFastaFile(); 
+    
+    if ( (ReferenceFastaFilefile.size()>0) and (pars.getDoMasking()) ) {
+        set[0].contig[contigname].repeat.addMarks(ReferenceFastaFilefile, contigname,'N'); 
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -4974,8 +4977,8 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 	} else {
 		SpannerMode=SPANNER_BUILD;
 	}
-
-		
+    
+    
 	// get Max Fragments
 	MaxFragments  = pars.getMaxFragments();    
 	// get Minimum Q mapping value for unique read
@@ -5000,7 +5003,7 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 	
 	// ReadGroups
 	unsigned int ReadGroupCode = 0;
-
+    
 	//---------------------------------------------------------------------------
 	// Check if this is a valid BAM alignment file (optional)
 	//---------------------------------------------------------------------------
@@ -5022,7 +5025,7 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 	//BamReader br1,br2;
 	
 	BamAlignment ba;
-		
+    
 	//ar1.Open(BamFileNames,BamZ<1,false);
 	ar1.Open(BamFileNames);
 	ar2.Open(BamFileNames);
@@ -5048,7 +5051,7 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 		ar1.Rewind(); 
 	}
 	
-
+    
 	if (ar2.GetReferenceCount()<1) {
 		cout << "ERROR: Unable to open the BAM file twice (" << file1.c_str() << ")." << endl;
 		exit(104);
@@ -5063,10 +5066,10 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 	
 	// retrieve the header text BAM 
 	string samHeader = ar1.GetHeaderText();	
-		
+    
 	// fill anchorinfo from Bam info  (don't use NT_ anchors)
 	C_anchorinfo anchor1(ar1); 
-
+    
 	// override anchors with anchorfile? 
 	string anchorfile1=pars.getAnchorfile();
 	if (anchorfile1.size()>0) {
@@ -5080,8 +5083,8 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 	
 	// only process specified contigs
 	anchor1.anchorlimit(AllowContigsRegex);
-
-
+    
+    
 	vector<string> elements =pars.getMobileElements();
 	
 	// bookeep mobile element anchors default
@@ -5102,7 +5105,7 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 		exit(-1);
 	}
 	libraries = libs;
-
+    
 	//---------------------------------------------------------------------------
 	// check first library for platform info. set flip if 454 or AB
 	//---------------------------------------------------------------------------
@@ -5115,6 +5118,10 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 		case ST_SOLID:
 			MateMode=MATEMODE_SOLID;
 			break;
+        case ST_ILLUMINA_LONG:
+			MateMode=MATEMODE_ILLUMINA_LONG;
+			break;
+
 		default:
 			MateMode=MATEMODE_ILLUMINA;
 			break;
@@ -5160,17 +5167,17 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 	
 	// clear doneFrag map
 	doneFrag.clear();
-
+    
 	/*
 	 if ( BamFileNames.size()==1 ) {
-		br1.Open(file1);
-		//br2.Open(file1,"",true);
-		br2.Open(file1);
-		if (br2.LocateIndex()) {
-			br2.OpenIndex(file1);
-		}
-	}
-	*/
+     br1.Open(file1);
+     //br2.Open(file1,"",true);
+     br2.Open(file1);
+     if (br2.LocateIndex()) {
+     br2.OpenIndex(file1);
+     }
+     }
+     */
 	
 	bool next = true;
 	//---------------------------------------------------------------------------
@@ -5180,7 +5187,7 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 		//if (BamFileNames.size()>1) { 
 		//	next = nextBamAlignmentPair(ar1,ar2,mr)&&(Nfrag<=MaxFragments);
 		//} else if (BamFileNames.size()==1) {
-			next= nextBamAlignmentPair(ar1,ar2,pair1)&&(Nfrag<=MaxFragments);
+        next= nextBamAlignmentPair(ar1,ar2,pair1)&&(Nfrag<=MaxFragments);
 		//}
 		if (!next) continue;
 		
@@ -5212,13 +5219,13 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 		// this is a complete pair
 		//------------------------------------------------------------------------
 		/*
-		if (scan) {
-			pair2=pair1;
-		} else {
-			// worry about handling multiple sets here XXXXXXXXXXXXX ???? XXXXXXX
-			pair2 = set[iset].resolvePairConstraint(pair1);  
-		}
-		*/
+         if (scan) {
+         pair2=pair1;
+         } else {
+         // worry about handling multiple sets here XXXXXXXXXXXXX ???? XXXXXXX
+         pair2 = set[iset].resolvePairConstraint(pair1);  
+         }
+         */
 		
 		
 		set[iset].repeatStats.Fill1(int(pair1.read[0].Nalign));
@@ -5424,7 +5431,7 @@ void C_pairedfiles::testMultiMapBam( string  & file1, RunControlParameters & par
 	ar1.Open(BamFileNames);
 	
 	if (ar1.LocateIndexes()) {
-			ar1.OpenIndexes(BamFileNames);
+        ar1.OpenIndexes(BamFileNames);
 	}
 	
 	if (ar1.GetReferenceCount()<1) {
@@ -5437,7 +5444,7 @@ void C_pairedfiles::testMultiMapBam( string  & file1, RunControlParameters & par
 		}
 		ar1.Rewind(); 
 	}
-				
+    
 	// retrieve the header text BAM 
 	string samHeader = ar1.GetHeaderText();
 	
@@ -5462,7 +5469,7 @@ void C_pairedfiles::testMultiMapBam( string  & file1, RunControlParameters & par
 	anchor1.anchorlimit(AllowContigsRegex);
 	// bookeep mobile element anchors default
 	anchor1.anchorElements();
-
+    
 	anchors=anchor1;
 	
 	//---------------------------------------------------------------------------
@@ -5512,7 +5519,7 @@ void C_pairedfiles::testMultiMapBam( string  & file1, RunControlParameters & par
 	//---------------------------------------------------------------------------
 	
 	while ( ar1.GetNextAlignment(ba1) && (Nfrag<MaxFragments) ) {
-       
+        
 		Nfrag++;
 		set[0].Nfrag++;
 		
@@ -5531,10 +5538,10 @@ void C_pairedfiles::testMultiMapBam( string  & file1, RunControlParameters & par
 			cout << Nfrag << "\t" << ba1.RefID <<  "\t" << ba1.Position <<  "\n";
 		}      		
 		
-  }
+    }
 	
 	ar1.Close();	
-			
+    
 	// finalize histos
 	for (int iset=0; iset<Nset; iset++) {
 		
@@ -5558,65 +5565,65 @@ void C_pairedfiles::testMultiMapBam( string  & file1, RunControlParameters & par
 // make multiple sets for each read group in bam for scan   
 //------------------------------------------------------------------------------
 int C_pairedfiles::makeSetsFromLibs(string & name, RunControlParameters & pars, C_anchorinfo & anchors) {
-  
-  C_librarymap::iterator it;
-  int N = libraries.libmap.size();
-  
-  ReadGroupID2set.clear();
+    
+    C_librarymap::iterator it;
+    int N = libraries.libmap.size();
+    
+    ReadGroupID2set.clear();
 	
-  setNames.clear();
-  set.clear();
-
-  cout << " Number of Libraries:\t " <<  N<< endl;
-  
-  int iset=0;
-  for ( it=libraries.libmap.begin() ; it != libraries.libmap.end(); it++ )
-  {
-
-    // cout << (*it).first << " => " << (*it).second << endl;
-    //unsigned int ReadGroupCode=(*it).first;
-    C_libraryinfo lib1 = (*it).second; 
+    setNames.clear();
+    set.clear();
     
-    string setName = lib1.Info.ReadGroupID;
-    C_set set1(setName, pars); 
-    setNames.push_back(setName);
-    set.push_back(set1);
+    cout << " Number of Libraries:\t " <<  N<< endl;
     
-    // hash from ReadGroupID to code
-    ReadGroupID2Code[setName]=lib1.Info.ReadGroupCode;  
-
-    // index from ReadGroupID to set 
-    ReadGroupID2set[setName]=iset;
-
-    // index from ReadGroupCode to set 
-    ReadGroupCode2set[lib1.Info.ReadGroupCode]=iset;
+    int iset=0;
+    for ( it=libraries.libmap.begin() ; it != libraries.libmap.end(); it++ )
+    {
+        
+        // cout << (*it).first << " => " << (*it).second << endl;
+        //unsigned int ReadGroupCode=(*it).first;
+        C_libraryinfo lib1 = (*it).second; 
+        
+        string setName = lib1.Info.ReadGroupID;
+        C_set set1(setName, pars); 
+        setNames.push_back(setName);
+        set.push_back(set1);
+        
+        // hash from ReadGroupID to code
+        ReadGroupID2Code[setName]=lib1.Info.ReadGroupCode;  
+        
+        // index from ReadGroupID to set 
+        ReadGroupID2set[setName]=iset;
+        
+        // index from ReadGroupCode to set 
+        ReadGroupCode2set[lib1.Info.ReadGroupCode]=iset;
+        
+        set[iset].anchors = anchors;
+        set[iset].elementMinAnchor=anchors.anchorMinElement(); 
+        set[iset].setFileName(name);
+        
+        // keep only lib in set libraries=libs; ????	  
+        
+        C_libraries libs1=libraries;
+        libs1.libmap.clear();
+        libs1.libmap[lib1.Info.ReadGroupCode]=lib1;
+        
+        set[iset].libraries = libs1; 
+        // anchorinfo -> libraries
+        set[iset].libraries.anchorinfo=anchors;
+        
+        iset++;
+        
+    }
     
-    set[iset].anchors = anchors;
-    set[iset].elementMinAnchor=anchors.anchorMinElement(); 
-    set[iset].setFileName(name);
-
-    // keep only lib in set libraries=libs; ????	  
-	  
-	  C_libraries libs1=libraries;
-    libs1.libmap.clear();
-    libs1.libmap[lib1.Info.ReadGroupCode]=lib1;
-
-    set[iset].libraries = libs1; 
-    // anchorinfo -> libraries
-    set[iset].libraries.anchorinfo=anchors;
-
-    iset++;
-
-  }
-
-  return iset;
+    return iset;
 }
 
 //------------------------------------------------------------------------------
 // make one set for all read group in bam for build  
 //------------------------------------------------------------------------------
 int C_pairedfiles::makeOneSetFromLibs(string & name,
-									RunControlParameters & pars, C_anchorinfo & anchors) {
+                                      RunControlParameters & pars, C_anchorinfo & anchors) {
 	
 	C_librarymap::iterator it;
 	int N = libraries.libmap.size();
@@ -5624,9 +5631,9 @@ int C_pairedfiles::makeOneSetFromLibs(string & name,
 	ReadGroupID2set.clear();
 	
 	C_HistoGroups H= pars.getHistoGroups();
-
+    
 	cout << " Number of Libraries:\t " <<  N<< endl;
-
+    
 	setNames.clear();
 	set.clear();
 	
@@ -5639,7 +5646,7 @@ int C_pairedfiles::makeOneSetFromLibs(string & name,
 	set[iset].anchors = anchors;
 	set[iset].elementMinAnchor=anchors.anchorMinElement(); 
 	set[iset].setFileName(name);
-
+    
 	
 	for ( it=libraries.libmap.begin() ; it != libraries.libmap.end(); it++ )
 	{
@@ -5647,7 +5654,7 @@ int C_pairedfiles::makeOneSetFromLibs(string & name,
 		// cout << (*it).first << " => " << (*it).second << endl;
 		//unsigned int ReadGroupCode=(*it).first;
 		C_libraryinfo lib1 = (*it).second; 
-				
+        
 		// hash from ReadGroupID to code
 		ReadGroupID2Code[lib1.Info.ReadGroupID]=lib1.Info.ReadGroupCode;  
 		
@@ -5661,19 +5668,19 @@ int C_pairedfiles::makeOneSetFromLibs(string & name,
 		// fragment length 
 		int HGI = H.ReadGroupIndex[lib1.Info.ReadGroupID];		
 		libraries.libmap[lib1.Info.ReadGroupCode].fragHist = H.Groups[HGI].h["LF"];
-
+        
 		// read length 
 		libraries.libmap[lib1.Info.ReadGroupCode].readLengthHist = H.Groups[HGI].h["LR"];
 		
-			
+        
 	}
 	
 	// set threshold for each library
 	double tailcut = pars.getFragmentLengthWindow();	
 	libraries.resetFragLimits(tailcut);
-
+    
 	set[iset].libraries = libraries; 
-
+    
 	return 1;
 }
 
@@ -5724,7 +5731,7 @@ int  C_pairedfiles::BamZA2PairedRead(BamAlignment & ba1, C_pairedread & pr1)
 			case '@':
 				
 				NZA++;
-							
+                
 				// 
 				r1.anchor=ba1.RefID;
 				// define start of query at start of mapped part
@@ -5757,7 +5764,7 @@ int  C_pairedfiles::BamZA2PairedRead(BamAlignment & ba1, C_pairedread & pr1)
 				
 				break;
 				
-			// mate
+                // mate
 			case '&':
 			case '=':  
 				
@@ -5787,7 +5794,7 @@ int  C_pairedfiles::BamZA2PairedRead(BamAlignment & ba1, C_pairedread & pr1)
 				
 		}
 	}
-
+    
 	// convert ReadGroupID to readGroupCode (Mosaik/Spanner) 				
 	ba1.GetReadGroup(ReadGroupID1);							
 	// all libraries stored in every set for this map to work 
@@ -5807,8 +5814,11 @@ int  C_pairedfiles::BamZA2PairedRead(BamAlignment & ba1, C_pairedread & pr1)
 			} else {
 				rr2.align[0].sense=!rr2.align[0].sense;
 			}
-		}
-  }
+		} else if (MateMode==MATEMODE_ILLUMINA_LONG) { 
+          rr1.align[0].sense=!rr1.align[0].sense;
+          rr2.align[0].sense=!rr2.align[0].sense;
+        }
+    }
 	
 	// convert ReadGroupID to readGroupCode (Mosaik/Spanner) 				
 	ba1.GetReadGroup(ReadGroupID1);							
@@ -5818,11 +5828,11 @@ int  C_pairedfiles::BamZA2PairedRead(BamAlignment & ba1, C_pairedread & pr1)
 	pr1.read[0]=rr1;
 	pr1.read[1]=rr2;
 	
-
+    
 	if (NZA < 1)  {
 		cerr << "no ZA tag info " << endl;
 	}
-	 
+    
 	return(NZA);
 }
 
@@ -5839,7 +5849,7 @@ int  C_pairedfiles::BamBam2PairedRead(BamAlignment & ba1, BamAlignment & ba2, C_
 	
 	C_readmap r1,r2;
 	C_readmaps rr1,rr2;
-		
+    
 	string tagNM = "NMs";
 	string tagMD = "MDs";
 	string ReadGroupID1;
@@ -5847,16 +5857,16 @@ int  C_pairedfiles::BamBam2PairedRead(BamAlignment & ba1, BamAlignment & ba2, C_
 	
 	
 	int Nmap=1,mm=0;
-				
+    
 	// 
 	r1.anchor=ba1.RefID;
 	r1.len=BamCigarData2Len(ba1.CigarData,0);				
 	r1.pos=ba1.Position;
 	r1.sense=(ba1.IsReverseStrand()? 'R': 'F');
-  r1.q=ba1.MapQuality;
+    r1.q=ba1.MapQuality;
 	r1.q2=0;
 	r1.nmap=(r1.q>0? 1: 2);
-				
+    
 	// mismatches NM
 	if (ba1.GetTag(tagNM,mm)) {
 		r1.mm=(mm>=0? mm: 0);
@@ -5868,7 +5878,7 @@ int  C_pairedfiles::BamBam2PairedRead(BamAlignment & ba1, BamAlignment & ba2, C_
 		}
 		r1.mm=mm;
 	}
-
+    
 	rr1.align.push_back(r1);
 	rr1.Nalign=r1.nmap;
 	
@@ -5898,7 +5908,7 @@ int  C_pairedfiles::BamBam2PairedRead(BamAlignment & ba1, BamAlignment & ba2, C_
 		rr2.Nalign=r2.nmap;
 		
 	}
-
+    
 	
 	if (Nmap>1) { 
 		// 454 & SOLiD pair orientation gymnastics
@@ -5914,7 +5924,11 @@ int  C_pairedfiles::BamBam2PairedRead(BamAlignment & ba1, BamAlignment & ba2, C_
 			} else {
 				rr2.align[0].sense=!rr2.align[0].sense;
 			}
-		}
+		} else if (MateMode==MATEMODE_ILLUMINA_LONG) { 
+            rr1.align[0].sense=!rr1.align[0].sense;
+            rr2.align[0].sense=!rr2.align[0].sense;
+        }
+	
 	}
 	
 	// convert ReadGroupID to readGroupCode (Mosaik/Spanner) 				
@@ -5924,11 +5938,11 @@ int  C_pairedfiles::BamBam2PairedRead(BamAlignment & ba1, BamAlignment & ba2, C_
 	
 	pr1.read[0]=rr1;
 	pr1.read[1]=rr2;
-		
+    
 	return Nmap;
 }
-		
-		
+
+
 
 
 //------------------------------------------------------------------------------
@@ -5965,7 +5979,7 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
 	if (!ba2.GetTag(tagZA,ZAm) ) { 
 		return -1;
 	} 			  
-
+    
 	StringPiece ZASPm(ZAm);    // Wrap a StringPiece around the moblist record ZAm 
 	
 	while (RE2::FindAndConsume(&ZASPm,patternZA,&this1,&q1,&q2,&mob1,&nmap1,&cig1,&md1) ) {
@@ -6004,7 +6018,7 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
 				rm1.align.push_back(r1);
 				rm1.Nalign=r1.nmap;
 				
-								
+                
 				// mobile element
 				me1 = anchors.element[r1.anchor];
 				if (me1>=0) {
@@ -6044,7 +6058,7 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
 				}												
 		}
 	}
-
+    
 	// flip strands for non-illumina modes
 	if (NZA>1) { 
 		// 454 & SOLiD pair orientation gymnastics
@@ -6060,9 +6074,12 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
 			} else {
 				rm2.align[0].sense=!rm2.align[0].sense;
 			}
-		}
+        } else if (MateMode==MATEMODE_ILLUMINA_LONG) { 
+            rm1.align[0].sense=!rm1.align[0].sense;
+            rm2.align[0].sense=!rm2.align[0].sense;
+        }        
 	}
-
+    
 	NZA=0;
 	
 	prm.read[0]=rm1;
@@ -6070,7 +6087,7 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
 	
 	
 	StringPiece ZASPa(ZAa);    // Wrap a StringPiece around the official reference part ZAa
-			
+    
 	while (RE2::FindAndConsume(&ZASPa,patternZA,&this1,&q1,&q2,&mob1,&nmap1,&cig1,&md1) ) {
 		
 		char t1 = this1[0];
@@ -6104,7 +6121,7 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
 					}
 					r1.mm=mm;
 				}
-
+                
 				
 				// here - this is the mate that mapped to a moblist
 				// check if properpair.. if so then make this alignment precede 
@@ -6115,7 +6132,7 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
 				
 				break;
 				
-			// mate
+                // mate
 			case '&':  
 			case '=':  
 				
@@ -6138,7 +6155,7 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
 				
 				ra2.align.push_back(r2);
 				ra2.Nalign=r2.nmap;
-												
+                
 		}
 	}
 	
@@ -6157,10 +6174,14 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
 			} else {
 				ra2.align[0].sense=!ra2.align[0].sense;
 			}
-		}
+		} else if (MateMode==MATEMODE_ILLUMINA_LONG) { 
+            ra1.align[0].sense=!ra1.align[0].sense;
+            ra2.align[0].sense=!ra2.align[0].sense;
+        }
+	
 	}
 	
-
+    
 	
 	pra.read[0]=ra1;
 	pra.read[1]=ra2;
@@ -6189,7 +6210,7 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
 	int q=round(-10*log10(p+1e-10));
 	if (q>99) q=99;
 	if (q<0) q=0;	
-
+    
 	bool properpair=false;
 	if ( (LF>LMlow)&&(LF<LMhigh)&&properOrientation) {					
 		properpair=true;
@@ -6205,7 +6226,7 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
 		pr1.read[1-im].align[0].nmap=pra.read[ia].align[0].nmap;
 	}
 	pr1.ReadGroupCode=rgcode;
-  pr1.Qproperpair=char(q);
+    pr1.Qproperpair=char(q);
 	
 	
 	
@@ -6217,29 +6238,29 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
 
 
 
-		
+
 
 //------------------------------------------------------------------------------
 // parse Bam tagData for tag:i:N
 //------------------------------------------------------------------------------
 int  C_pairedfiles::parseBamTagData(string & tagData, string & tag) {
-      int N=-1;
-      string str = tagData;
-      size_t f1 = str.find(tag); //"H0");
-      if (f1!=string::npos)
-      {
-         f1=f1+tag.length();
-         char nm=str[f1];
-         N=nm;
-      }
-       /* 
-          size_t f2=str.find_first_not_of("0123456789",f1);
-          if (f2!=string::npos)  {
-            str = str.substr(f1,f2-f1);
-            N= string2Int (str);
-          }
-       */
-      return N;
+    int N=-1;
+    string str = tagData;
+    size_t f1 = str.find(tag); //"H0");
+    if (f1!=string::npos)
+    {
+        f1=f1+tag.length();
+        char nm=str[f1];
+        N=nm;
+    }
+    /* 
+     size_t f2=str.find_first_not_of("0123456789",f1);
+     if (f2!=string::npos)  {
+     str = str.substr(f1,f2-f1);
+     N= string2Int (str);
+     }
+     */
+    return N;
 }
 
 //------------------------------------------------------------------------------
@@ -6265,46 +6286,46 @@ string  C_pairedfiles::parseBamTagDataString(string & tagData, string & tag) {
 // Bam file sort order
 //------------------------------------------------------------------------------
 string  C_pairedfiles::parseBamHeader(string & samheader, const string & tag) const {
-      string str = samheader;
-      string order="    ";
-      size_t f1 = str.find(tag); //"SO");
-      if (f1!=string::npos)
-      {
-         f1=f1+tag.length();
-         order = str.substr (f1,4);;
-      }
-      return order;
+    string str = samheader;
+    string order="    ";
+    size_t f1 = str.find(tag); //"SO");
+    if (f1!=string::npos)
+    {
+        f1=f1+tag.length();
+        order = str.substr (f1,4);;
+    }
+    return order;
 }
 
-  
+
 //------------------------------------------------------------------------------
 // parse Bam read name into end (0 or 1) and ID (name)
 //------------------------------------------------------------------------------
 bool  C_pairedfiles::parseBamReadName(string & name0, int & e1, string & id) {
-      
-      size_t Lname0=name0.size();
-      string pe=name0.substr(Lname0-2,2); 
-      e1=0;
-      
-      // sometime read names end in .1 or .2 indicating pair order
-      
-      if (pe==".1") {  
-         e1=0;                   // end 0
-      } else if (pe==".2") {
-         e1=1;                   // end 1
-      } else {
-         e1=0;                   // single end
-         if (pe[0]=='.') {
+    
+    size_t Lname0=name0.size();
+    string pe=name0.substr(Lname0-2,2); 
+    e1=0;
+    
+    // sometime read names end in .1 or .2 indicating pair order
+    
+    if (pe==".1") {  
+        e1=0;                   // end 0
+    } else if (pe==".2") {
+        e1=1;                   // end 1
+    } else {
+        e1=0;                   // single end
+        if (pe[0]=='.') {
             return false;
-         }        
-      }     
-      // ID0
-      if (pe[0]=='.') {  
+        }        
+    }     
+    // ID0
+    if (pe[0]=='.') {  
         id=name0.substr(0,Lname0-2); 
-      } else {
+    } else {
         id=name0;
-      }
-      return true;
+    }
+    return true;
 }
 
 
@@ -6323,7 +6344,7 @@ bool  C_pairedfiles::nextBamAlignmentPair( BamMultiReader & ar1,BamMultiReader &
 	pr1.read[1].Nalign=0;
 	pr1.Name="";
 	pr1.ReadGroupCode=0;
-
+    
 	if (BamZ==1) {  
 		// use ZA tag to extract  all pair info from first end in bam 		
 		return (nextBamAlignmentZA( ar1, pr1));
@@ -6372,7 +6393,7 @@ bool  C_pairedfiles::nextBamAlignmentZA( BamMultiReader & ar1, C_pairedread & pr
 		if (doneFrag[ba1.Name]) {
 			continue;
 		}
-			
+        
 		doneFrag[ba1.Name]=true;
 		
 		// skip unmapped reads (another program somewhere ...)
@@ -6398,7 +6419,7 @@ bool  C_pairedfiles::nextBamAlignmentZA( BamMultiReader & ar1, C_pairedread & pr
 		// skip proper pairs right here to save span file space from  build
 		//-------------------------------------------------------------------------------
 		skip=false;
-  	if (!scan) { 
+        if (!scan) { 
 			
 			string rgid;
 			ba1.GetReadGroup(rgid);
@@ -6424,6 +6445,9 @@ bool  C_pairedfiles::nextBamAlignmentZA( BamMultiReader & ar1, C_pairedread & pr
 				} else {
 					rev=!rev;			
 				}
+			}	else if ( MateMode==MATEMODE_ILLUMINA_LONG) {
+                revMate=!revMate;
+                rev=!rev;			
 			}		
 			
 			
@@ -6478,13 +6502,13 @@ bool  C_pairedfiles::nextBamAlignmentPairSortedByName( BamMultiReader & ar1, C_p
 	
 	// pair structures
 	//C_pairedread pr1;	
-
+    
 	// Bam structure
 	BamAlignment ba1,ba2;
 	
 	bool scan = SpannerMode==SPANNER_SCAN;
 	//bool build = SpannerMode==SPANNER_BUILD;
-		
+    
 	int LF=0;
 	bool findmate=false;	
 	int NmateFound=-1;
@@ -6508,7 +6532,7 @@ bool  C_pairedfiles::nextBamAlignmentPairSortedByName( BamMultiReader & ar1, C_p
 		
 		// single ends not processed here
 		if (!ba1.IsPaired()) {
-  		continue;
+            continue;
 		}
 		
 		
@@ -6539,7 +6563,7 @@ bool  C_pairedfiles::nextBamAlignmentPairSortedByName( BamMultiReader & ar1, C_p
 		int LMhigh = libraries.libmap[rgcode].LMhigh;
 		
 		// orientation transform to Illumina FR
-    
+        
 		rev=ba1.IsReverseStrand();
 		revMate=ba1.IsMateReverseStrand();
 		
@@ -6558,7 +6582,10 @@ bool  C_pairedfiles::nextBamAlignmentPairSortedByName( BamMultiReader & ar1, C_p
 			} else {
 				rev=!rev;			
 			}
-		}		
+		} 	else if ( MateMode==MATEMODE_ILLUMINA_LONG) {
+            revMate=!revMate;
+            rev=!rev;			
+        }		
 		
 		// now in Illumina convention... check proper pair orientation
 		if (ba1.RefID==ba1.MateRefID) {
@@ -6604,12 +6631,12 @@ bool  C_pairedfiles::nextBamAlignmentPairSortedByName( BamMultiReader & ar1, C_p
 		
 	}	
 	
-  if(NmateFound<0) {
+    if(NmateFound<0) {
 		return(false);
 	}
 	
 	NmateFound = BamBam2PairedRead(ba1, ba2, pr);
-		
+    
 	return (NmateFound>0);		
 }
 
@@ -6624,13 +6651,13 @@ bool  C_pairedfiles::nextBamAlignmentJump( BamMultiReader & ar1, BamMultiReader 
 	//------------------------------------------------------------------------------
 	// select abberant pairs that meet Qmin criteria, include dangling (unmapped) ends
 	//------------------------------------------------------------------------------
-		
+    
 	// Bam structure
 	BamAlignment ba1,ba2;
 	
 	bool scan = SpannerMode==SPANNER_SCAN;
 	//bool build = SpannerMode==SPANNER_BUILD;
-
+    
 	int LF=0;
 	bool findmate=false;	
 	int NmateFound=-1;
@@ -6665,7 +6692,7 @@ bool  C_pairedfiles::nextBamAlignmentJump( BamMultiReader & ar1, BamMultiReader 
 			NmateFound=1;  // set to mark dangling end
 			break;
 		}	
-				
+        
 		// skip proper pairs	=  abberant pair criteria 	
 		LF = ba1.InsertSize;
 		// SLX RP only  ??? 
@@ -6677,7 +6704,7 @@ bool  C_pairedfiles::nextBamAlignmentJump( BamMultiReader & ar1, BamMultiReader 
 		int LMhigh = libraries.libmap[rgcode].LMhigh;
 		
 		// orientation transform to Illumina FR
-    
+        
 		rev=ba1.IsReverseStrand();
 		revMate=ba1.IsMateReverseStrand();
 		
@@ -6695,7 +6722,10 @@ bool  C_pairedfiles::nextBamAlignmentJump( BamMultiReader & ar1, BamMultiReader 
 			} else {
 				rev=!rev;			
 			}
-		}		
+		} else if ( MateMode==MATEMODE_ILLUMINA_LONG) {
+            revMate=!revMate;
+            rev=!rev;			
+        }	
 		
 		
 		if (ba1.RefID==ba1.MateRefID) {
@@ -6791,12 +6821,12 @@ bool  C_pairedfiles::nextBamAlignmentJump( BamMultiReader & ar1, BamMultiReader 
 		
 	}	
 	
-  if(NmateFound<0) {
+    if(NmateFound<0) {
 		return(false);
 	}
 	
 	NmateFound = BamBam2PairedRead(ba1, ba2, pr);
-		
+    
 	// check consistent LF
 	if ( (ba1.RefID==ba2.MateRefID) & properOrientation) {
 		int LF1= set[0].Fraglength(pr);
@@ -6809,9 +6839,9 @@ bool  C_pairedfiles::nextBamAlignmentJump( BamMultiReader & ar1, BamMultiReader 
 			cerr	 << " fraglength problem " << LF1 << "\t" << LF << "\t" << s1 << s2 << "\t" << ba1.Name << endl;
 		}
 	}	
-		
-  return (NmateFound>0);		
-
+    
+    return (NmateFound>0);		
+    
 }
 
 
@@ -6850,13 +6880,13 @@ bool  C_pairedfiles::nextBamAlignmentPairSpecial( BamMultiReader & ar1, C_paired
 		bool same = false;
 		while (!same) { 
 			ar1.GetNextAlignment(ba2);		
-  		// make sure read names match		
-  		same = (ba1.Name.compare(ba2.Name) == 0); 
+            // make sure read names match		
+            same = (ba1.Name.compare(ba2.Name) == 0); 
 			if (!same) {
-					// this can happen if an read pair only hits moblist, not reference 
- 				  // cerr << "Problem in special bam record order\n " << ba1.Name << " is not " << ba2.Name << "\n";				
-				  // keep going   exit(97);
-				  ba1=ba2;
+                // this can happen if an read pair only hits moblist, not reference 
+                // cerr << "Problem in special bam record order\n " << ba1.Name << " is not " << ba2.Name << "\n";				
+                // keep going   exit(97);
+                ba1=ba2;
 			}
 		}
 		
@@ -6873,7 +6903,7 @@ bool  C_pairedfiles::nextBamAlignmentPairSpecial( BamMultiReader & ar1, C_paired
 		
 		// single ends not processed here
 		if (!ba1.IsPaired()) {
-  		continue;
+            continue;
 		}
 		
 		
@@ -6881,7 +6911,7 @@ bool  C_pairedfiles::nextBamAlignmentPairSpecial( BamMultiReader & ar1, C_paired
 			continue;
 		}	
 		
-				
+        
 		// skip proper pairs	=  abberant pair criteria 	
 		LF = ba1.InsertSize;
 		// SLX RP only  ??? 
@@ -6893,7 +6923,7 @@ bool  C_pairedfiles::nextBamAlignmentPairSpecial( BamMultiReader & ar1, C_paired
 		int LMhigh = libraries.libmap[rgcode].LMhigh;
 		
 		// orientation transform to Illumina FR
-    
+        
 		rev=ba1.IsReverseStrand();
 		revMate=ba1.IsMateReverseStrand();
 		
@@ -6912,7 +6942,10 @@ bool  C_pairedfiles::nextBamAlignmentPairSpecial( BamMultiReader & ar1, C_paired
 			} else {
 				rev=!rev;			
 			}
-		}		
+		} else if ( MateMode==MATEMODE_ILLUMINA_LONG) {
+            revMate=!revMate;
+            rev=!rev;			
+        }	
 		
 		// now in Illumina convention... check proper pair orientation
 		if (ba1.RefID==ba1.MateRefID) {
@@ -6953,7 +6986,7 @@ bool  C_pairedfiles::nextBamAlignmentPairSpecial( BamMultiReader & ar1, C_paired
 		
 	}	
 	
-  if(NmateFound<0) {
+    if(NmateFound<0) {
 		return(false);
 	}
 	
@@ -6977,12 +7010,12 @@ int C_pairedfiles::BamCigarData2Len(vector<CigarOp> CigarData, bool Query) {
 		if ( op.Type == 'M' ) {
 			len+=op.Length;
 		}
-
+        
 		// if op is INS
 		if ( (!Query)&&( op.Type == 'D' )) {
 			len+=op.Length;
 		}
-
+        
 		// if op is DEL
 		if ( (Query)&&( op.Type == 'I' )) {
 			len+=op.Length;
@@ -7012,29 +7045,29 @@ int C_pairedfiles::BamCigarData2mm(vector<CigarOp> CigarData) {
 	return(indel);
 }
 
-				
+
 
 //--------------------------------------------------------------------------------
 // function to check for existing Set element of vector
 //--------------------------------------------------------------------------------
 char C_pairedfiles::checkSetName(string & setname1)
 {
-  // loop over existing contigsets
-  vector<string>::const_iterator cii;
-  int ii;
-  for(ii=0; ii < int(this->setNames.size()); ii++)
-  {
-    // return index to existing contigset
-    if (this->setNames[ii]==setname1) {
-      return ii;
+    // loop over existing contigsets
+    vector<string>::const_iterator cii;
+    int ii;
+    for(ii=0; ii < int(this->setNames.size()); ii++)
+    {
+        // return index to existing contigset
+        if (this->setNames[ii]==setname1) {
+            return ii;
+        }
     }
-  }
-  // no set found, make a new one
-  C_set set1(set1);
-  this->setNames.push_back(set1.getSetName());
-  this->set.push_back(set1); 
-  this->Nset=this->setNames.size();
-  return Nset-1;
+    // no set found, make a new one
+    C_set set1(set1);
+    this->setNames.push_back(set1.getSetName());
+    this->set.push_back(set1); 
+    this->Nset=this->setNames.size();
+    return Nset-1;
 }
 
 //----------------------------------------------------------------------------
@@ -7042,51 +7075,51 @@ char C_pairedfiles::checkSetName(string & setname1)
 //----------------------------------------------------------------------------
 
 bool C_pairedfiles::checkBamFile(string & filename1) {
-
-  const char* bamFilename1 = filename1.c_str();
-
-  // check if this is a file...
-  DIR  *d;
-  d = opendir(bamFilename1);
-  if (d) {
-	  return false;
-  }
-
-  BamMultiReader file1;
+    
+    const char* bamFilename1 = filename1.c_str();
+    
+    // check if this is a file...
+    DIR  *d;
+    d = opendir(bamFilename1);
+    if (d) {
+        return false;
+    }
+    
+    BamMultiReader file1;
 	// file1.SetFilename(bamFilename1);
-
+    
 	vector<string> bamfiles;
 	bamfiles.clear();
 	bamfiles.push_back(filename1); 
 	
-  //file1.Open(bamFilename1,"",true);
+    //file1.Open(bamFilename1,"",true);
 	file1.Open(bamfiles);
 	
-  if (file1.GetReferenceCount()>0) { 
-   	//cerr << endl;
-	//	cerr << "BAM" << endl; 
-    return true;
+    if (file1.GetReferenceCount()>0) { 
+        //cerr << endl;
+        //	cerr << "BAM" << endl; 
+        return true;
 	}
-  file1.Close();
-  return false;
+    file1.Close();
+    return false;
 }
 
 
 bool C_pairedfiles::checkSpannerFiles(string & fs1) {
-  //C_headers h;
-  vector<string> ff;
-  //C_libraries libs;
-  int nf = selectfiles(ff,fs1);
+    //C_headers h;
+    vector<string> ff;
+    //C_libraries libs;
+    int nf = selectfiles(ff,fs1);
 	
 	// at least three files (multi+library+anchor)
-  if (nf<3) return false;
-  //----------------------------------------------------------------------------
-  // load anchor info  
-  //----------------------------------------------------------------------------
-  //C_anchorinfo a1();
-  for (int i=0; i<nf; i++) {
-     string f1=ff[i];
-     size_t found = f1.find(".anchors.txt");
+    if (nf<3) return false;
+    //----------------------------------------------------------------------------
+    // load anchor info  
+    //----------------------------------------------------------------------------
+    //C_anchorinfo a1();
+    for (int i=0; i<nf; i++) {
+        string f1=ff[i];
+        size_t found = f1.find(".anchors.txt");
 		if (found!=string::npos) {
 			C_anchorinfo a(f1);
 			// check against other anchor file 
@@ -7132,70 +7165,70 @@ bool C_pairedfiles::checkSpannerFiles(string & fs1) {
 				}
 			}
 		}
-  }
-  if (anchors.L.size()<1) return false;
-  if (libraries.libmap.size()<1) return false;
-  
+    }
+    if (anchors.L.size()<1) return false;
+    if (libraries.libmap.size()<1) return false;
+    
 	// fix 
 	libraries.anchorinfo=anchors;
 	
-  C_headerSpan h1;
-  vector<string> x;
-  split(x, fs1,"/");
-  // reconstruct path - everything but last thing after last "/"
-  string path="/";
-  for (int i=0; i<int(x.size()-1); i++) {
-    path = path + x[i]+"/";
-  }
-  // filename stub
-  string stub = x[x.size()-1];
-  // span file list
-  //vector<string> s1;
-  //s1.clear();
-  int Nspanx = int(h1.spanext.size());
-  for (int i=0; i<Nspanx; i++) {
-     string f1 = fs1+h1.spanext[i];
-     fstream input(f1.c_str(), ios::in|ios::binary);
-     if (!input) {
-			  /*
-        cerr << "Unable to open input file: " << f1 << endl;
-        headers.clear();
-        return false;
-				*/
-			 continue;
-     }
-     C_headerSpan hf(input);
-     // set type here
-     hf.type=i;
-     headers[f1]=hf;
-     input.close();
-  }
-  return true;  
+    C_headerSpan h1;
+    vector<string> x;
+    split(x, fs1,"/");
+    // reconstruct path - everything but last thing after last "/"
+    string path="/";
+    for (int i=0; i<int(x.size()-1); i++) {
+        path = path + x[i]+"/";
+    }
+    // filename stub
+    string stub = x[x.size()-1];
+    // span file list
+    //vector<string> s1;
+    //s1.clear();
+    int Nspanx = int(h1.spanext.size());
+    for (int i=0; i<Nspanx; i++) {
+        string f1 = fs1+h1.spanext[i];
+        fstream input(f1.c_str(), ios::in|ios::binary);
+        if (!input) {
+            /*
+             cerr << "Unable to open input file: " << f1 << endl;
+             headers.clear();
+             return false;
+             */
+            continue;
+        }
+        C_headerSpan hf(input);
+        // set type here
+        hf.type=i;
+        headers[f1]=hf;
+        input.close();
+    }
+    return true;  
 }
 
 bool C_pairedfiles::checkSpannerDirectory(string & fs1) {
-  // ---------------------------------------------------------------------------
-  // check all files in directory for *.pair.span
-  // ---------------------------------------------------------------------------
-  string patternReadSpan("(.+)\\.pair\\.span$");
-  string patternMultiSpan("(.+)\\.multi\\.span$");
-  string match;
-  string f;
-  DIR  *d;
-  struct dirent *dir;
-  SpannerFileNames.clear();
-  d = opendir(fs1.c_str());
-  if (d)
-  {
-    while ((dir = readdir(d)) != NULL)
+    // ---------------------------------------------------------------------------
+    // check all files in directory for *.pair.span
+    // ---------------------------------------------------------------------------
+    string patternReadSpan("(.+)\\.pair\\.span$");
+    string patternMultiSpan("(.+)\\.multi\\.span$");
+    string match;
+    string f;
+    DIR  *d;
+    struct dirent *dir;
+    SpannerFileNames.clear();
+    d = opendir(fs1.c_str());
+    if (d)
     {
-      string filename = dir->d_name;
-      if (RE2::FullMatch(filename.c_str(),patternReadSpan.c_str(),&match)) {      
+        while ((dir = readdir(d)) != NULL)
+        {
+            string filename = dir->d_name;
+            if (RE2::FullMatch(filename.c_str(),patternReadSpan.c_str(),&match)) {      
 				f = match;
 				printf("%s\n", f.c_str());
 				SpannerFileNames.push_back(f);
-      }
-      if (RE2::FullMatch(filename.c_str(),patternMultiSpan.c_str(),&match)) {      
+            }
+            if (RE2::FullMatch(filename.c_str(),patternMultiSpan.c_str(),&match)) {      
 				f = match;
 				size_t found;
 				found=f.find("special");
@@ -7203,11 +7236,11 @@ bool C_pairedfiles::checkSpannerDirectory(string & fs1) {
 					printf("%s\n", f.c_str());
 					SpannerFileNames.push_back(f);
 				}
-      }
+            }
+        }
+        closedir(d);
     }
-    closedir(d);
-  }
-  return (SpannerFileNames.size()>0);  
+    return (SpannerFileNames.size()>0);  
 }
 
 

@@ -5121,7 +5121,7 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
         case ST_ILLUMINA_LONG:
 			MateMode=MATEMODE_ILLUMINA_LONG;
 			break;
-
+            
 		default:
 			MateMode=MATEMODE_ILLUMINA;
 			break;
@@ -5815,8 +5815,8 @@ int  C_pairedfiles::BamZA2PairedRead(BamAlignment & ba1, C_pairedread & pr1)
 				rr2.align[0].sense=!rr2.align[0].sense;
 			}
 		} else if (MateMode==MATEMODE_ILLUMINA_LONG) { 
-          rr1.align[0].sense=!rr1.align[0].sense;
-          rr2.align[0].sense=!rr2.align[0].sense;
+            rr1.align[0].sense=!rr1.align[0].sense;
+            rr2.align[0].sense=!rr2.align[0].sense;
         }
     }
 	
@@ -5928,7 +5928,7 @@ int  C_pairedfiles::BamBam2PairedRead(BamAlignment & ba1, BamAlignment & ba2, C_
             rr1.align[0].sense=!rr1.align[0].sense;
             rr2.align[0].sense=!rr2.align[0].sense;
         }
-	
+        
 	}
 	
 	// convert ReadGroupID to readGroupCode (Mosaik/Spanner) 				
@@ -6178,7 +6178,7 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
             ra1.align[0].sense=!ra1.align[0].sense;
             ra2.align[0].sense=!ra2.align[0].sense;
         }
-	
+        
 	}
 	
     

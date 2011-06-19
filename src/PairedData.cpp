@@ -5804,19 +5804,19 @@ int  C_pairedfiles::BamZA2PairedRead(BamAlignment & ba1, C_pairedread & pr1)
 		// 454 & SOLiD pair orientation gymnastics
 		if (MateMode==MATEMODE_454) { // 454
 			if (ba1.IsFirstMate()) {
-				rr1.align[0].sense=!rr1.align[0].sense;
+				rr1.align[0].sense=rr1.align[0].sense=='F'? 'R': 'F';
 			} else {
-				rr2.align[0].sense=!rr2.align[0].sense;
+				rr2.align[0].sense=rr2.align[0].sense=='F'? 'R': 'F';
 			}
 		} else if (MateMode==MATEMODE_SOLID) { // SOLiD
 			if (!ba1.IsFirstMate()) {
-				rr1.align[0].sense=!rr1.align[0].sense;
+				rr1.align[0].sense=rr1.align[0].sense=='F'? 'R': 'F';
 			} else {
-				rr2.align[0].sense=!rr2.align[0].sense;
+				rr2.align[0].sense=rr2.align[0].sense=='F'? 'R': 'F';
 			}
 		} else if (MateMode==MATEMODE_ILLUMINA_LONG) { 
-            rr1.align[0].sense=!rr1.align[0].sense;
-            rr2.align[0].sense=!rr2.align[0].sense;
+            rr1.align[0].sense=rr1.align[0].sense=='F'? 'R': 'F';
+            rr2.align[0].sense=rr2.align[0].sense=='F'? 'R': 'F';
         }
     }
 	
@@ -5914,19 +5914,19 @@ int  C_pairedfiles::BamBam2PairedRead(BamAlignment & ba1, BamAlignment & ba2, C_
 		// 454 & SOLiD pair orientation gymnastics
 		if (MateMode==MATEMODE_454) { // 454
 			if (ba1.IsFirstMate()) {
-				rr1.align[0].sense=!rr1.align[0].sense;
+				rr1.align[0].sense=rr1.align[0].sense=='F'? 'R': 'F';
 			} else {
-				rr2.align[0].sense=!rr2.align[0].sense;
+				rr2.align[0].sense=rr2.align[0].sense=='F'? 'R': 'F';
 			}
 		} else if (MateMode==MATEMODE_SOLID) { // SOLiD
 			if (!ba1.IsFirstMate()) {
-				rr1.align[0].sense=!rr1.align[0].sense;
+				rr1.align[0].sense=rr1.align[0].sense=='F'? 'R': 'F';
 			} else {
-				rr2.align[0].sense=!rr2.align[0].sense;
+				rr2.align[0].sense=rr2.align[0].sense=='F'? 'R': 'F';
 			}
 		} else if (MateMode==MATEMODE_ILLUMINA_LONG) { 
-            rr1.align[0].sense=!rr1.align[0].sense;
-            rr2.align[0].sense=!rr2.align[0].sense;
+            rr1.align[0].sense=rr1.align[0].sense=='F'? 'R': 'F';
+            rr2.align[0].sense=rr2.align[0].sense=='F'? 'R': 'F';
         }
         
 	}
@@ -6064,19 +6064,19 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
 		// 454 & SOLiD pair orientation gymnastics
 		if (MateMode==MATEMODE_454) { // 454
 			if (ba2.IsFirstMate()) {
-				rm1.align[0].sense=!rm1.align[0].sense;
+				rm1.align[0].sense=rm1.align[0].sense=='F'? 'R': 'F';
 			} else {
-				rm2.align[0].sense=!rm2.align[0].sense;
+				rm2.align[0].sense=rm2.align[0].sense=='F'? 'R': 'F';
 			}
 		} else if (MateMode==MATEMODE_SOLID) { // SOLiD
 			if (!ba2.IsFirstMate()) {
-				rm1.align[0].sense=!rm1.align[0].sense;
+				rm1.align[0].sense=rm1.align[0].sense=='F'? 'R': 'F';
 			} else {
-				rm2.align[0].sense=!rm2.align[0].sense;
+				rm2.align[0].sense=rm2.align[0].sense=='F'? 'R': 'F';
 			}
         } else if (MateMode==MATEMODE_ILLUMINA_LONG) { 
-            rm1.align[0].sense=!rm1.align[0].sense;
-            rm2.align[0].sense=!rm2.align[0].sense;
+            rm1.align[0].sense=rm1.align[0].sense=='F'? 'R': 'F';
+            rm2.align[0].sense=rm2.align[0].sense=='F'? 'R': 'F';
         }        
 	}
     
@@ -6164,19 +6164,19 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
 		// 454 & SOLiD pair orientation gymnastics
 		if (MateMode==MATEMODE_454) { // 454
 			if (ba1.IsFirstMate()) {
-				ra1.align[0].sense=!ra1.align[0].sense;
+				ra1.align[0].sense=ra1.align[0].sense=='F'? 'R': 'F';
 			} else {
-				ra2.align[0].sense=!ra2.align[0].sense;
+				ra2.align[0].sense=ra2.align[0].sense=='F'? 'R': 'F';
 			}
 		} else if (MateMode==MATEMODE_SOLID) { // SOLiD
 			if (!ba1.IsFirstMate()) {
-				ra1.align[0].sense=!ra1.align[0].sense;
+				ra1.align[0].sense=ra1.align[0].sense=='F'? 'R': 'F';
 			} else {
-				ra2.align[0].sense=!ra2.align[0].sense;
+				ra2.align[0].sense=ra2.align[0].sense=='F'? 'R': 'F';
 			}
 		} else if (MateMode==MATEMODE_ILLUMINA_LONG) { 
-            ra1.align[0].sense=!ra1.align[0].sense;
-            ra2.align[0].sense=!ra2.align[0].sense;
+            ra1.align[0].sense=ra1.align[0].sense=='F'? 'R': 'F';
+            ra2.align[0].sense=ra2.align[0].sense=='F'? 'R': 'F';
         }
         
 	}

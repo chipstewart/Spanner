@@ -1,4 +1,4 @@
-README																11 Mar 2011
+README																19 June 2011
 
 Spanner is a c++ program for the detection of Structural Variation events from whole genome sequenced read pair data. It uses aligned read information in bam format and was developed in conjunction with the Mosaik alignment program (https://github.com/wanpinglee/MOSAIK). 
 
@@ -20,7 +20,11 @@ Spanner links to two other libraries:
  hg clone https://re2.googlecode.com/hg re2
 
  
- 
+In addition to Bamtools and RE2, Spanner also uses the TCLAP command line parser. TCLAP is not a library, but rather a set of include header files. The TCLAP header tree should be installed on your include header path (eg. /usr/local/include). If this is not possible then TCLAP should be included as a qualifier on the CPPFLAGS line of the Makefile:
+
+CPPFLAGS=-Wall -O2 -march=nocona -I$(RE2_ROOT) -I$(BAMTOOLS_ROOT)/include -I$(/home/<your area>/include)
+
+
 INSTALLING SPANNER
 
  Go the area with the Spanner source and find the Makefile. The Makefile needs to know where to find Bamtools and RE2, so it is necessary to edit the Makefile to change  RE2_ROOT=" " and BAMTOOLS_ROOT=" "  to point to the main install areas for those packages.   Once RE2_ROOT and BAMTOOLS_ROOT are set, then 

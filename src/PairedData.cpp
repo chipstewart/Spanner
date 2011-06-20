@@ -6404,10 +6404,19 @@ bool  C_pairedfiles::nextBamAlignmentZA( BamMultiReader & ar1, C_pairedread & pr
 			continue;
 		}	
 		
+        
 		int LF = ba1.InsertSize;
 		// SLX RP only
 		if (ba1.IsReverseStrand()) LF=-LF; 
-		
+        
+        if ((MateMode!=MATEMODE_ILLUMINA)&(ba1.RefID==ba1.MateRefID)) {
+            C_pairedread pr0;
+            int NZA= C_pairedfiles::BamZA2PairedRead( ba1, pr0);
+            if ((NZA==2)&(pr0.read[1].align.size()>0)) {
+                LF=set[0].Fraglength(pr0);
+                LF=LF+0;
+            }
+        }        
 		// check if fragment done already
 		ndone++;
 		if (ba1.Name.size()<1) {			
@@ -6431,6 +6440,7 @@ bool  C_pairedfiles::nextBamAlignmentZA( BamMultiReader & ar1, C_pairedread & pr
 			rev=ba1.IsReverseStrand();
 			revMate=ba1.IsMateReverseStrand();
 			
+            
 			//454 -> IL
 			if ( MateMode==MATEMODE_454) {
 				if (ba1.IsFirstMate()) {
@@ -6453,11 +6463,14 @@ bool  C_pairedfiles::nextBamAlignmentZA( BamMultiReader & ar1, C_pairedread & pr
 			
 			
 			if (ba1.RefID==ba1.MateRefID) {
+                /*
 				if (ba1.Position<ba1.MatePosition) {				
 					properOrientation = (!rev)&&revMate;
 				}	else {
 					properOrientation = rev&&(!revMate);
 				}
+                */
+                properOrientation=rev!=revMate;
 			}
 			
 			if (ba1.IsMateMapped()&&(LF>LMlow)&&(LF<LMhigh)&&properOrientation) {					

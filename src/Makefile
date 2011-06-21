@@ -8,16 +8,17 @@ OBJECTS=$(SOURCES:.cpp=.o)
 #CSOURCES=fastlz.c bgzf.c
 CSOURCES=fastlz.c
 COBJECTS=$(CSOURCES:.c=.o)
-
+ 
 # ================
 # compiler options
 # ================
-RE2_ROOT =/home/stewardg/Projects/source/re2
-BAMTOOLS_ROOT=/home/stewardg/Projects/source/bamtools
+RE2_ROOT =/home/radon00/stewart/cga2/tools/re2
+BAMTOOLS_ROOT=/home/radon00/stewart/cga2/tools/bamtools
+TCLAP_ROOT=/home/radon00/stewart/cga2/tools
 
 #CPPFLAGS=-Wall -O2 -march=nocona -std=c++0x -I$(RE2DIR) -I$(BAMTOOLS_ROOT)/include
-CPPFLAGS=-Wall -O2 -march=nocona -I$(RE2_ROOT) -I$(BAMTOOLS_ROOT)/include -std=gnu++0x
- 
+#CPPFLAGS=-Wall -O2 -march=nocona -I$(RE2_ROOT) -I$(BAMTOOLS_ROOT)/include -std=gnu++0x
+CPPFLAGS=-Wall -O2 -march=nocona -I$(RE2_ROOT) -I$(BAMTOOLS_ROOT)/include -I$(TCLAP_ROOT) 
 #CPPFLAGS=-Wall -g -march=nocona -I$(RE2_ROOT) -I$(BAMTOOLS_ROOT)/include -std=gnu++0x
 
 #CPPFLAGS=-Wall -g

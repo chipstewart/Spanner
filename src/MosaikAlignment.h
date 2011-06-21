@@ -28,9 +28,9 @@
 #include "windows.h"
 #endif
 
-#ifndef __APPLE__
-#include <cstdint>
-#endif
+//#ifndef __APPLE__
+//#include <cstdint>
+//#endif
 
 using namespace std;
 using namespace std::tr1;

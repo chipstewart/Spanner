@@ -322,7 +322,7 @@ void C_anchorinfo::anchorlimit(string & allow) {
     for (size_t i = 0; i<names.size(); i++) {
         name= names[i];
         // skip this ContigName if not present in AllowContigs
-        if (!  RE2::PartialMatch(name.c_str(),patternAllowContigsRegex.c_str())) {
+        if (!  RE2::FullMatch(name.c_str(),patternAllowContigsRegex.c_str())) {
             use[i]=false;
         }
     }

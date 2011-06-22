@@ -319,6 +319,7 @@ void C_anchorinfo::anchorlimit(string & allow) {
     string patternAllowContigsRegex(allow);  
     // regex match
     string name=" ";
+    if (patternAllowContigsRegex==".") return;
     for (size_t i = 0; i<names.size(); i++) {
         name= names[i];
         // skip this ContigName if not present in AllowContigs

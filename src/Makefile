@@ -2,7 +2,7 @@
 # define our source and object files
 # ==================================
 
-SOURCES=Spanner.cpp SpanDet.cpp RunControlParameterFile.cpp Function-Generic.cpp Function-Sequence.cpp Histo.cpp MosaikAlignment.cpp PairedData.cpp headerSpan.cpp cluster.cpp steps.cpp DepthCnvDet.cpp BedFile.cpp  SHA1.cpp
+SOURCES=Spanner.cpp SpanDet.cpp RunControlParameterFile.cpp Function-Generic.cpp UtilityFunctions.cpp Histo.cpp MosaikAlignment.cpp PairedData.cpp headerSpan.cpp cluster.cpp steps.cpp DepthCnvDet.cpp BedFile.cpp  SHA1.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 
 #CSOURCES=fastlz.c bgzf.c

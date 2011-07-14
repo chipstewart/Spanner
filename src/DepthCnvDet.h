@@ -31,7 +31,7 @@
 #include "Type-Hash.h"
 #include "RunControlParameterFile.h"
 #include "Histo.h"
-#include "Function-Generic.h"
+#include "UtilityFunctions.h"
 #include "PairedData.h"
 #include "cluster.h"
 #include "SpanDet.h"

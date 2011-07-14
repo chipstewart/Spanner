@@ -5106,6 +5106,7 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 		exit(-1);
 	}
 	libraries = libs;
+    libraries.anchorinfo=anchors;
     
 	//---------------------------------------------------------------------------
 	// check first library for platform info. set flip if 454 or AB
@@ -5327,45 +5328,58 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
 			cerr << "==============================" << endl;
 		}
 		
+        HistObj h=set[iset].libraries.libmap[ReadGroupCode].fragHist; 
+        
 		if (scan) {
 			
 			// finalize library: fragment length
-			HistObj h=set[iset].fragStats.h;
+			h=set[iset].fragStats.h;
 			
-			double lowf = (1.0-pars.getFragmentLengthWindow()/100.0)/2.0;
-			double highf = (1.0-lowf); // half tail on high side  
-			
-			// store fraglength info from pars to library (override this data set)
-			C_librarymap::iterator it;
-			
-			
-			for ( it=set[iset].libraries.libmap.begin() ; it != set[iset].libraries.libmap.end(); it++ ) {
-				ReadGroupCode  = (*it).first; 
-				C_libraryinfo lib1 = (*it).second; 
-				
-				set[iset].libraries.libmap[ReadGroupCode].LM=int(h.mode);
-				set[iset].libraries.libmap[ReadGroupCode].tailcut = pars.getFragmentLengthWindow();
-				set[iset].libraries.libmap[ReadGroupCode].LMlow=int(h.p2xTrim(lowf)); // int(pars.getFragmentLengthLo());
-				set[iset].libraries.libmap[ReadGroupCode].LMhigh=int(h.p2xTrim(highf)); //int(pars.getFragmentLengthHi()); 
-				// store fraglength histogram from this data set to library
-				set[iset].libraries.libmap[ReadGroupCode].fragHist=h;
-				
-				
-				// Read length
-				h=set[iset].lengthStats.h;
-				set[iset].libraries.libmap[ReadGroupCode].readLengthHist=h;
-				set[iset].libraries.libmap[ReadGroupCode].LR=int(set[0].lengthStats.h.mode);
-				set[iset].libraries.libmap[ReadGroupCode].LRmax=int(h.xc[h.xc.size()-1]);
-				int nb=h.n.size();
-				int xmin= set[iset].libraries.libmap[ReadGroupCode].LRmax;
-				for (int ib=nb; ib>0; ib--) {
-					if ( (h.n[ib-1]>0)&&(h.xc[ib-1]<xmin) ) xmin=h.xc[ib-1];
-				}
-				set[iset].libraries.libmap[ReadGroupCode].LRmin=xmin;	  
-				// Redundancy	  
-				set[iset].calcLibraryRedundancy(set[iset].libraries.libmap[ReadGroupCode]);	  
-			}
-		}
+        }
+        
+        double lowf = (1.0-pars.getFragmentLengthWindow()/100.0)/2.0;
+        double highf = (1.0-lowf); // half tail on high side  
+        
+        // store fraglength info from pars to library (override this data set)
+        C_librarymap::iterator it;
+        
+        
+        for ( it=set[iset].libraries.libmap.begin() ; it != set[iset].libraries.libmap.end(); it++ ) {
+            ReadGroupCode  = (*it).first; 
+            C_libraryinfo lib1 = (*it).second; 
+            
+            set[iset].libraries.libmap[ReadGroupCode].LM=int(h.median);
+            set[iset].libraries.libmap[ReadGroupCode].tailcut = pars.getFragmentLengthWindow();
+            set[iset].libraries.libmap[ReadGroupCode].LMlow=int(h.p2xTrim(lowf)); // int(pars.getFragmentLengthLo());
+            set[iset].libraries.libmap[ReadGroupCode].LMhigh=int(h.p2xTrim(highf)); //int(pars.getFragmentLengthHi()); 
+            // store fraglength histogram from this data set to library
+            set[iset].libraries.libmap[ReadGroupCode].fragHist=h;
+            set[iset].libraries.libmap[ReadGroupCode].fragHist.Finalize();
+            
+            
+            // Read length
+            
+            
+            h=set[iset].libraries.libmap[ReadGroupCode].readLengthHist;             
+            if (scan) {
+                h=set[iset].lengthStats.h;
+            }    
+                
+            set[iset].libraries.libmap[ReadGroupCode].readLengthHist=h;
+            set[iset].libraries.libmap[ReadGroupCode].readLengthHist.Finalize();
+            set[iset].libraries.libmap[ReadGroupCode].LR=int(set[0].lengthStats.h.median);
+            set[iset].libraries.libmap[ReadGroupCode].LRmax=int(h.xc[h.xc.size()-1]);
+            int nb=h.n.size();
+            int xmin= set[iset].libraries.libmap[ReadGroupCode].LRmax;
+            for (int ib=nb; ib>0; ib--) {
+                if ( (h.n[ib-1]>0)&&(h.xc[ib-1]<xmin) ) xmin=h.xc[ib-1];
+            }
+            set[iset].libraries.libmap[ReadGroupCode].LRmin=xmin;	  
+            
+            // Redundancy	&  Fragment counts  
+            set[iset].calcLibraryRedundancy(set[iset].libraries.libmap[ReadGroupCode]);	  
+        }
+		
 	}
 	cout << "-----------------------------------------------------------------\n";
 	cout << "final stats: "<< file1 << endl;

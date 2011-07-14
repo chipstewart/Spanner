@@ -48,8 +48,8 @@ FastaObj::FastaObj(const string & fn, const string & sn)
     string match, match2;
     
     // Patterns to match
-    string patternFastaHeader("^>(\\s*\\S+\\s*.*)$");
-    string patternFastaName("^\\s*(\\S+)");
+    //string patternFastaHeader("^>(\\s*\\S+\\s*.*)$");
+    //string patternFastaName("^\\s*(\\S+)");
     //boost::regex patternFastaHeader("^>(\\s*\\S+\\s*.*)$");
     //boost::regex patternFastaName("^\\s*(\\S+)");
     
@@ -92,8 +92,13 @@ FastaObj::FastaObj(const string & fn, const string & sn)
         // header line (long format): register previous sequence and start new
         // if (boost::regex_search(line, match, patternFastaHeader)) {
         //if (RE2::FullMatch(line.c_str(),patternFastaName.c_str(),&match) ) {
-        if (RE2::FullMatch(line.c_str(),patternFastaHeader.c_str(),&match) ) {
+        
+        if (line.size()<2) continue;
+        
+        if ( line[0]=='>') {
+            //RE2::FullMatch(line.c_str(),patternFastaHeader.c_str(),&match) ) {
                 
+            match=line.substr(1);
             // if previous sequence info not yet registred, register it
             if ( (!registered)&(selected) ) {
                 
@@ -116,10 +121,15 @@ FastaObj::FastaObj(const string & fn, const string & sn)
             // parse out sequence name
             seqName = seqHeader;
             
-            //if (boost::regex_search(seqHeader, match2, patternFastaName)) {     
-            if (RE2::FullMatch(seqHeader.c_str(),patternFastaName.c_str(),&match2) ) {
-                seqName = match2;
-            }
+            vector<string> vs;
+            int ns= split(vs , seqHeader, " "); 
+            
+            if (ns>1)
+                seqName=vs[0];
+            
+            //if (RE2::FullMatch(seqHeader.c_str(),patternFastaName.c_str(),&match2) ) {
+            //    seqName = match2;
+            //}
             
             // select sequence by name
             string sn1=seqName;

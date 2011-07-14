@@ -20,11 +20,14 @@
 // #include <boost/regex.hpp>
 
 //"RE2" regular expression library  (replaces boost...)
-#include <re2/re2.h>
-using namespace re2;
+//#include <re2/re2.h>
+//using namespace re2;
 
 // "hash_map" true hashes
 #include <ext/hash_map>
+
+// local includes
+#include "UtilityFunctions.h"
 
 using namespace std;
 

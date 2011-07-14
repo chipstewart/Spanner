@@ -22,7 +22,8 @@
 // private
 #include "Type-Hash.h"
 #include "RunControlParameterFile.h"
-#include "Function-Generic.h"
+//#include "Function-Generic.h"
+#include "UtilityFunctions.h"
 
 using namespace std;
 

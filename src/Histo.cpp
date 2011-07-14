@@ -16,7 +16,8 @@ using std::endl;
 using std::setw;
 using std::setprecision;
 #include <math.h>
-#include "Function-Generic.h"
+//#include "Function-Generic.h"
+#include "UtilityFunctions.h"
 #include "Histo.h"
 
 //==========================================================
@@ -267,10 +268,14 @@ void HistObj::Finalize() {
     this->median = -1e20;
     bool donemedian = false;
     int binHi = 0;
+    this->sumx=0;
+    this->sumxx=0;
     for (int i = 1; i<this->Nbin; i++) {
         this->c[i] = this->c[i - 1] + this->n[i];
         // check for highest xc bin that contains something
         //if ((binHi == 0)&(this->c[i] == this->Ntot)) {
+        this->sumx+=this->n[i];
+        this->sumxx+=this->n[i]*n[i];
         if (this->n[i] != 0) {
             binHi = i;
         }

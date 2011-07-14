@@ -25,7 +25,8 @@
 #include <stdio.h> 
 // local includes
 #include "Histo.h"
-#include "Function-Generic.h"
+//#include "Function-Generic.h"
+#include "UtilityFunctions.h"
 
 // float HUGE = 1e30;
 

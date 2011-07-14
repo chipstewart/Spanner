@@ -322,6 +322,11 @@ string int2binary(const int n1) {
     return out;
 }
 
+int droundi(const double x)
+{ 
+    return int(floor(0.5+x)); 
+}
+
 
 //------------------------------------------------------------------------------
 // upperCase  -- converts string to upper case 

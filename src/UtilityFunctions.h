@@ -20,6 +20,8 @@
 #include <errno.h> 
 #include <dirent.h> 
 #include <sys/stat.h> 
+#include <math.h> 
+
 // private
 //#include "Type-Hash.h"
 
@@ -107,6 +109,11 @@ string extractfileext(const string & );
 // convert int to binary number string 
 //=========================================================================
 string int2binary(const int);
+
+//=========================================================================
+// round double to nearest int 
+//=========================================================================
+int droundi(const double x);
 
 //------------------------------------------------------------------------------
 // file check

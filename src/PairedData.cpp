@@ -507,7 +507,7 @@ C_libraryinfo::C_libraryinfo(const C_libraryinfo & rhs)     // copy constructor
     LMhigh=rhs.LMhigh;    
     LR=rhs.LR;
     LRmin=rhs.LRmin;
-    LRmax=rhs.LR;
+    LRmax=rhs.LRmax;
     NPair=rhs.NPair;
     NSingle=rhs.NSingle;
     NPairRedundant=rhs.NPairRedundant;
@@ -1065,8 +1065,8 @@ void C_libraries::resetFragLimits(double tailcut)
     for ( it=libmap.begin() ; it != libmap.end(); it++ )
     {
         unsigned int ReadGroupCode=(*it).first;
-        int LMlow  = libmap[ReadGroupCode].fragHist.p2xTrim(lowf);
-        int LMhigh = libmap[ReadGroupCode].fragHist.p2xTrim(highf);
+        int LMlow  = droundi(libmap[ReadGroupCode].fragHist.p2xTrim(lowf));
+        int LMhigh = droundi(libmap[ReadGroupCode].fragHist.p2xTrim(highf));
 		if (tailcut<0) { 
 			LMlow=100000;
 			LMhigh=-100000;
@@ -1074,7 +1074,7 @@ void C_libraries::resetFragLimits(double tailcut)
 		
 		// fill LM 
 		if (libmap[ReadGroupCode].LM==0) {
-			libmap[ReadGroupCode].LM = libmap[ReadGroupCode].fragHist.mode1;
+			libmap[ReadGroupCode].LM = droundi(libmap[ReadGroupCode].fragHist.mode1);
 		}
 		
         libmap[ReadGroupCode].LMlow=LMlow;
@@ -5370,11 +5370,11 @@ void C_pairedfiles::loadBam( string  & file1, RunControlParameters & pars)
             set[iset].libraries.libmap[ReadGroupCode].LR=int(set[0].lengthStats.h.median);
             set[iset].libraries.libmap[ReadGroupCode].LRmax=int(h.xc[h.xc.size()-1]);
             int nb=h.n.size();
-            int xmin= set[iset].libraries.libmap[ReadGroupCode].LRmax;
+            double xmin= set[iset].libraries.libmap[ReadGroupCode].LRmax;
             for (int ib=nb; ib>0; ib--) {
                 if ( (h.n[ib-1]>0)&&(h.xc[ib-1]<xmin) ) xmin=h.xc[ib-1];
             }
-            set[iset].libraries.libmap[ReadGroupCode].LRmin=xmin;	  
+            set[iset].libraries.libmap[ReadGroupCode].LRmin=droundi(xmin);	  
             
             // Redundancy	&  Fragment counts  
             set[iset].calcLibraryRedundancy(set[iset].libraries.libmap[ReadGroupCode]);	  
@@ -6222,7 +6222,7 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
 			p=1-p;
 		}
 	}
-	int q=round(-10*log10(p+1e-10));
+	int q=droundi(-10*log10(p+1e-10));
 	if (q>99) q=99;
 	if (q<0) q=0;	
     

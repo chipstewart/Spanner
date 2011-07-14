@@ -1515,7 +1515,7 @@ C_SVV C_SpannerSV::findInvDir(C_contig  & contig, C_SpannerCluster & clus,  RunC
         int DL=(len-droundi(c1.high[1]));
         if (DL>(2*int(e1.posU))) {
             e1.lenU=droundi(c1.std[1]/sqrt(c1.N));
-            e1.length=c1.high[1];
+            e1.length=droundi(c1.high[1]);
             e1.posU=DL/2;
             e1.pos=e1.pos+DL/2;
         }

@@ -598,7 +598,7 @@ C_HistoGroups::C_HistoGroups(string & filename) {
 		C_Histos h1(file1);
 		if (h1.h.size()>0) {
 			this->Groups.push_back(h1);
-			for (int rg=0; rg<h1.ReadGroupTag.size(); rg++) {
+			for (size_t rg=0; rg<h1.ReadGroupTag.size(); rg++) {
 				size_t pos = h1.ReadGroupTag[rg].find("ID:");      // position after "ID:" in str
 				string str1 = h1.ReadGroupTag[rg].substr(pos+3);   // get from "ID:" to the end
 				if (str1.find("\t")!=string::npos) {

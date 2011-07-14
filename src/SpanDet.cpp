@@ -289,201 +289,201 @@ void C_SpannerSV::printSummary(string & outfilename, C_contig & c1) {
 
 
 int C_SpannerSV::findDel(C_contig  & contig, C_SpannerCluster & clus,  
-        RunControlParameters & pars) {
-  del.typeName="deletions";
-  //int Nc = clus.longpairc.cluster.size();
-  C_cluster2d_elements::iterator it;
-  C_cluster2d_element1 c1;
-  vector<C_localpair> cpair;
-  // vector of fraglength shift
+                         RunControlParameters & pars) {
+    del.typeName="deletions";
+    //int Nc = clus.longpairc.cluster.size();
+    C_cluster2d_elements::iterator it;
+    C_cluster2d_element1 c1;
+    vector<C_localpair> cpair;
+    // vector of fraglength shift
 	vector<int> DiffLF;
-  // vector of mapping qualities 5' end
+    // vector of mapping qualities 5' end
 	vector<int> mapQ5;
-  // vector of mapping qualities 3' end
+    // vector of mapping qualities 3' end
 	vector<int> mapQ3;
  	
-  //----------------------------------------------------------------------------
-  // samples name vector sorted & unique in ret
-  //----------------------------------------------------------------------------
-  C_librarymap::iterator il;
-  vector<string>::iterator is;
-  del.samples.clear();
-  for ( il=libraries.libmap.begin() ; il != libraries.libmap.end(); il++ )
-  {
-    C_libraryinfo lib1 = (*il).second; 
-    del.samples.push_back(lib1.Info.SampleName);
-  }  
-  sort(del.samples.begin(),del.samples.end());
-  is = unique (del.samples.begin(), del.samples.end()); 
-  del.samples.resize( is - del.samples.begin() );  
-
-  //----------------------------------------------------------------------------
-  // SVCF Info (list here and in C_SVR << )
-  //----------------------------------------------------------------------------
-  C_SVCF_TAG tag1;
+    //----------------------------------------------------------------------------
+    // samples name vector sorted & unique in ret
+    //----------------------------------------------------------------------------
+    C_librarymap::iterator il;
+    vector<string>::iterator is;
+    del.samples.clear();
+    for ( il=libraries.libmap.begin() ; il != libraries.libmap.end(); il++ )
+    {
+        C_libraryinfo lib1 = (*il).second; 
+        del.samples.push_back(lib1.Info.SampleName);
+    }  
+    sort(del.samples.begin(),del.samples.end());
+    is = unique (del.samples.begin(), del.samples.end()); 
+    del.samples.resize( is - del.samples.begin() );  
+    
+    //----------------------------------------------------------------------------
+    // SVCF Info (list here and in C_SVR << )
+    //----------------------------------------------------------------------------
+    C_SVCF_TAG tag1;
 	tag1.INFO=true;
 	tag1.Id="SVLEN";
 	tag1.Number=1;
 	tag1.Type="Integer";
 	tag1.Descr="Difference in length between REF and ALT alleles";
-  del.SVCF.INFO.push_back(tag1);
-  tag1.Id="CIPOS";
+    del.SVCF.INFO.push_back(tag1);
+    tag1.Id="CIPOS";
 	tag1.Number=2;
 	tag1.Type="Integer";
 	tag1.Descr="Confidence interval around POS";
-  del.SVCF.INFO.push_back(tag1);
-  tag1.Id="END";
+    del.SVCF.INFO.push_back(tag1);
+    tag1.Id="END";
 	tag1.Number=1;
 	tag1.Descr="Deletion end coordinate";
-  del.SVCF.INFO.push_back(tag1);
-  tag1.Id="CIEND";
+    del.SVCF.INFO.push_back(tag1);
+    tag1.Id="CIEND";
 	tag1.Number=2;
 	tag1.Type="Integer";
 	tag1.Descr="Confidence interval around END";
-  del.SVCF.INFO.push_back(tag1);
-  tag1.Id="CISVLEN";
+    del.SVCF.INFO.push_back(tag1);
+    tag1.Id="CISVLEN";
 	tag1.Descr="Confidence interval around SVLEN";
-  del.SVCF.INFO.push_back(tag1);
-  tag1.Id="NALTF";
+    del.SVCF.INFO.push_back(tag1);
+    tag1.Id="NALTF";
 	tag1.Number=1;
 	tag1.Type="Integer";
 	tag1.Descr="Number of ALT supporting fragments";
-  del.SVCF.INFO.push_back(tag1);
-  tag1.Id="QLF";
+    del.SVCF.INFO.push_back(tag1);
+    tag1.Id="QLF";
 	tag1.Number=1;
 	tag1.Type="Integer";
 	tag1.Descr="Aberrant fragment length metric";
-  del.SVCF.INFO.push_back(tag1);
-  tag1.Id="QOUT";
+    del.SVCF.INFO.push_back(tag1);
+    tag1.Id="QOUT";
 	tag1.Number=1;
 	tag1.Type="Integer";
 	tag1.Descr="Outlier fragment metric";
-  del.SVCF.INFO.push_back(tag1);
+    del.SVCF.INFO.push_back(tag1);
 	tag1.Id="PRF";
 	tag1.Number=2;
 	tag1.Type="Integer";
 	tag1.Descr="Range of F cluster reads";
-  del.SVCF.INFO.push_back(tag1);
+    del.SVCF.INFO.push_back(tag1);
 	tag1.Id="PRR";
 	tag1.Number=2;
 	tag1.Type="Integer";
 	tag1.Descr="Range of R cluster reads";
-  del.SVCF.INFO.push_back(tag1);
-  tag1.Id="MQ5";
+    del.SVCF.INFO.push_back(tag1);
+    tag1.Id="MQ5";
 	tag1.Number=1;
 	tag1.Type="Integer";
 	tag1.Descr="Median mapping quality at 5' end";
-  del.SVCF.INFO.push_back(tag1);
-  tag1.Id="MQ3";
+    del.SVCF.INFO.push_back(tag1);
+    tag1.Id="MQ3";
 	tag1.Descr="Median mapping quality at 3' end";
-  del.SVCF.INFO.push_back(tag1);
-  tag1.INFO=false;
+    del.SVCF.INFO.push_back(tag1);
+    tag1.INFO=false;
 	tag1.FORMAT=true;
 	tag1.Id="NF";
 	tag1.Number=1;
 	tag1.Type="Integer";
 	tag1.Descr="Number of ALT supporting fragments/sample";
-  del.SVCF.FMT.push_back(tag1);
-  tag1.FORMAT=false;
+    del.SVCF.FMT.push_back(tag1);
+    tag1.FORMAT=false;
 	tag1.ALT=true;
 	tag1.Id="DEL";
 	tag1.Descr="Deletion relative to REF";
-  del.SVCF.ALT.push_back(tag1);
+    del.SVCF.ALT.push_back(tag1);
 	
 	//string s1[] = {"L","NF","NP","UP","UL","PA","PB","PC","PD","AL","NR","ER","MR"};
-  //vector<string> Info1(s1, s1 + 13);
-  //del.SVCF.Info=Info1;
-  
-  // SVCF Format  (list here and in C_SVR << operator method)
-  // string s2[] = {"NF","NP","N3","N5","NR","ER"}; //"CN"};
-  //string s2[] = {"NF","NP","NR","ER"}; //"CN"};
-  //string s2[] = {"NF"}; //"CN"};
-  //vector<string> Format1(s2, s2 + 1);
-  //del.SVCF.Format=Format1;
-  
-  // SVCF samples
-  del.SVCF.Samples=del.samples;    
-
-  // SVCF EventType
-  del.SVCF.EventType=del.typeName;
-
-
-
-  //----------------------------------------------------------------------------
-  // use library fragment length properties
-  //----------------------------------------------------------------------------
-  // use library LF, LFmax, and LFsig for selection rather than pars
-  //double LF = pars.getFragmentLength();
-  //double LFmax = pars.getFragmentLengthHi();
-  //HistObj LFhist = pars.getFragHist();
-  // double LFsig= LFhist.std;
-  //----------------------------------------------------------------------------
-  // expected number of pairs that span a given deletion
-  //----------------------------------------------------------------------------
-  //double Nexp = contig.localpairs.size()*double(LF-2*contig.aLR)/double(contig.Length);
-  //double Nexp = contig.frag_depth.Stats.h.mean;
-  // contig alignability estimate
-  //float totSites = contig.Length-int(contig.totalNoCovBases);
-  //float acontig  = float (totSites-contig.totalRepeatBases) / totSites;
-  //----------------------------------------------------------------------------
-  // loop over long pair clusters to identify candidate deletions
-  //----------------------------------------------------------------------------
-  for ( it=clus.longpairc.cluster.begin() ; it != clus.longpairc.cluster.end(); it++ ) {
-    int i = (*it).first;
-    c1 = clus.longpairc.cluster[i];   
-    int Np = c1.inp.size();
-    //-------------------------------------------------------------------------
-    // initialize cluster limits:    p5a--p5b      p3a-p3b
-    //-------------------------------------------------------------------------
-    int p5b = 0;              // trailing edge of 5' cluster
-    int p5a = contig.Length;  // leading edge of 5' cluster
-    int p3b = 0;              // trailing edge of 3' cluster
-    int p3a = contig.Length;  // leading edge of 3' cluster
-    int p5aMax=0;             // leading edge of trailing read in 5' cluster 
-    int p3aMax=0;             // leading edge of trailing read in 3' cluster
-    int LFmax=0;              // longest library in this cluster
-    unsigned int RGCmax=0;    // ReadGroupCode for longest library
-    int LFrange=0;            // LF width of longest library
-    double qAberr=0;          // product of fragment consistency with LF
-    C_RGmap RGmap;            // declare empty Readgroup counter
-
-    // loop over fragments in cluster
-    cpair.resize(Np);
-    DiffLF.resize(Np);
-    mapQ5.resize(Np);
-    mapQ3.resize(Np);
-    for (int j=0; j<Np; j++) {
-       int k = c1.inp[j];
-       C_localpair lp1 = clus.longpair[k];
-       cpair[j]=lp1;
-       int p = lp1.pos;                // start of 5' cluster
-       if (p<p5a) p5a=p;
-       if (p>p5aMax) p5aMax=p;
-       p = lp1.pos+lp1.len1;           // end of 5' cluster
-       if (p>p5b) p5b=p;
-       p = lp1.pos+lp1.lm-lp1.len2;    // start of 3' cluster
-       if (p<p3a) p3a=p;
-       if (p>p3aMax) p3aMax=p;
-       p = lp1.pos+lp1.lm;             // end of 3' cluster
-       if (p>p3b) p3b=p;
-       unsigned int RGC1=lp1.ReadGroupCode;
-       RGmap[RGC1]++;
-       int LMhigh1=libraries.libmap[RGC1].LMhigh;
-       if (LMhigh1>LFmax) {
-           RGCmax=RGC1;
-           LFmax=LMhigh1;
-           LFrange=LMhigh1-libraries.libmap[RGC1].LMlow;
-       }
-       double pAb1=libraries.libmap[RGC1].fragHist.x2pTrim(double(lp1.lm));
-       qAberr+=double(p2q(1-pAb1))/Np;
-			 // frag length shift
-			 DiffLF[j]=lp1.lm-libraries.libmap[RGC1].fragHist.median;
-			 // mapQ5
-			 mapQ5[j]=lp1.q1;
-			 // mapQ3
-			 mapQ3[j]=lp1.q2;
-    }
+    //vector<string> Info1(s1, s1 + 13);
+    //del.SVCF.Info=Info1;
     
+    // SVCF Format  (list here and in C_SVR << operator method)
+    // string s2[] = {"NF","NP","N3","N5","NR","ER"}; //"CN"};
+    //string s2[] = {"NF","NP","NR","ER"}; //"CN"};
+    //string s2[] = {"NF"}; //"CN"};
+    //vector<string> Format1(s2, s2 + 1);
+    //del.SVCF.Format=Format1;
+    
+    // SVCF samples
+    del.SVCF.Samples=del.samples;    
+    
+    // SVCF EventType
+    del.SVCF.EventType=del.typeName;
+    
+    
+    
+    //----------------------------------------------------------------------------
+    // use library fragment length properties
+    //----------------------------------------------------------------------------
+    // use library LF, LFmax, and LFsig for selection rather than pars
+    //double LF = pars.getFragmentLength();
+    //double LFmax = pars.getFragmentLengthHi();
+    //HistObj LFhist = pars.getFragHist();
+    // double LFsig= LFhist.std;
+    //----------------------------------------------------------------------------
+    // expected number of pairs that span a given deletion
+    //----------------------------------------------------------------------------
+    //double Nexp = contig.localpairs.size()*double(LF-2*contig.aLR)/double(contig.Length);
+    //double Nexp = contig.frag_depth.Stats.h.mean;
+    // contig alignability estimate
+    //float totSites = contig.Length-int(contig.totalNoCovBases);
+    //float acontig  = float (totSites-contig.totalRepeatBases) / totSites;
+    //----------------------------------------------------------------------------
+    // loop over long pair clusters to identify candidate deletions
+    //----------------------------------------------------------------------------
+    for ( it=clus.longpairc.cluster.begin() ; it != clus.longpairc.cluster.end(); it++ ) {
+        int i = (*it).first;
+        c1 = clus.longpairc.cluster[i];   
+        int Np = c1.inp.size();
+        //-------------------------------------------------------------------------
+        // initialize cluster limits:    p5a--p5b      p3a-p3b
+        //-------------------------------------------------------------------------
+        int p5b = 0;              // trailing edge of 5' cluster
+        int p5a = contig.Length;  // leading edge of 5' cluster
+        int p3b = 0;              // trailing edge of 3' cluster
+        int p3a = contig.Length;  // leading edge of 3' cluster
+        int p5aMax=0;             // leading edge of trailing read in 5' cluster 
+        int p3aMax=0;             // leading edge of trailing read in 3' cluster
+        int LFmax=0;              // longest library in this cluster
+        unsigned int RGCmax=0;    // ReadGroupCode for longest library
+        int LFrange=0;            // LF width of longest library
+        double qAberr=0;          // product of fragment consistency with LF
+        C_RGmap RGmap;            // declare empty Readgroup counter
+        
+        // loop over fragments in cluster
+        cpair.resize(Np);
+        DiffLF.resize(Np);
+        mapQ5.resize(Np);
+        mapQ3.resize(Np);
+        for (int j=0; j<Np; j++) {
+            int k = c1.inp[j];
+            C_localpair lp1 = clus.longpair[k];
+            cpair[j]=lp1;
+            int p = lp1.pos;                // start of 5' cluster
+            if (p<p5a) p5a=p;
+            if (p>p5aMax) p5aMax=p;
+            p = lp1.pos+lp1.len1;           // end of 5' cluster
+            if (p>p5b) p5b=p;
+            p = lp1.pos+lp1.lm-lp1.len2;    // start of 3' cluster
+            if (p<p3a) p3a=p;
+            if (p>p3aMax) p3aMax=p;
+            p = lp1.pos+lp1.lm;             // end of 3' cluster
+            if (p>p3b) p3b=p;
+            unsigned int RGC1=lp1.ReadGroupCode;
+            RGmap[RGC1]++;
+            int LMhigh1=libraries.libmap[RGC1].LMhigh;
+            if (LMhigh1>LFmax) {
+                RGCmax=RGC1;
+                LFmax=LMhigh1;
+                LFrange=LMhigh1-libraries.libmap[RGC1].LMlow;
+            }
+            double pAb1=libraries.libmap[RGC1].fragHist.x2pTrim(double(lp1.lm));
+            qAberr+=double(p2q(1-pAb1))/Np;
+            // frag length shift
+            DiffLF[j]=lp1.lm-libraries.libmap[RGC1].fragHist.median;
+            // mapQ5
+            mapQ5[j]=lp1.q1;
+            // mapQ3
+            mapQ3[j]=lp1.q2;
+        }
+        
 		vector <int> DiffLF1 = DiffLF;
 		sort(DiffLF1.begin(),DiffLF1.end());
 		int DLF1=DiffLF1[Np/2];
@@ -491,7 +491,7 @@ int C_SpannerSV::findDel(C_contig  & contig, C_SpannerCluster & clus,
 		if ( 2*(Np/2)==Np)  {
 			DLF1= (DiffLF1[Np/2]+DiffLF1[(Np/2)-1])/2.0;
 		}
-
+        
 		sort(mapQ5.begin(),mapQ5.end());
 		int mQ5=mapQ5[Np/2];		
 		sort(mapQ3.begin(),mapQ3.end());
@@ -500,180 +500,180 @@ int C_SpannerSV::findDel(C_contig  & contig, C_SpannerCluster & clus,
 			mQ5= (mapQ5[Np/2]+mapQ5[-1+(Np/2)])/2.0;
 			mQ3= (mapQ3[Np/2]+mapQ3[-1+(Np/2)])/2.0;
 		}
-
-    // check for very strange read lengths or indexing screwups
-    //if ((p5b+1)!=p0) {
-    //if ( abs((p5b+1)-p0)>(int(20*contig.sLR)) ) {
-    //   cerr << "problem with cluster index edge calc " << p0 << " ~ " << p5b << endl;
-    //}
-    //-------------------------------------------------------------------------
-    // mapping length ~  extent of deletion 
-    // for some reason the average deletion is ~2 reads too big 
-    //-------------------------------------------------------------------------
-    // int len1 = int(c1.mean[1]-LF-2*contig.aLR);
-    //-------------------------------------------------------------------------
-    // length <~ distance from the start of 3' cluster and end of 5' cluster 
-    //------------------------------------------------------------------------- 
-    // int len = int(p3a-p5b-1);
-    //-------------------------------------------------------------------------
-    // estimate gap size where breakpoint should be 
-    //-------------------------------------------------------------------------
-    // int avegap = ((p5aMax-p5a)+(p3aMax-p3a))/(2*Np);
-    // average gap over this contig
-    //int avegapC = double(contig.Length)/int(2*contig.localpairs.size());
-    //int avegapC = double(contig.Length)/double(contig.totalUniqueReads);
-    
-    //-------------------------------------------------------------------------
-    // correct p0 and len for expected gaps between reads 
-    //-------------------------------------------------------------------------
-    // int p0 = p5b+1+avegap/2;
-    // int len = int(p3a-p5b-1)-avegap/2;
-    int p0 = p5b+1;
+        
+        // check for very strange read lengths or indexing screwups
+        //if ((p5b+1)!=p0) {
+        //if ( abs((p5b+1)-p0)>(int(20*contig.sLR)) ) {
+        //   cerr << "problem with cluster index edge calc " << p0 << " ~ " << p5b << endl;
+        //}
+        //-------------------------------------------------------------------------
+        // mapping length ~  extent of deletion 
+        // for some reason the average deletion is ~2 reads too big 
+        //-------------------------------------------------------------------------
+        // int len1 = int(c1.mean[1]-LF-2*contig.aLR);
+        //-------------------------------------------------------------------------
+        // length <~ distance from the start of 3' cluster and end of 5' cluster 
+        //------------------------------------------------------------------------- 
+        // int len = int(p3a-p5b-1);
+        //-------------------------------------------------------------------------
+        // estimate gap size where breakpoint should be 
+        //-------------------------------------------------------------------------
+        // int avegap = ((p5aMax-p5a)+(p3aMax-p3a))/(2*Np);
+        // average gap over this contig
+        //int avegapC = double(contig.Length)/int(2*contig.localpairs.size());
+        //int avegapC = double(contig.Length)/double(contig.totalUniqueReads);
+        
+        //-------------------------------------------------------------------------
+        // correct p0 and len for expected gaps between reads 
+        //-------------------------------------------------------------------------
+        // int p0 = p5b+1+avegap/2;
+        // int len = int(p3a-p5b-1)-avegap/2;
+        int p0 = p5b+1;
 		int p1 = p3b;
-    int len = int(DLF1);
-    /*
-    don't extrapolate without threshold info
-    //-------------------------------------------------------------------------
-    // extrapolate cluster effective lm below threshold
-    //-------------------------------------------------------------------------
-    int Low = int(c1.low[1]);      // lowest lm in cluster
-    int dL = int(c1.high[1]-Low);  // range of lm in cluster
-    double EsigLm = LFhist.std;   // expected lm stdev
-    double sigLm = c1.std[1]; // observed lm stdev
-    int dLx = int(dL*((EsigLm/sigLm) - 1.0));
-    bool extend = ((Low-dLx)< int(LFmax));
-    if (extend) {
-      len = len -dLx;
-    }
-    */
-    //-------------------------------------------------------------------------
-    // bail on candidate with negative length...
-    //-------------------------------------------------------------------------
-    if (len<1) continue; 
-    //-------------------------------------------------------------------------
-    // check for overlap with previous evt
-    //-------------------------------------------------------------------------
-    bool overlap = false;
-    C_SV1 e0;
-    if (del.evt.size()>0) { 
-       e0 = del.evt.back();
-       int pp = e0.pend;
-       overlap=(pp>p0);
-       overlap = overlap&&(abs(int(e0.pos)-int(p0))<LFmax);
-
-       /*
-       if (overlap) {
-          cout << " overlap: prev pos " << e0.pos << "\t prev end " 
-          << e0.pos+e0.length << "\t this pos " << p0 << endl;
-       }
-       */
-    }
-    //cout << p0 << " del len1 " << len1 << " \t len " << len << "\t avegap " << avegap << "\t Np " << Np << endl;
-    //len = len1;
-    //
-    // coverage within deletion region
-    //int p1 = p0+len-1;
-    //C_SVcoverage1 cov(contig, p0, p1,nomcov) ;
-    // coverage within 5' cluster region
-    //C_SVcoverage1 cov5(contig, p5a, p5b,nomcov) ;
-    // coverage within 3' cluster region
-    //C_SVcoverage1 cov3(contig, p3a, p3b,nomcov) ;
-   
-    C_SV1 e1;
-    e1.pos = p0;
-    e1.pend = p1;
-    e1.anchor = contig.getAnchorIndex();
-    e1.length = len;
-    //e1.q = p2q(cov.p);
+        int len = int(DLF1);
+        /*
+         don't extrapolate without threshold info
+         //-------------------------------------------------------------------------
+         // extrapolate cluster effective lm below threshold
+         //-------------------------------------------------------------------------
+         int Low = int(c1.low[1]);      // lowest lm in cluster
+         int dL = int(c1.high[1]-Low);  // range of lm in cluster
+         double EsigLm = LFhist.std;   // expected lm stdev
+         double sigLm = c1.std[1]; // observed lm stdev
+         int dLx = int(dL*((EsigLm/sigLm) - 1.0));
+         bool extend = ((Low-dLx)< int(LFmax));
+         if (extend) {
+         len = len -dLx;
+         }
+         */
+        //-------------------------------------------------------------------------
+        // bail on candidate with negative length...
+        //-------------------------------------------------------------------------
+        if (len<1) continue; 
+        //-------------------------------------------------------------------------
+        // check for overlap with previous evt
+        //-------------------------------------------------------------------------
+        bool overlap = false;
+        C_SV1 e0;
+        if (del.evt.size()>0) { 
+            e0 = del.evt.back();
+            int pp = e0.pend;
+            overlap=(pp>p0);
+            overlap = overlap&&(abs(int(e0.pos)-int(p0))<LFmax);
+            
+            /*
+             if (overlap) {
+             cout << " overlap: prev pos " << e0.pos << "\t prev end " 
+             << e0.pos+e0.length << "\t this pos " << p0 << endl;
+             }
+             */
+        }
+        //cout << p0 << " del len1 " << len1 << " \t len " << len << "\t avegap " << avegap << "\t Np " << Np << endl;
+        //len = len1;
+        //
+        // coverage within deletion region
+        //int p1 = p0+len-1;
+        //C_SVcoverage1 cov(contig, p0, p1,nomcov) ;
+        // coverage within 5' cluster region
+        //C_SVcoverage1 cov5(contig, p5a, p5b,nomcov) ;
+        // coverage within 3' cluster region
+        //C_SVcoverage1 cov3(contig, p3a, p3b,nomcov) ;
+        
+        C_SV1 e1;
+        e1.pos = p0;
+        e1.pend = p1;
+        e1.anchor = contig.getAnchorIndex();
+        e1.length = len;
+        //e1.q = p2q(cov.p);
 		// adhoc satuating functions
 		e1.q=(Np*100.0)/(Np+10.0);
 		e1.q5=mQ5;
 		e1.q3=mQ3;
-    //e1.cov=cov;
-    //e1.cov5=cov5;
-    //e1.cov3=cov3;
-    e1.cls = c1;
-    e1.pair=cpair;
-    e1.p5[0]=p5a;
-    e1.p5[1]=p5b;
-    e1.p3[0]=p3a;
-    e1.p3[1]=p3b;
-
-
-    // brkpoint uncertainty depends on average gap between read starts in cluster
-    //e1.posU=(avegap>avegapC? avegap: avegapC);
-    e1.CIpos[0]=-(p5aMax-p5a)/Np;
+        //e1.cov=cov;
+        //e1.cov5=cov5;
+        //e1.cov3=cov3;
+        e1.cls = c1;
+        e1.pair=cpair;
+        e1.p5[0]=p5a;
+        e1.p5[1]=p5b;
+        e1.p3[0]=p3a;
+        e1.p3[1]=p3b;
+        
+        
+        // brkpoint uncertainty depends on average gap between read starts in cluster
+        //e1.posU=(avegap>avegapC? avegap: avegapC);
+        e1.CIpos[0]=-(p5aMax-p5a)/Np;
 		e1.CIpos[1]=(p3aMax-p3a)/Np;
-    e1.CIend[0]=-(p5aMax-p5a)/Np;
+        e1.CIend[0]=-(p5aMax-p5a)/Np;
 		e1.CIend[1]=(p3aMax-p3a)/Np;
 		e1.CIlen[0]=-(DLF1-DiffLF1[0])/Np;
 		e1.CIlen[1]=(DiffLF1[DiffLF1.size()-1]-DLF1)/Np;
-    
-    // correction to pos,len for deletion bracketed by repeat region
-    int DL=(len-e1.cls.mean[1]);
-    if (DL>(4*int(e1.CIpos[1]))) {
-				e1.CIlen[0]=-e1.cls.std[1]/sqrt(e1.cls.N);
-				e1.CIlen[1]=e1.cls.std[1]/sqrt(e1.cls.N);
-				e1.length=e1.cls.mean[1];
+        
+        // correction to pos,len for deletion bracketed by repeat region
+        int DL=(len-e1.cls.mean[1]);
+        if (DL>(4*int(e1.CIpos[1]))) {
+            e1.CIlen[0]=-e1.cls.std[1]/sqrt(e1.cls.N);
+            e1.CIlen[1]=e1.cls.std[1]/sqrt(e1.cls.N);
+            e1.length=e1.cls.mean[1];
    			e1.CIpos[0]=-DL/2;
 	  		e1.CIpos[1]=DL/2;
-        e1.pos=e1.pos+DL/2;
+            e1.pos=e1.pos+DL/2;
+        }
+        
+        
+        // prob(outlier) in cluster is x2p of fragment dist with range of cluster
+        double aRange=((p3b-p3a)+(p5b-p5a))/2.0;
+        double pOut=libraries.libmap[RGCmax].fragHist.x2pTrim(aRange);
+        e1.qOutlier=p2q(1.0-pOut);
+        
+        // prob(Aberrant LM) for independent fragments
+        e1.qAberrantLM=int(qAberr);
+        
+        // ReadGroups in event
+        e1.ReadGroupMap=RGmap;
+        
+        // end alignability
+        //e1.a5 = cov5.Nsite/(float(int(cov5.p1)-int(cov5.p0))*acontig);
+        //e1.a3 = cov3.Nsite/(float(int(cov3.p1)-int(cov3.p0))*acontig);
+        
+        //-------------------------------------------------------------------------
+        // if overlapped merge this cluster with prev event
+        //-------------------------------------------------------------------------
+        if (overlap) {
+            C_SV1 e2 = merge(e0,e1,contig, pars, 0);
+            // remove existing event at end of list
+            del.evt.pop_back();
+            e1=e2;
+        } 
+        
+        int Npairs = e1.pair.size();
+        // bkp piles up at the corner of Np-Lm space close to 0,LF
+        bool significant = double(Npairs) > 0; //(0.01*Nexp - (e1.cls.mean[1])/LFrange);
+        // simple cut on number of pairs in event
+        significant = significant & (Npairs>=pars.getMinClustered());    
+        // simple cut on event length
+        significant = significant & (int(e1.length)>=pars.getMinLength());    
+        // quantized copy number
+        //e1.copynumber = short(2*e1.cov.N/e1.cov.eN +0.5);
+        //-------------------------------------------------------------------------
+        // new deletion event
+        //-------------------------------------------------------------------------
+        e1.type="DEL";
+        if (significant) { //&(e1.copynumber<(2+pars.getCNslosh()))) { 
+            del.evt.push_back(e1);
+        }
     }
-
-
-    // prob(outlier) in cluster is x2p of fragment dist with range of cluster
-    double aRange=((p3b-p3a)+(p5b-p5a))/2.0;
-    double pOut=libraries.libmap[RGCmax].fragHist.x2pTrim(aRange);
-    e1.qOutlier=p2q(1.0-pOut);
-
-    // prob(Aberrant LM) for independent fragments
-    e1.qAberrantLM=int(qAberr);
-
-    // ReadGroups in event
-    e1.ReadGroupMap=RGmap;
-
-    // end alignability
-    //e1.a5 = cov5.Nsite/(float(int(cov5.p1)-int(cov5.p0))*acontig);
-    //e1.a3 = cov3.Nsite/(float(int(cov3.p1)-int(cov3.p0))*acontig);
-
-    //-------------------------------------------------------------------------
-    // if overlapped merge this cluster with prev event
-    //-------------------------------------------------------------------------
-    if (overlap) {
-      C_SV1 e2 = merge(e0,e1,contig, pars, 0);
-      // remove existing event at end of list
-      del.evt.pop_back();
-      e1=e2;
-    } 
-      
-    int Npairs = e1.pair.size();
-    // bkp piles up at the corner of Np-Lm space close to 0,LF
-    bool significant = double(Npairs) > 0; //(0.01*Nexp - (e1.cls.mean[1])/LFrange);
-    // simple cut on number of pairs in event
-    significant = significant & (Npairs>=pars.getMinClustered());    
-    // simple cut on event length
-    significant = significant & (int(e1.length)>=pars.getMinLength());    
-    // quantized copy number
-    //e1.copynumber = short(2*e1.cov.N/e1.cov.eN +0.5);
-    //-------------------------------------------------------------------------
-    // new deletion event
-    //-------------------------------------------------------------------------
-    e1.type="DEL";
-    if (significant) { //&(e1.copynumber<(2+pars.getCNslosh()))) { 
-        del.evt.push_back(e1);
-    }
-  }
-  
-  // sort list
-  del.evt.sort();
-  
-  // calc sample supporting and spanning fragments
-  del.finalize(contig,libraries,pars);
-
-  // SVCF event count
-  del.SVCF.NEvent=int(del.evt.size());  
-  
-  return int(del.evt.size());
+    
+    // sort list
+    del.evt.sort();
+    
+    // calc sample supporting and spanning fragments
+    del.finalize(contig,libraries,pars);
+    
+    // SVCF event count
+    del.SVCF.NEvent=int(del.evt.size());  
+    
+    return int(del.evt.size());
 }       
 
 
@@ -3637,7 +3637,7 @@ ostream &operator<<(ostream &output, C_SV1 & e1)
   s = b;
   output << s;
 
-	sprintf(b,"END=%d;CIEND=%d,%d;", e1.pend,e1.CIend[0],e1.CIend[1],int(e1.cls.inp.size()));
+  sprintf(b,"END=%d;CIEND=%d,%d;", e1.pend,e1.CIend[0],e1.CIend[1]);
   s = b;
   output << s;
 	

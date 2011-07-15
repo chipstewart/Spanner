@@ -22,6 +22,7 @@
 #include <re2/re2.h>
 using namespace re2;
 
+#include "UtilityFunctions.h"
 
 using std::ios;
 using std::ifstream;
@@ -159,6 +160,15 @@ void printBpos(ostream &, const vector<int>, const int);
 //------------------------------------------------------------------------------
 void printBposFasta(ostream &, const string, const vector<int>, const int);
 
+//------------------------------------------------------------------------------
+// returns the next number,token pair and remainder of cigar string
+//------------------------------------------------------------------------------
+bool  getNextCigarToken(string &,  int &, string &);
+
+//------------------------------------------------------------------------------
+// returns the next string in MD tag and remainder of MD string
+//------------------------------------------------------------------------------
+bool  getNextMdString(string & ,  string & );
 //------------------------------------------------------------------------------
 // getCigarLength -- returns the total sequence length of a cigar string
 //------------------------------------------------------------------------------

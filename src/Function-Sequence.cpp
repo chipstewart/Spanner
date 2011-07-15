@@ -10,33 +10,8 @@
 #ifndef FUNCTION_SEQUENCE_CPP
 #define FUNCTION_SEQUENCE_CPP
 
-//#include <iostream>
-//#include <fstream>
-//#include <string>
-//#include <vector>
-//#include <map>
-//#include <iterator>
-//#include <algorithm>
-
-// "boost" regular expression library
-// #include <boost/regex.hpp>
-
 #include "Function-Sequence.h"
 
-/*
-using std::ios;
-using std::ifstream;
-using std::ofstream;
-using std::ostream;
-using std::istream;
-using std::cin;
-using std::cout;
-using std::clog;
-using std::endl;
-using std::string;
-using std::vector;
-using std::map;
-*/
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
@@ -862,6 +837,39 @@ void printBposFasta(ostream &out, const string header, const vector<int> bpos, c
   out << endl;
 }
 
+bool  getNextCigarToken(string & c1,  int & n1, string & op1) {
+    
+    size_t k=0;
+    size_t L=c1.size();
+    while (isdigit(c1[k])&(k<L)) {
+       k++;
+    }
+    if (k==L)  return false;
+    string ns=c1.substr(0,k-1);
+    n1=string2Int(ns);
+    if (!isalpha(c1[k])) 
+        return false;
+    op1=c1[k];
+    c1=c1.substr(k+1);
+    return true;
+}
+
+bool  getNextMdString(string & md1,  string & s1) {    
+    size_t k1=0;
+    size_t L=md1.size();
+    while (!isdigit(md1[k1])&(k1<L)) {
+        k1++;
+    }
+    if (k1==L)  return false;
+    size_t k2=k1;
+    while (isdigit(md1[k2])&(k2<L)) {
+        k2++;
+    }
+    s1=md1.substr(k1,k2-1);
+    md1=md1.substr(k2);
+    return true;
+}
+
 //------------------------------------------------------------------------------
 // getCigarLength -- returns the total sequence length of a cigar string
 //   opt=0: query length
@@ -877,7 +885,9 @@ int getCigarLength(string cigar, int opt=0)
 	string op1;
 	
 	int len=0;
-	while (RE2::FindAndConsume(&sp,patternCigar, &len1, &op1)) {
+    string c1=cigar;
+	//while (RE2::FindAndConsume(&sp,patternCigar, &len1, &op1)) {
+    while (getNextCigarToken(c1, len1, op1) ) {
 		if (opt==0) {
 			// query length does not count deletions in reference
 			size_t found=op1.find("D");
@@ -907,12 +917,14 @@ bool getCigarLengths(string cigar, int &LQ, int &LR, int &MM)
 	
 	int len1;
 	string op1;
-	
+	string c1=cigar;
 	LQ=0;
 	LR=0;
 	MM=0;
 	
-	while (RE2::FindAndConsume(&sp,patternCigar, &len1, &op1)) {
+	//while (RE2::FindAndConsume(&sp,patternCigar, &len1, &op1)) {
+    while (getNextCigarToken(c1, len1, op1) ) {
+
 		size_t found=op1.find("S");
 		if (found!=string::npos) 	// skip S's (clips in query)
 			continue;
@@ -943,10 +955,12 @@ int getCigarMismatchCount(string cigar)
 	
 	int len1;
 	string op1;
-	
+	string c1=cigar;
 	int mm=0;
+    
 	//while (RE2::FindAndConsume(&sp,patternCigar.c_str(), &len1, &op1)) {
-	while (RE2::FindAndConsume(&sp,patternCigar, &len1, &op1)) {
+	//while (RE2::FindAndConsume(&sp,patternCigar, &len1, &op1)) {
+    while (getNextCigarToken(c1, len1, op1) ) {
 		
 		size_t found=op1.find("S");
 		if (found!=string::npos) 	// skip S's (clips in query)
@@ -970,10 +984,11 @@ int getMDMismatchCount(string MD)
 	StringPiece sp(MD);    // Wrap a StringPiece around it
 	
 	string se;
+    string md1=MD;
 	
 	int mm=0;
-	while (RE2::FindAndConsume(&sp,patternMD, &se)) {
-
+	//while (RE2::FindAndConsume(&sp,patternMD, &se)) {
+    while (getNextMdString(md1,se)) {
 		size_t found=se.find("^");
 		if (found==string::npos) {
 			// skip ^'s (gaps in reads are already in cigar)			

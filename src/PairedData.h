@@ -47,18 +47,18 @@ using namespace BamTools;
 // Basic single read-map properties
 //------------------------------------------------------------------------------
 class C_readmap {
-  friend ostream &operator<<(ostream &, const C_readmap &);
-  public:
+    friend ostream &operator<<(ostream &, const C_readmap &);
+public:
     unsigned int pos;           // position in contig (unpadded)
     unsigned short len;         // length of this read aligment in contig coordinates
     unsigned short anchor;      // anchor index  
     char sense;                 // forward ('F') or reverse complement ('R')
-		char q;                     // mapping quality
+    char q;                     // mapping quality
   	char q2;                    // mapping quality of next best alignment
     unsigned short nmap;        // number of mappings for this read 
 	unsigned short mm;          // number of mismatches     
   	string mob;                 // two char flag for special contig hit
-	  C_readmap();  
+    C_readmap();  
     C_readmap(const C_readmap &);  
     C_readmap(unsigned int, unsigned short, unsigned short, char, char,char);
     ~C_readmap(){};  
@@ -71,11 +71,11 @@ class C_readmap {
 // multiply-mapped read class 
 //------------------------------------------------------------------------------
 class C_readmaps {
-  friend ostream &operator<<(ostream &, const C_readmaps &);
-  public:
+    friend ostream &operator<<(ostream &, const C_readmaps &);
+public:
     C_readmaps();                   // constructor
     C_readmaps(const C_readmaps &);  
-	  vector<C_readmap> align;         // vector of all alignments for this read
+    vector<C_readmap> align;         // vector of all alignments for this read
     ~C_readmaps(){};  
     C_readmaps&operator=(const C_readmaps &rhs);
     char element;
@@ -86,25 +86,25 @@ class C_readmaps {
 // Paired-read class  
 //------------------------------------------------------------------------------
 class C_pairedread {
- friend ostream &operator<<(ostream &, const C_pairedread &); 
-  public:
+    friend ostream &operator<<(ostream &, const C_pairedread &); 
+public:
     C_pairedread();              // constructor
     C_readmaps read[2];          // read[0] or read[1]
     ~C_pairedread(){};  
     unsigned int ReadGroupCode;
-		string Name;
-	  char Qproperpair;	
-  private:
+    string Name;
+    char Qproperpair;	
+private:
     unsigned int Nend;
-
+    
 };
 
 //------------------------------------------------------------------------------
 // anchor info 
 //------------------------------------------------------------------------------
 class C_anchorinfo {
-  friend ostream &operator<<(ostream &, C_anchorinfo &);
-  public:
+    friend ostream &operator<<(ostream &, C_anchorinfo &);
+public:
     C_anchorinfo();               // constructor
     C_anchorinfo(const C_anchorinfo &);           // copy constructor
     C_anchorinfo(char);           // AB constructor
@@ -120,36 +120,36 @@ class C_anchorinfo {
     unsigned int anchorMinElement();
     void printAnchorInfo(string &);
     char anchorIndex(string &);   // return anchor index given anchor name 
-		map<string, unsigned int, less<string> > L;
+    map<string, unsigned int, less<string> > L;
     vector<char> use; 
     vector<char> element; 
     vector <string> names;
-		string source;
-		string special;	// prefix for "special.bam anchors"
+    string source;
+    string special;	// prefix for "special.bam anchors"
     void push_anchor (string &, unsigned int);
 };
 
-    
+
 //------------------------------------------------------------------------------
 // library info 
 //------------------------------------------------------------------------------
 class C_libraryinfo {
-  friend ostream &operator<<(ostream &, C_libraryinfo &);
-  public:
+    friend ostream &operator<<(ostream &, C_libraryinfo &);
+public:
     C_libraryinfo();                          // constructor
     C_libraryinfo(const C_libraryinfo &);     // copy constructor
     Mosaik::ReadGroup Info; 
     /* BAM/Mosiak header info:
-    unsigned int MedianFragmentLength;
-		unsigned int ReadGroupCode;
-		SequencingTechnologies SequencingTechnology;
-		string CenterName;
-		string Description;
-		string LibraryName;
-		string PlatformUnit;
-		string ReadGroupID;
-		string SampleName;
-    */   
+     unsigned int MedianFragmentLength;
+     unsigned int ReadGroupCode;
+     SequencingTechnologies SequencingTechnology;
+     string CenterName;
+     string Description;
+     string LibraryName;
+     string PlatformUnit;
+     string ReadGroupID;
+     string SampleName;
+     */   
     // Fragment lengths 
     HistObj fragHist;                    // fragment length distribution
     HistObj readLengthHist;              // read length distribution
@@ -166,7 +166,7 @@ class C_libraryinfo {
     int NSingle;
     int NPairRedundant;
     int NSingleRedundant; 
-		string source;
+    string source;
   	bool isSpecial();
 };
 
@@ -176,7 +176,7 @@ class C_libraryinfo {
 typedef std::map<unsigned int, C_libraryinfo, std::less<unsigned int> >  C_librarymap;
 
 class C_libraries {
-  friend ostream &operator<<(ostream &, C_libraries &);
+    friend ostream &operator<<(ostream &, C_libraries &);
 public:
 	C_libraries();                            // constructor
 	C_libraries(const C_libraries &);         // copy constructor
@@ -204,75 +204,75 @@ public:
 
 //  local read pair structure  (mapped fragment contained on one anchor reference)
 class C_localpair {
-  friend ostream &operator<<(ostream &, const C_localpair &);
-  public:
-   unsigned int pos;            // position in contig (unpadded)
-   int lm;                      // length from F to R ends
-   unsigned short anchor;       // anchor index  
-   unsigned short len1;         // length of F read aligment 
-   unsigned short len2;         // length of R read aligment 
-   char orient;                 // orient FR ('') or both forward ('F') or both reverse complement ('R')
-   char q1;                     // F mapping quality
-   char q2;                     // R mapping quality
-   char mm1;                    // F mismatches 
-   char mm2;                    // R mismatches
-   char constrain;              // marks non-unique ends 0-both u, 1-FU,2-RU,3-both NU
-   unsigned int ReadGroupCode;  // library info index
-   C_localpair();  
-   C_localpair(const C_localpair &);  
-   C_localpair(unsigned int, int, unsigned short,unsigned short 
-       ,unsigned short, char, char, char,char, char, char,unsigned int);
-   C_localpair(C_pairedread &,char);
-   ~C_localpair(){};  
-   C_localpair&operator=(const C_localpair &rhs);
-   int operator==(const C_localpair &rhs) const;
-   int operator<(const C_localpair &rhs) const;  
+    friend ostream &operator<<(ostream &, const C_localpair &);
+public:
+    unsigned int pos;            // position in contig (unpadded)
+    int lm;                      // length from F to R ends
+    unsigned short anchor;       // anchor index  
+    unsigned short len1;         // length of F read aligment 
+    unsigned short len2;         // length of R read aligment 
+    char orient;                 // orient FR ('') or both forward ('F') or both reverse complement ('R')
+    char q1;                     // F mapping quality
+    char q2;                     // R mapping quality
+    char mm1;                    // F mismatches 
+    char mm2;                    // R mismatches
+    char constrain;              // marks non-unique ends 0-both u, 1-FU,2-RU,3-both NU
+    unsigned int ReadGroupCode;  // library info index
+    C_localpair();  
+    C_localpair(const C_localpair &);  
+    C_localpair(unsigned int, int, unsigned short,unsigned short 
+                ,unsigned short, char, char, char,char, char, char,unsigned int);
+    C_localpair(C_pairedread &,char);
+    ~C_localpair(){};  
+    C_localpair&operator=(const C_localpair &rhs);
+    int operator==(const C_localpair &rhs) const;
+    int operator<(const C_localpair &rhs) const;  
 }; 
 
 
 // cross read pair structure ( mapped fragment across two anchor references)
 class C_crosspair {
-  friend ostream &operator<<(ostream &, const C_crosspair &);
-  public:
-   C_readmap read[2];          // position in contig (unpadded)
-   unsigned int ReadGroupCode; // library info index
-   C_crosspair();  
-   C_crosspair(const C_crosspair &);  
-   C_crosspair(const C_readmap  &, const C_readmap  &, const unsigned int);
-   ~C_crosspair(){};  
-   C_crosspair&operator=(const C_crosspair &rhs);
-   int operator==(const C_crosspair &rhs) ; //const;
-   int operator<(const C_crosspair &rhs) const;  
+    friend ostream &operator<<(ostream &, const C_crosspair &);
+public:
+    C_readmap read[2];          // position in contig (unpadded)
+    unsigned int ReadGroupCode; // library info index
+    C_crosspair();  
+    C_crosspair(const C_crosspair &);  
+    C_crosspair(const C_readmap  &, const C_readmap  &, const unsigned int);
+    ~C_crosspair(){};  
+    C_crosspair&operator=(const C_crosspair &rhs);
+    int operator==(const C_crosspair &rhs) ; //const;
+    int operator<(const C_crosspair &rhs) const;  
 }; 
 
 //------------------------------------------------------------------------------
 // u-multi read pair structure ( fragment with one unique and one multiple map)
 //------------------------------------------------------------------------------
 class C_umpair {
-  friend ostream &operator<<(ostream &, const C_umpair &);
-  public:
-   C_readmap read[2];          // position in contig (unpadded)
-   int nmap;                   // Number of different element subclasses (moblist hits)
-   int nmapA;                  // Total number of moblist hits
-   int elements;
-	 int Qproperpair;
-   unsigned int ReadGroupCode;  // library info index
-   C_umpair();  
-   C_umpair(const C_umpair &); 
-   C_umpair(const C_readmap  &, const C_readmap  &, int, int, unsigned int);
-   C_umpair(const C_pairedread  &, const C_anchorinfo & );
-   ~C_umpair(){};  
-   C_umpair&operator=(const C_umpair &rhs);
-   bool constrain(int LMlow, int LMhigh);
-   int operator==(const C_umpair &rhs) ; //const;
-   int operator<(const C_umpair &rhs) const;  
+    friend ostream &operator<<(ostream &, const C_umpair &);
+public:
+    C_readmap read[2];          // position in contig (unpadded)
+    int nmap;                   // Number of different element subclasses (moblist hits)
+    int nmapA;                  // Total number of moblist hits
+    int elements;
+    int Qproperpair;
+    unsigned int ReadGroupCode;  // library info index
+    C_umpair();  
+    C_umpair(const C_umpair &); 
+    C_umpair(const C_readmap  &, const C_readmap  &, int, int, unsigned int);
+    C_umpair(const C_pairedread  &, const C_anchorinfo & );
+    ~C_umpair(){};  
+    C_umpair&operator=(const C_umpair &rhs);
+    bool constrain(int LMlow, int LMhigh);
+    int operator==(const C_umpair &rhs) ; //const;
+    int operator<(const C_umpair &rhs) const;  
 }; 
 
 //------------------------------------------------------------------------------
 // C_read class for single end reads - adds ReadGroupCode to readmap class
 //------------------------------------------------------------------------------
 class C_singleEnd : public C_readmap {
-  public:
+public:
     C_singleEnd();  
     C_singleEnd(const C_singleEnd &); 
     C_singleEnd(unsigned int, unsigned short,unsigned short, char, char, char, unsigned int);
@@ -285,8 +285,8 @@ class C_singleEnd : public C_readmap {
 // depth of coverage class
 //------------------------------------------------------------------------------
 class C_depth {
-  friend ostream &operator<<(ostream &, const C_depth &);
-  public:
+    friend ostream &operator<<(ostream &, const C_depth &);
+public:
     C_depth();              // constructor
     C_depth(int);           // constructor
     ~C_depth() {};          // destructor
@@ -303,13 +303,13 @@ class C_depth {
     int GCcontent(const string &,const string &); 
     void calcStats();              // default stat calculator
     void calcStats(int,float,float);     // specify bins
- 
+    
 };
 
 // repeat marker class
 class C_marker {
-  friend ostream &operator<<(ostream &, const C_marker &);
-  public:
+    friend ostream &operator<<(ostream &, const C_marker &);
+public:
     C_marker() {};          // constructor
     C_marker(int);          // constructor
     ~C_marker() {};         // destructor
@@ -326,8 +326,8 @@ typedef std::map<string, C_headerSpan, std::less<string> >  C_headers;
 
 //contig class
 class C_contig {
-  friend ostream &operator<<(ostream &, const C_contig &);
-  public:
+    friend ostream &operator<<(ostream &, const C_contig &);
+public:
     C_contig() {};                               // default constructor
     C_contig(string &, int, bool);               // constructor
     void calcStats();                            // calculate stats
@@ -401,7 +401,7 @@ class C_contig {
     static bool isRedundantRead(const C_singleEnd &r1, const C_singleEnd &r2);
     static bool isRedundantMulti(const C_umpair &p1, const C_umpair &p2);
     //static bool isRedundantPairBam(C_localpair &p1, C_localpair &p2);
-   private:
+private:
     string contigName;                              // contig name
 }; // end class 
 
@@ -412,23 +412,23 @@ typedef std::map<string, C_pairedread, std::less<string> >  C_pairedreads;
 typedef std::map<string, C_contig, std::less<string> >  C_contigs;
 
 /*
-class C_readGroupTags {
-	friend ostream &operator<<(ostream &, const C_readGroupTags &);
-	public:	
-		string sample;
-		string library;
-		string description;
-		string platformUnit;
-		string predictedInsertSize;
-		string platformTech;
-		string daterun;
-		string seqcenter;
-};
-*/
+ class C_readGroupTags {
+ friend ostream &operator<<(ostream &, const C_readGroupTags &);
+ public:	
+ string sample;
+ string library;
+ string description;
+ string platformUnit;
+ string predictedInsertSize;
+ string platformTech;
+ string daterun;
+ string seqcenter;
+ };
+ */
 
 // pair map container class for each set 
 class C_set {
-  friend ostream &operator<<(ostream &, const C_set &);
+    friend ostream &operator<<(ostream &, const C_set &);
 public:
 	C_set(string &, RunControlParameters &);               // constructor
 	C_contigs contig;
@@ -504,7 +504,7 @@ typedef std::map<unsigned long int, int, std::less<unsigned long int> >  C_ReadG
 
 // Paired-read map file container class
 class C_pairedfiles {
-  friend ostream &operator<<(ostream &, const C_pairedfiles &);
+    friend ostream &operator<<(ostream &, const C_pairedfiles &);
 public:
 	C_pairedfiles(string &, RunControlParameters &);  // constructor
 	void summaryLog(); 
@@ -556,13 +556,15 @@ private:
 	//int  Bam2MosaikRead( BamAlignment & ba1, Mosaik::Alignment & ma1); 
 	//int  Bam2Mosaik( BamAlignment & ba1, Mosaik::Alignment & ma1, Mosaik::Alignment & ma2); 
 	//int  BamZA2Mosaik(BamAlignment & ba1, Mosaik::Alignment & ma1, Mosaik::Alignment & ma2); 
-  bool  parseBamReadName(string &, int &, string &);
+    bool  parseBamReadName(string &, int &, string &);
 	int  parseBamTagData(string & tagData, string & tag);
 	string  parseBamTagDataString(string & tagData, string & tag);
 	string  parseBamHeader(string & samheader, const string & tag) const;
 	void inputcheck(string &,  RunControlParameters &);
 	int BamCigarData2Len(vector<CigarOp>, bool);
 	int BamCigarData2mm(vector<CigarOp>);
+    // replace re2                 
+    bool  getNextZAtag(string & za, string & this1, int & q1,int & q2,string & mob1, int & nmap1, string & cigar1, string & md1);
 	C_anchorinfo anchors;
 	C_libraries libraries;
 	C_headers headers;
@@ -589,25 +591,25 @@ private:
 // chromosome length and name arrays for AB files, which do not include 
 // information about the reference anchor 
 const unsigned long ABCHROMOSOMELENGTH[25]={ 
- 247249719, 242951149, 199501827, 191273063, 180857866, 170899992, 158821424, 146274826, 
- 140273252, 135374737, 134452384, 132349534, 114142980, 106368585, 100338915,  88827254, 
-  78774742,  76117153,  63811651,  62435964,  46944323,  49691432, 154913754,  57772954, 16571};
+    247249719, 242951149, 199501827, 191273063, 180857866, 170899992, 158821424, 146274826, 
+    140273252, 135374737, 134452384, 132349534, 114142980, 106368585, 100338915,  88827254, 
+    78774742,  76117153,  63811651,  62435964,  46944323,  49691432, 154913754,  57772954, 16571};
 //---------------------------------------------------------------------------  
 //  updated after email from Yongmin - AB used build36.1
 //---------------------------------------------------------------------------  
 /*
-  250781858,246421880,202351854,194005536,183441550,173341421,161090302
+ 250781858,246421880,202351854,194005536,183441550,173341421,161090302
  ,148364467,142277156,137308662,136373133,134240242,115773594,107888137
  ,101772329, 90096215, 79900096, 77204541, 64723247, 63327907, 47614957
  , 50401310,157126808, 58598282,    16808};
-*/
+ */
 const string ABCHROMOSOMENAME[25]={"1","2","3","4","5","6","7","8","9","10",
-  "11","12","13","14","15","16","17","18","19","20","21","22","X","Y","MT"};
-  
+    "11","12","13","14","15","16","17","18","19","20","21","22","X","Y","MT"};
+
 // add a prototype for the Ariya Hidayat's FastLZ library
 extern "C" {
-  int fastlz_compress(const void* input, int length, void* output);	
-  int fastlz_decompress(const void* input, int length, void* output, int maxout);
+    int fastlz_compress(const void* input, int length, void* output);	
+    int fastlz_decompress(const void* input, int length, void* output, int maxout);
 }
 
 const int DPCOMPRESS=1000000;
@@ -617,6 +619,6 @@ union light_t {
     int i32[2];
     short i16[4];
     char i8[8];
-  };
+};
 
 #endif

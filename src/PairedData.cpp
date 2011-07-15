@@ -5737,8 +5737,9 @@ int  C_pairedfiles::BamZA2PairedRead(BamAlignment & ba1, C_pairedread & pr1)
 	StringPiece ZASP(ZA);    // Wrap a StringPiece around it
 	int lenQ,lenR, mm;
 	
-	while (RE2::FindAndConsume(&ZASP,patternZA,&this1,&q1,&q2,&mob1,&nmap1,&cig1,&md1) ) {
-		
+	//while (RE2::FindAndConsume(&ZASP,patternZA,&this1,&q1,&q2,&mob1,&nmap1,&cig1,&md1) ) {
+    while (getNextZAtag(ZA, this1, q1, q2, mob1, nmap1, cig1, md1) ){
+        
 		char t1 = this1[0];
 		
 		switch (t1) {
@@ -6278,6 +6279,50 @@ int  C_pairedfiles::parseBamTagData(string & tagData, string & tag) {
     return N;
 }
 
+
+bool  C_pairedfiles::getNextZAtag(string & za, string & this1, int & q1,int & q2,string & mob1, int & nmap1, string & cigar1, string & md1) {
+
+    size_t k1=za.find_first_of("<");
+    size_t k2=za.find_first_of(">");
+    if (k1==string::npos) return false;
+    if (k2==string::npos) return false;
+    string za1=za.substr(k1+1,k2-k1-1);
+    za=za.substr(k2+1);
+    size_t i1=za1.find_first_of(";");
+    if (i1==string::npos) return false;
+    string s=za1.substr(0,i1);
+    this1=s;
+    za1=za1.substr(i1+1);
+    i1=za1.find_first_of(";");
+    if (i1==string::npos) return false;
+    s=za1.substr(0,i1);
+    q1=string2Int(s);
+    za1=za1.substr(i1+1);
+    i1=za1.find_first_of(";");
+    if (i1==string::npos) return false;
+    s=za1.substr(0,i1);
+    q2=string2Int(s);
+    za1=za1.substr(i1+1);
+    i1=za1.find_first_of(";");
+    if (i1==string::npos) return false;
+    s=za1.substr(0,i1);
+    mob1=s;
+    za1=za1.substr(i1+1);
+    i1=za1.find_first_of(";");
+    if (i1==string::npos) return false;
+    s=za1.substr(0,i1);
+    nmap1=string2Int(s);
+    za1=za1.substr(i1+1);
+    i1=za1.find_first_of(";");
+    if (i1==string::npos) return false;
+    s=za1.substr(0,i1);
+    cigar1=s;
+    s=za1.substr(i1+1);
+    md1=s;                                
+    return true;
+}
+
+                 
 //------------------------------------------------------------------------------
 // parse Bam tagData for tag:i:Z
 //------------------------------------------------------------------------------

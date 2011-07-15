@@ -845,7 +845,7 @@ bool  getNextCigarToken(string & c1,  int & n1, string & op1) {
        k++;
     }
     if (k==L)  return false;
-    string ns=c1.substr(0,k-1);
+    string ns=c1.substr(0,k);
     n1=string2Int(ns);
     if (!isalpha(c1[k])) 
         return false;
@@ -857,6 +857,14 @@ bool  getNextCigarToken(string & c1,  int & n1, string & op1) {
 bool  getNextMdString(string & md1,  string & s1) {    
     size_t k1=0;
     size_t L=md1.size();
+    while (isdigit(md1[k1])&(k1<L)) {
+        k1++;
+    }
+    md1=md1.substr(k1);
+    s1="";
+    if (k1==L) return false;
+    k1=0;
+    L=md1.size();
     while (!isdigit(md1[k1])&(k1<L)) {
         k1++;
     }

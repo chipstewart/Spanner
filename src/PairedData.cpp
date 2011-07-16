@@ -5998,7 +5998,10 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
     
 	StringPiece ZASPm(ZAm);    // Wrap a StringPiece around the moblist record ZAm 
 	
-	while (RE2::FindAndConsume(&ZASPm,patternZA,&this1,&q1,&q2,&mob1,&nmap1,&cig1,&md1) ) {
+    //while (RE2::FindAndConsume(&ZASPm,patternZA,&this1,&q1,&q2,&mob1,&nmap1,&cig1,&md1) ) {
+        
+    while (getNextZAtag(ZAm, this1, q1, q2, mob1, nmap1, cig1, md1) ){
+            
 		
 		char t1 = this1[0];
 		
@@ -6047,6 +6050,8 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
 			case '&':  
 			case '=':  
 				
+                if ((cig1.size()<1)|(md1.size()<1))  break;
+                
 				NZA++;
 				
 				if (!getCigarLengths(cig1,lenQ,lenR,mm)) continue;
@@ -6094,7 +6099,10 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
             rm1.align[0].sense=rm1.align[0].sense=='F'? 'R': 'F';
             rm2.align[0].sense=rm2.align[0].sense=='F'? 'R': 'F';
         }        
-	}
+	} else {
+        return NZA;
+    }
+	
     
 	NZA=0;
 	
@@ -6104,8 +6112,9 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
 	
 	StringPiece ZASPa(ZAa);    // Wrap a StringPiece around the official reference part ZAa
     
-	while (RE2::FindAndConsume(&ZASPa,patternZA,&this1,&q1,&q2,&mob1,&nmap1,&cig1,&md1) ) {
-		
+	//while (RE2::FindAndConsume(&ZASPa,patternZA,&this1,&q1,&q2,&mob1,&nmap1,&cig1,&md1) ) {
+    while (getNextZAtag(ZAa, this1, q1, q2, mob1, nmap1, cig1, md1) ){
+            
 		char t1 = this1[0];
 		
 		switch (t1) {
@@ -6152,6 +6161,8 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
 			case '&':  
 			case '=':  
 				
+                if ((cig1.size()<1)|(md1.size()<1))  break;
+                
 				NZA++;
 				
 				if (!getCigarLengths(cig1,lenQ,lenR,mm)) continue;
@@ -6195,7 +6206,9 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
             ra2.align[0].sense=ra2.align[0].sense=='F'? 'R': 'F';
         }
         
-	}
+	} else {
+        return NZA;
+    }
 	
     
 	

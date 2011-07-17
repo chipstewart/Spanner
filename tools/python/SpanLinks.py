@@ -53,11 +53,9 @@ def makeLinks(params,L,subdirectory,pathname):
                 
                     print >>f, "cd ", linkareaA
 
-                    if ('special' in filename):
-                        if (os.path.islink(filename)):
-                            print >>f, "rm ", filename
+                    if ('special' in filename):                      
                         nospecial = filename.replace('special.', '')
-                        print >>f, "ln -s", filename, " ",nospecial
+                        print >>f, "ln -sf", filename, " ",nospecial
                     else:
                         if not (os.path.islink(filename)):
                             print >>f, "ln -s", filename
@@ -70,7 +68,7 @@ def makeLinks(params,L,subdirectory,pathname):
 
                     if ('special' in filename):
                         if (os.path.islink(filename)):
-                            print >>f, "rm ", filename
+                            os.remove(filename)
 
                         nospecial = filename.replace('special.', '')
                         os.symlink(filename,nospecial)
@@ -88,11 +86,9 @@ def makeLinks(params,L,subdirectory,pathname):
 
             if os.path.exists (filename):
                 if makescript:
-                    if ('special' in filename):
-                        if (os.path.islink(filename)):
-                            print >>f, "rm ", filename
+                    if ('special' in filename):                     
                         nospecial = filename.replace('special.', '')
-                        print >>f, "ln -s", filename, " ",nospecial
+                        print >>f, "ln -sf", filename, " ",nospecial
                     else:
                         if not (os.path.islink(filename)):
                             print >>f, "ln -s", filename

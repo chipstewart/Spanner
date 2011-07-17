@@ -55,7 +55,7 @@ def makeLinks(params,L,subdirectory,pathname):
 
                     if ('special' in filename):
                         if (os.path.islink(filename)):
-                            os.remove(filename)
+                            print >>f, "rm ", filename
                         nospecial = filename.replace('special.', '')
                         print >>f, "ln -s", filename, " ",nospecial
                     else:
@@ -70,7 +70,8 @@ def makeLinks(params,L,subdirectory,pathname):
 
                     if ('special' in filename):
                         if (os.path.islink(filename)):
-                            os.remove(filename)
+                            print >>f, "rm ", filename
+
                         nospecial = filename.replace('special.', '')
                         os.symlink(filename,nospecial)
                     else:
@@ -89,7 +90,7 @@ def makeLinks(params,L,subdirectory,pathname):
                 if makescript:
                     if ('special' in filename):
                         if (os.path.islink(filename)):
-                            os.remove(filename)
+                            print >>f, "rm ", filename
                         nospecial = filename.replace('special.', '')
                         print >>f, "ln -s", filename, " ",nospecial
                     else:

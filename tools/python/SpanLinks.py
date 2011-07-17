@@ -45,9 +45,6 @@ def makeLinks(params,L,subdirectory,pathname):
             linkareaA=linkarea+"/"+A
 
             filename=directory+pathname.strip('.')
-            
-            if ('special' in filename):
-                continue
 
             if os.path.exists (filename):
                 if makescript:
@@ -55,14 +52,24 @@ def makeLinks(params,L,subdirectory,pathname):
                         print >>f, "mkdir -p ", linkareaA
                 
                     print >>f, "cd ", linkareaA
-                    print >>f, "ln -s", filename
+
+                    if ('special' in filename):
+                        nospecial = filename.replace('special.', '')
+                        print >>f, "ln -s", filename, " ",nospecial
+                    else:
+                        print >>f, "ln -s", filename
 
                 else:
                     if not os.path.exists (linkareaA):
                         os.makedirs (linkareaA)
 
                     os.chdir(linkArea)
-                    os.symlink(filename)
+
+                    if ('special' in filename):
+                        nospecial = filename.replace('special.', '')
+                        os.symlink(filename,nospecial)
+                    else:
+                        os.symlink(filename)
 
             else:
                 if(verbose):
@@ -74,12 +81,25 @@ def makeLinks(params,L,subdirectory,pathname):
 
             if os.path.exists (filename):
                 if makescript:
-                    print >>f, "ln -s", filename
+                    if ('special' in filename):
+                        nospecial = filename.replace('special.', '')
+                        print >>f, "ln -s", filename, " ",nospecial
+                    else:
+                        print >>f, "ln -s", filename
+
                 else:
-                    os.symlink(filename)
+                    if ('special' in filename):
+                        nospecial = filename.replace('special.', '')
+                        os.symlink(filename,nospecial)
+                    else:
+                        os.symlink(filename)
             else:
                 if (verbose):
                     print "# missing ",filename
+
+            #skip special pair,cross, multi span links
+            if ('special' in filename):
+                continue
 
             filename= basename+"."+A+".pair.span"
 
@@ -161,8 +181,8 @@ def filehook(params, directory, files):
         pathname = os.path.join(directory, file)
         #print file
         # skip special libraries (should be matched to regular)
-        if ('special.' in file):
-            continue
+        #if ('special.' in file):
+        #    continue
 
         if fnmatch.fnmatch(file, pattern):
             if os.path.isfile(pathname):

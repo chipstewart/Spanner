@@ -55,7 +55,7 @@ def makeLinks(params,L,subdirectory,pathname):
 
                     if ('special' in filename):                      
                         nospecial = filename.replace('special.', '')
-                        (dirName, nospecialfileName) = os.path.split(nospecial)
+                        (dirName, nospecialfilename) = os.path.split(nospecial)
                         print >>f, "ln -sf", filename, " ",nospecialfilename
                     else:
                         print >>f, "ln -s", filename
@@ -88,7 +88,7 @@ def makeLinks(params,L,subdirectory,pathname):
                 if makescript:
                     if ('special' in filename):                     
                         nospecial = filename.replace('special.', '')
-                        (dirName, nospecialfileName) = os.path.split(nospecial)
+                        (dirName, nospecialfilename) = os.path.split(nospecial)
                         print >>f, "ln -sf", filename, " ",nospecialfilename
                     else:
                         print >>f, "ln -s", filename

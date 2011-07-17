@@ -54,6 +54,8 @@ def makeLinks(params,L,subdirectory,pathname):
                     print >>f, "cd ", linkareaA
 
                     if ('special' in filename):
+                        if (os.path.islink(filename)):
+                            os.remove(filename)
                         nospecial = filename.replace('special.', '')
                         print >>f, "ln -s", filename, " ",nospecial
                     else:
@@ -67,6 +69,8 @@ def makeLinks(params,L,subdirectory,pathname):
                     os.chdir(linkArea)
 
                     if ('special' in filename):
+                        if (os.path.islink(filename)):
+                            os.remove(filename)
                         nospecial = filename.replace('special.', '')
                         os.symlink(filename,nospecial)
                     else:
@@ -84,6 +88,8 @@ def makeLinks(params,L,subdirectory,pathname):
             if os.path.exists (filename):
                 if makescript:
                     if ('special' in filename):
+                        if (os.path.islink(filename)):
+                            os.remove(filename)
                         nospecial = filename.replace('special.', '')
                         print >>f, "ln -s", filename, " ",nospecial
                     else:
@@ -92,6 +98,8 @@ def makeLinks(params,L,subdirectory,pathname):
 
                 else:
                     if ('special' in filename):
+                        if (os.path.islink(filename)):
+                            os.remove(filename)
                         nospecial = filename.replace('special.', '')
                         os.symlink(filename,nospecial)
                     else:

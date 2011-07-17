@@ -57,8 +57,7 @@ def makeLinks(params,L,subdirectory,pathname):
                         nospecial = filename.replace('special.', '')
                         print >>f, "ln -sf", filename, " ",nospecial
                     else:
-                        if not (os.path.islink(filename)):
-                            print >>f, "ln -s", filename
+                        print >>f, "ln -s", filename
 
                 else:
                     if not os.path.exists (linkareaA):
@@ -90,8 +89,7 @@ def makeLinks(params,L,subdirectory,pathname):
                         nospecial = filename.replace('special.', '')
                         print >>f, "ln -sf", filename, " ",nospecial
                     else:
-                        if not (os.path.islink(filename)):
-                            print >>f, "ln -s", filename
+                        print >>f, "ln -s", filename
 
                 else:
                     if ('special' in filename):

@@ -541,6 +541,8 @@ private:
 	int  BamZA2PairedRead(BamAlignment & ba1, C_pairedread & pr1); 
 	int  BamBam2PairedRead(BamAlignment & ba1, BamAlignment & ba2, C_pairedread & pr1); 
 	int  BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2, C_pairedread & pr1); 
+    int  Murphys_law_special_bam_moblist_flipper(BamAlignment & ba1, BamAlignment & ba2); 
+
 	//C_pairedread   Mosaik2pair(  Mosaik::AlignedRead& mr);
 	//bool  nextBamAlignmentPair( BamMultiReader & ar1, BamMultiReader & ar2, Mosaik::AlignedRead & mr1); 
 	//bool  nextBamAlignmentPair( BamReader & ar1, BamReader & ar2, Mosaik::AlignedRead & mr1); 

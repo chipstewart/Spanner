@@ -6947,7 +6947,7 @@ bool  C_pairedfiles::nextBamAlignmentPairSpecial( BamMultiReader & ar1, C_paired
 	//C_pairedread pr1;	
 	
 	// Bam structure
-	BamAlignment ba1,ba2;
+	BamAlignment ba1,ba2,baTmp;
 	
 	bool scan = SpannerMode==SPANNER_SCAN;
 	//bool build = SpannerMode==SPANNER_BUILD;
@@ -6982,6 +6982,13 @@ bool  C_pairedfiles::nextBamAlignmentPairSpecial( BamMultiReader & ar1, C_paired
 		
 		doneFrag[ba1.Name]=true;
 		
+        if (Murphys_law_special_bam_moblist_flipper(ba1, ba2) ) {
+            baTmp=ba1;
+            ba1=ba2;
+            ba2=baTmp;
+        }
+
+             
 		// skip unmapped reads (another function in a module somewhere ...)
 		if (ba1.RefID<0) {
 			continue;
@@ -7110,7 +7117,13 @@ int C_pairedfiles::BamCigarData2Len(vector<CigarOp> CigarData, bool Query) {
 	return(len);
 }
 
-
+             
+int  C_pairedfiles::Murphys_law_special_bam_moblist_flipper(BamAlignment & ba1, BamAlignment & ba2)
+{
+    return (anchors.use[ba2.RefID] & !anchors.use[ba1.RefID]);
+}
+            
+                
 int C_pairedfiles::BamCigarData2mm(vector<CigarOp> CigarData) {
 	// iterate over CIGAR operations to calculate number of indel bases
 	int indel=0;

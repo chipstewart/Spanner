@@ -6960,6 +6960,7 @@ bool  C_pairedfiles::nextBamAlignmentPairSpecial( BamMultiReader & ar1, C_paired
 	bool rev,revMate;
 	bool properOrientation = false;	
 	
+    int ntry=0;
 	
 	while ( ar1.GetNextAlignment(ba1) ) {
 		
@@ -6982,12 +6983,22 @@ bool  C_pairedfiles::nextBamAlignmentPairSpecial( BamMultiReader & ar1, C_paired
 		
 		doneFrag[ba1.Name]=true;
 		
-        if (Murphys_law_special_bam_moblist_flipper(ba1, ba2) ) {
+        int Murph= Murphys_law_special_bam_moblist_flipper(ba1, ba2);
+        if (Murph==0) {
             baTmp=ba1;
             ba1=ba2;
             ba2=baTmp;
+            Murph=1;
+        } else if (Murph<0) {
+            ntry++; 
         }
-
+        if (ntry>10) {
+            cerr << " Special bam records out of order or missing moblist " << endl;
+            cerr << ba1.Name << endl;            
+            exit(-132);
+        }
+        if (Murph<0) 
+            continue;
              
 		// skip unmapped reads (another function in a module somewhere ...)
 		if (ba1.RefID<0) {
@@ -7117,10 +7128,20 @@ int C_pairedfiles::BamCigarData2Len(vector<CigarOp> CigarData, bool Query) {
 	return(len);
 }
 
-             
+// detects random combinations of adjacent special bam records
+// correct combination is u1=true,u2=false (return 1)
+// fixable is flipped (return 0), hopeless is both true or false (return < 0)
 int  C_pairedfiles::Murphys_law_special_bam_moblist_flipper(BamAlignment & ba1, BamAlignment & ba2)
 {
-    return (anchors.use[ba2.RefID] & !anchors.use[ba1.RefID]);
+    int u1=(anchors.use[ba1.RefID]? 1:0);
+    int u2=(anchors.use[ba2.RefID]? 1:0);
+    if ((u1==1)&(u2==0) )
+        return 1;
+    if ((u1==0)&(u2==1) )
+        return 0;
+    if ((u1==1)&(u2==1) )
+        return -1;
+    return -2;
 }
             
                 

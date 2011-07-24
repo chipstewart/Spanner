@@ -1414,7 +1414,7 @@ C_umpair::C_umpair(const C_pairedread  & pair1, const C_anchorinfo & anchor1) {
     // check that both ends have maps and that at least one end is unique hit
     bool ok=  ( (N0*N1)>0 ) && ( (N0==1)||(N1==1) );
     if (!ok) {
-        cerr << "bad UM fragment " << N0 << " " << N1 << endl;
+        cerr << "bad UM fragment " << pair1.Name << "\t" << N0 << " " << N1 << endl;
         exit(-1);
     }
     

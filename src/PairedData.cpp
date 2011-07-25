@@ -371,10 +371,18 @@ bool C_anchorinfo::anchorElements(vector<string> & elements0) {
 		string match;
 		string patternElement("^("+elements0[0]+"\\S+)\\.\\S+");  
         
+        size_t found;        
+            
 		for (size_t i = 0; i<names.size(); i++) {
-			if ( RE2::FullMatch(names[i].c_str(),patternElement.c_str(),&match) ) {			
+            if ( RE2::FullMatch(names[i].c_str(),patternElement.c_str(),&match) ) {		
 				elements1.push_back(match);
-			}
+			} else {
+                found = names[i].find(elements0[0]);
+                if (found==0) { 
+                    // do not analyze coverage within these elements
+                    use[i]=false;
+                }
+            }
 		}
 		
 		vector<string>::iterator it;
@@ -6256,7 +6264,7 @@ int  C_pairedfiles::BamSpecial2PairedRead(BamAlignment & ba1, BamAlignment & ba2
 	}
 	pr1.ReadGroupCode=rgcode;
     pr1.Qproperpair=char(q);
-	
+	pr1.Name=ba1.Name;
 	
 	
 	return(NZA);
@@ -6982,7 +6990,12 @@ bool  C_pairedfiles::nextBamAlignmentPairSpecial( BamMultiReader & ar1, C_paired
 		}
 		
 		doneFrag[ba1.Name]=true;
-		
+        /*
+		if (ba1.Name=="ERR002422.121091") {            
+            cout<<ba1.Position<< endl;
+        }        
+        */
+        
         int Murph= Murphys_law_special_bam_moblist_flipper(ba1, ba2);
         if (Murph==0) {
             baTmp=ba1;
@@ -6992,7 +7005,7 @@ bool  C_pairedfiles::nextBamAlignmentPairSpecial( BamMultiReader & ar1, C_paired
         } else if (Murph<0) {
             ntry++; 
         }
-        if (ntry>10) {
+        if (ntry>100) {
             cerr << " Special bam records out of order or missing moblist " << endl;
             cerr << ba1.Name << endl;            
             exit(-132);
@@ -7000,7 +7013,7 @@ bool  C_pairedfiles::nextBamAlignmentPairSpecial( BamMultiReader & ar1, C_paired
         if (Murph<0) 
             continue;
              
-		// skip unmapped reads (another function in a module somewhere ...)
+		// skip unmapped reads (another function in a module far far away somewhere ...)
 		if (ba1.RefID<0) {
 			continue;
 		}	

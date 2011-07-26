@@ -217,7 +217,7 @@ def main():
                   help="minimum number of read pairs in file")
     parser.add_option("-v", "--verbose",dest='verbose', default=False,
                   help="detailed standard output ",action='store_true')
-    parser.add_option("-p", "--peak",default="0.25",
+    parser.add_option("-p", "--peak",default="0.99",
                   help="max allow std/median fragment distribution")
     parser.add_option("-m", "--makescript",default="",
                   help="makelink script")

@@ -6745,6 +6745,10 @@ void C_SpannerCluster::selectPairs(C_contig & c1, int Qmin) {
             //double p1= double((*i).pos);
             int lm1=(*i).lm;  
             
+            // skip flipped libs (ie. unfixed jumping libs)
+            int LF1 = libraries.libmap[(*i).ReadGroupCode].LM;
+            if (LF1<0) continue;
+            
             if (o1=='>') {
                 invert5.push_back((*i));
             } else if (o1=='<') {
@@ -6754,6 +6758,7 @@ void C_SpannerCluster::selectPairs(C_contig & c1, int Qmin) {
                 int LFhigh = libraries.libmap[(*i).ReadGroupCode].LMhigh;        
                 int LFlow = libraries.libmap[(*i).ReadGroupCode].LMlow;
                 
+
                 //--------------------------------------------------------------------
                 // many libraries have significant tail extending down to LR
                 // use min of LR & LMlow; 
@@ -6851,6 +6856,10 @@ int C_SpannerCluster::makepairX(vector<C_crosspair> & p1,  char sense
             x4[0]=double(p1[i].read[0].pos);
             x4[1]=double(p1[i].read[1].anchor*1e10+p1[i].read[1].pos);  
             
+            // skip flipped libs (i.e. unfixed Jumping libs)
+            int LF1=libraries.libmap[p1[i].ReadGroupCode].LMhigh;
+            if (LF1<0) continue;
+            
             // get clustering width from library info
             int LFlow = libraries.libmap[p1[i].ReadGroupCode].LMlow;
             int LFhigh = libraries.libmap[p1[i].ReadGroupCode].LMhigh;
@@ -6911,6 +6920,10 @@ int C_SpannerCluster::makepairP(vector<C_localpair> & p1,  char orient
             
             // get average LF from library info record
             int LF1 = libraries.libmap[p1[i].ReadGroupCode].LM;
+            
+            //  skip libraries with negative fragment length 
+            if (LF1<0) continue;
+            
             x4[1]=double(p1[i].lm - LF1);  
             //x1.push_back(x);
             // get clustering width from library info
@@ -7317,6 +7330,11 @@ void C_SpannerRetroCluster::selectRetro(C_contig & c1,int Qmin) {
             
             unsigned int RGC1=(*i).ReadGroupCode;
             double lm1=libraries.libmap[RGC1].LM;
+            
+            // skip flipped libs (i.e. unfixed Jumping libs)
+            if (lm1<0) continue;
+
+            
             double lmHigh=libraries.libmap[RGC1].LMhigh;
             double lmLow=libraries.libmap[RGC1].LMlow;
             
@@ -7397,6 +7415,10 @@ int C_SpannerRetroCluster::makepairP(vector<C_umpair> & p1,  char orient
             // p1[i].read[0].pos;
             // get average LF from library info record
             int LF1 = libraries.libmap[p1[i].ReadGroupCode].LM;
+            
+            // skip flipped libs (i.e. unfixed Jumping libs)
+            if (LF1<0) continue;
+
             // get library fragment width info
             int LFlow = libraries.libmap[p1[i].ReadGroupCode].LMlow;
             int LFhigh = libraries.libmap[p1[i].ReadGroupCode].LMhigh;

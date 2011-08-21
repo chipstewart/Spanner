@@ -174,7 +174,7 @@ def goodLib(params,L):
 
    LFpeak=params["LFpeak"]
    peak=L.LFhist[0]["std"]/L.LFhist[0]["median"]
-   ok =  ok&(peak<LFpeak)
+   ok =  ok&(peak<LFpeak)&(L.LFhist[0]["median"]>0)
 
    return ok
 
